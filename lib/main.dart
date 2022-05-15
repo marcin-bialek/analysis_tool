@@ -1,6 +1,8 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
+import 'package:analysis_tool/views/home/side_menu_files.dart';
+import 'package:analysis_tool/views/start/start_page.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -73,7 +75,7 @@ class _HomePageState extends State<HomePage> {
       pageBuilder: (context, _, __) {
         switch (settings.name) {
           case SideMenuRoutes.files:
-            return const Text('files');
+            return const SideMenuFiles();
           case SideMenuRoutes.search:
             return const Text('search');
           case SideMenuRoutes.codes:
@@ -96,7 +98,7 @@ class _HomePageState extends State<HomePage> {
       pageBuilder: (context, _, __) {
         switch (settings.name) {
           case MainViewRoutes.start:
-            return const Text('start');
+            return const StartPage();
           case MainViewRoutes.settings:
             return const Text('settings');
           case MainViewRoutes.editor:

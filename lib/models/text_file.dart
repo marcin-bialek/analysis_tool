@@ -22,8 +22,8 @@ class TextFile implements JsonEncodable {
     final id = json[TextFileJsonKeys.id];
     final name = json[TextFileJsonKeys.name];
     final file = TextFile(id: id, name: name);
-    final textLines = json[TextFileJsonKeys.textLines] as List<String>;
-    file.textLines.addAll(textLines);
+    final textLines = json[TextFileJsonKeys.textLines] as List;
+    file.textLines.addAll(textLines.map((e) => e.toString()));
     return file;
   }
 
@@ -49,6 +49,11 @@ class TextFile implements JsonEncodable {
 
   @override
   int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    return 'TextFile(id: $id, name: $name)';
+  }
 }
 
 class TextFileJsonKeys {

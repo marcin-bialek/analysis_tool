@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -13,6 +14,10 @@ class ProjectService {
 
   Project? _currentProject;
   String? _currentProjectPath;
+  final _textFilesStreamController =
+      StreamController<List<TextFile>>.broadcast();
+
+  get filesStream => _textFilesStreamController.stream;
 
   ProjectService._();
 
@@ -22,7 +27,8 @@ class ProjectService {
   }
 
   Project _getOrCreateProject() {
-    return _currentProject ?? Project.withId(name: 'new-project');
+    _currentProject ??= Project.withId(name: 'new-project');
+    return _currentProject!;
   }
 
   Future<Project?> openProject() async {
@@ -42,8 +48,10 @@ class ProjectService {
       final project = Project.fromJson(jsonDecode(file));
       _currentProject = project;
       _currentProjectPath = result.files.first.path;
+      _textFilesStreamController.add(project.textFiles.toList());
       return project;
     } catch (e) {
+      print(e);
       throw InvalidFileError();
     }
   }
@@ -92,6 +100,7 @@ class ProjectService {
         case 'txt':
           final textFile = TextFile.fromText(file.name, text);
           project.textFiles.add(textFile);
+          _textFilesStreamController.add(project.textFiles.toList());
           break;
         default:
           throw UnsupportedFileError();
