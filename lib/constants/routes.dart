@@ -13,7 +13,8 @@ class MainViewRoutes {
 
   static const start = '/main-view/start';
   static const settings = '/main-view/settings';
-  static const editor = '/main-view/editor';
+  static const textEditor = '/main-view/text-editor';
+  static const codingEditor = '/main-view/coding-editor';
   static const codeGraph = '/main-view/code-graph';
   static const compare = '/main-view/compare';
 }

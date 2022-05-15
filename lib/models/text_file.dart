@@ -29,7 +29,8 @@ class TextFile implements JsonEncodable {
 
   factory TextFile.fromText(String name, String text) {
     final file = TextFile.withId(name: name);
-    file.textLines.addAll(text.split('\n').map((e) => e.trim()));
+    file.textLines.addAll(
+        text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty));
     return file;
   }
 

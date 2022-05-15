@@ -1,8 +1,10 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
+import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/start/start_page.dart';
+import 'package:analysis_tool/views/text_editor/text_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -101,8 +103,10 @@ class _HomePageState extends State<HomePage> {
             return const StartPage();
           case MainViewRoutes.settings:
             return const Text('settings');
-          case MainViewRoutes.editor:
-            return const Text('editor');
+          case MainViewRoutes.textEditor:
+            return TextEditor(file: settings.arguments as TextFile);
+          case MainViewRoutes.codingEditor:
+            return const Text('coding editor');
           case MainViewRoutes.codeGraph:
             return const Text('code graph');
           case MainViewRoutes.compare:

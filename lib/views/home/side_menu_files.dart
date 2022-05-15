@@ -1,3 +1,5 @@
+import 'package:analysis_tool/constants/keys.dart';
+import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +104,12 @@ class SideMenuFilesItem extends StatelessWidget {
           minLeadingWidth: 0.0,
           minVerticalPadding: 0.0,
           visualDensity: const VisualDensity(vertical: -4.0),
-          onTap: () {},
+          onTap: () {
+            mainViewNavigatorKey.currentState!.pushReplacementNamed(
+              MainViewRoutes.textEditor,
+              arguments: file,
+            );
+          },
           onLongPress: () {},
         ),
         // for (final v in file.codingVersions)
