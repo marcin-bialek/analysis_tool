@@ -107,7 +107,7 @@ class SideMenuFilesItem extends StatelessWidget {
           onTap: () {
             mainViewNavigatorKey.currentState!.pushReplacementNamed(
               MainViewRoutes.textEditor,
-              arguments: file,
+              arguments: <dynamic>[file, null],
             );
           },
           onLongPress: () {},

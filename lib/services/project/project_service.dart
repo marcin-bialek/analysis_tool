@@ -14,12 +14,19 @@ class ProjectService {
 
   Project? _currentProject;
   String? _currentProjectPath;
-  final _textFilesStreamController =
-      StreamController<List<TextFile>>.broadcast();
+  late final StreamController<List<TextFile>> _textFilesStreamController;
 
   get filesStream => _textFilesStreamController.stream;
 
-  ProjectService._();
+  ProjectService._() {
+    _textFilesStreamController = StreamController<List<TextFile>>.broadcast(
+      onListen: () {
+        if (_currentProject != null) {
+          _textFilesStreamController.add(_currentProject!.textFiles.toList());
+        }
+      },
+    );
+  }
 
   factory ProjectService() {
     _instance ??= ProjectService._();
@@ -107,4 +114,39 @@ class ProjectService {
       }
     }
   }
+
+  Stream<TextSearchResult> searchText(String text) {
+    final project = _getOrCreateProject();
+    bool stopSearch = false;
+    final controller = StreamController<TextSearchResult>(onCancel: () {
+      stopSearch = true;
+    });
+    (() async {
+      for (final file in project.textFiles) {
+        if (stopSearch) {
+          return;
+        }
+        for (int i = 0; i < file.textLines.length; i++) {
+          if (stopSearch) {
+            return;
+          }
+          final p = file.textLines[i].indexOf(text);
+          if (p >= 0) {
+            controller.add(TextSearchResult(file, i, p, text.length));
+          }
+        }
+      }
+      await controller.close();
+    })();
+    return controller.stream;
+  }
+}
+
+class TextSearchResult {
+  final TextFile file;
+  final int line;
+  final int start;
+  final int length;
+
+  TextSearchResult(this.file, this.line, this.start, this.length);
 }

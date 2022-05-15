@@ -1,12 +1,15 @@
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class TextEditor extends StatefulWidget {
   final TextFile file;
+  final int? line;
 
   const TextEditor({
     Key? key,
     required this.file,
+    this.line,
   }) : super(key: key);
 
   @override
@@ -14,6 +17,23 @@ class TextEditor extends StatefulWidget {
 }
 
 class _TextEditorState extends State<TextEditor> {
+  ItemScrollController? _textScrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textScrollController = ItemScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.line != null) {
+        _textScrollController?.scrollTo(
+          index: widget.line!,
+          duration: const Duration(microseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -40,7 +60,7 @@ class _TextEditorState extends State<TextEditor> {
         Expanded(
           child: Container(
             color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
-            child: ListView.separated(
+            child: ScrollablePositionedList.separated(
               itemCount: widget.file.textLines.length,
               itemBuilder: (context, index) {
                 final line = widget.file.textLines[index];
@@ -63,6 +83,7 @@ class _TextEditorState extends State<TextEditor> {
               separatorBuilder: (context, index) {
                 return const Divider();
               },
+              itemScrollController: _textScrollController,
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
+import 'package:analysis_tool/views/home/side_menu_search.dart';
 import 'package:analysis_tool/views/start/start_page.dart';
 import 'package:analysis_tool/views/text_editor/text_editor.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ class _HomePageState extends State<HomePage> {
           case SideMenuRoutes.files:
             return const SideMenuFiles();
           case SideMenuRoutes.search:
-            return const Text('search');
+            return const SideMenuSearch();
           case SideMenuRoutes.codes:
             return const Text('codes');
           case SideMenuRoutes.notes:
@@ -104,7 +105,8 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.settings:
             return const Text('settings');
           case MainViewRoutes.textEditor:
-            return TextEditor(file: settings.arguments as TextFile);
+            final args = settings.arguments as List;
+            return TextEditor(file: args[0], line: args[1]);
           case MainViewRoutes.codingEditor:
             return const Text('coding editor');
           case MainViewRoutes.codeGraph:
