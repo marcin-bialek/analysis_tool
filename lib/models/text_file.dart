@@ -4,27 +4,33 @@ import 'package:uuid/uuid.dart';
 class TextFile implements JsonEncodable {
   final String id;
   final String name;
-  final List<String> textLines;
+  final List<String> textLines = [];
 
-  const TextFile({
+  TextFile({
     required this.id,
     required this.name,
-    required this.textLines,
   });
 
   factory TextFile.withId({
     required String name,
-    required List<String> textLines,
   }) {
     final id = const Uuid().v4();
-    return TextFile(id: id, name: name, textLines: textLines);
+    return TextFile(id: id, name: name);
   }
 
   factory TextFile.fromJson(Map<String, dynamic> json) {
     final id = json[TextFileJsonKeys.id];
     final name = json[TextFileJsonKeys.name];
-    final textLines = json[TextFileJsonKeys.textLines];
-    return TextFile(id: id, name: name, textLines: textLines);
+    final file = TextFile(id: id, name: name);
+    final textLines = json[TextFileJsonKeys.textLines] as List<String>;
+    file.textLines.addAll(textLines);
+    return file;
+  }
+
+  factory TextFile.fromText(String name, String text) {
+    final file = TextFile.withId(name: name);
+    file.textLines.addAll(text.split('\n').map((e) => e.trim()));
+    return file;
   }
 
   @override
