@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -15,14 +16,23 @@ class ProjectService {
   Project? _currentProject;
   String? _currentProjectPath;
   late final StreamController<List<TextFile>> _textFilesStreamController;
+  late final StreamController<List<Note>> _notesStreamController;
 
   get filesStream => _textFilesStreamController.stream;
+  get notesStream => _notesStreamController.stream;
 
   ProjectService._() {
     _textFilesStreamController = StreamController<List<TextFile>>.broadcast(
       onListen: () {
         if (_currentProject != null) {
           _textFilesStreamController.add(_currentProject!.textFiles.toList());
+        }
+      },
+    );
+    _notesStreamController = StreamController<List<Note>>.broadcast(
+      onListen: () {
+        if (_currentProject != null) {
+          _notesStreamController.add(_currentProject!.notes.toList());
         }
       },
     );
@@ -139,6 +149,30 @@ class ProjectService {
       await controller.close();
     })();
     return controller.stream;
+  }
+
+  void addEmptyNote() {
+    final project = _getOrCreateProject();
+    final note = Note.withId(text: 'Nowa notatka');
+    project.notes.add(note);
+    _notesStreamController.add(project.notes.toList());
+  }
+
+  void removeNote(Note note) {
+    final project = _getOrCreateProject();
+    if (project.notes.remove(note)) {
+      _notesStreamController.add(project.notes.toList());
+    }
+  }
+
+  void updateNote(Note note, String text) {
+    final project = _getOrCreateProject();
+    if (note.text != text) {
+      final newNote = Note(id: note.id, text: text);
+      project.notes.remove(note);
+      project.notes.add(newNote);
+      _notesStreamController.add(project.notes.toList());
+    }
   }
 }
 

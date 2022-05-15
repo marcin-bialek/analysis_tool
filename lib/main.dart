@@ -3,6 +3,7 @@ import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
+import 'package:analysis_tool/views/home/side_menu_notes.dart';
 import 'package:analysis_tool/views/home/side_menu_search.dart';
 import 'package:analysis_tool/views/start/start_page.dart';
 import 'package:analysis_tool/views/text_editor/text_editor.dart';
@@ -82,11 +83,12 @@ class _HomePageState extends State<HomePage> {
           case SideMenuRoutes.search:
             return const SideMenuSearch();
           case SideMenuRoutes.codes:
-            return const Text('codes');
+            return const Text('kody', style: TextStyle(color: Colors.white));
           case SideMenuRoutes.notes:
-            return const Text('notes');
+            return const SideMenuNotes();
           case SideMenuRoutes.collaboration:
-            return const Text('collaboration');
+            return const Text('współpraca',
+                style: TextStyle(color: Colors.white));
           default:
             return Container();
         }
@@ -103,16 +105,20 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.start:
             return const StartPage();
           case MainViewRoutes.settings:
-            return const Text('settings');
+            return const Text('ustawienia',
+                style: TextStyle(color: Colors.white));
           case MainViewRoutes.textEditor:
             final args = settings.arguments as List;
             return TextEditor(file: args[0], line: args[1]);
           case MainViewRoutes.codingEditor:
-            return const Text('coding editor');
+            return const Text('edytor kodów',
+                style: TextStyle(color: Colors.white));
           case MainViewRoutes.codeGraph:
-            return const Text('code graph');
+            return const Text('graf kodów',
+                style: TextStyle(color: Colors.white));
           case MainViewRoutes.compare:
-            return const Text('compare');
+            return const Text('porównywanie',
+                style: TextStyle(color: Colors.white));
           default:
             return Container();
         }

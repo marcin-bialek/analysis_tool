@@ -1,5 +1,6 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:uuid/uuid.dart';
@@ -10,6 +11,7 @@ class Project implements JsonEncodable {
   final Set<TextFile> textFiles = {};
   final Set<Code> codes = {};
   final Set<TextCodingVersion> codingVersions = {};
+  final Set<Note> notes = {};
 
   Project({
     required this.id,
@@ -34,6 +36,8 @@ class Project implements JsonEncodable {
     final codingVersions = json[ProjectJsonKeys.codingVersions] as List;
     project.codingVersions.addAll(codingVersions.map((e) =>
         TextCodingVersion.fromJson(e, project.textFiles, project.codes)));
+    final notes = json[ProjectJsonKeys.notes] as List;
+    project.notes.addAll(notes.map((e) => Note.fromJson(e)));
     return project;
   }
 
@@ -46,6 +50,7 @@ class Project implements JsonEncodable {
       ProjectJsonKeys.codes: codes.map((e) => e.toJson()).toList(),
       ProjectJsonKeys.codingVersions:
           codingVersions.map((e) => e.toJson()).toList(),
+      ProjectJsonKeys.notes: notes.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -64,4 +69,5 @@ class ProjectJsonKeys {
   static const textFiles = 'textFiles';
   static const codes = 'codes';
   static const codingVersions = 'codingVersions';
+  static const notes = 'notes';
 }

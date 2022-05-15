@@ -64,9 +64,10 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
               return ListTile(
                 dense: true,
                 leading: Text(
-                  result.file.name,
+                  '${result.file.name}:${result.line}',
                   style: const TextStyle(
                     color: Colors.white,
+                    fontSize: 13.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -74,7 +75,10 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                   result.file.textLines[result.line].substring(result.start),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 13.0),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.0,
+                  ),
                 ),
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(
