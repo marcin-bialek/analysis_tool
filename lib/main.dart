@@ -1,6 +1,5 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
-import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/home/side_menu_notes.dart';

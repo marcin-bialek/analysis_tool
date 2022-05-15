@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
@@ -52,7 +51,15 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                   },
                 ),
               ),
-              if (_searching) const CircularProgressIndicator(),
+              if (_searching)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: const SizedBox(
+                    width: 20.0,
+                    height: 20.0,
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
             ],
           ),
         ),
