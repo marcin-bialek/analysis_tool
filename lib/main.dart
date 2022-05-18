@@ -76,21 +76,20 @@ class _HomePageState extends State<HomePage> {
   Route _sideMenuOnGenerateRoute(RouteSettings settings) {
     return PageRouteBuilder(
       pageBuilder: (context, _, __) {
-        switch (settings.name) {
-          case SideMenuRoutes.files:
-            return const SideMenuFiles();
-          case SideMenuRoutes.search:
-            return const SideMenuSearch();
-          case SideMenuRoutes.codes:
-            return const Text('kody', style: TextStyle(color: Colors.white));
-          case SideMenuRoutes.notes:
-            return const SideMenuNotes();
-          case SideMenuRoutes.collaboration:
-            return const Text('współpraca',
-                style: TextStyle(color: Colors.white));
-          default:
-            return Container();
-        }
+        return {
+              SideMenuRoutes.files: const SideMenuFiles(),
+              SideMenuRoutes.search: const SideMenuSearch(),
+              SideMenuRoutes.codes: const Text(
+                'kody',
+                style: TextStyle(color: Colors.white),
+              ),
+              SideMenuRoutes.notes: const SideMenuNotes(),
+              SideMenuRoutes.collaboration: const Text(
+                'współpraca',
+                style: TextStyle(color: Colors.white),
+              ),
+            }[settings.name] ??
+            Container();
       },
       settings: settings,
       transitionDuration: Duration.zero,

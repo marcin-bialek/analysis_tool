@@ -12,6 +12,8 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
+  String _currentMenu = SideMenuRoutes.notes;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -23,33 +25,36 @@ class _SideMenuState extends State<SideMenu> {
         children: [
           const SizedBox(height: 10.0),
           _SideMenuButton(Icons.content_copy_outlined, 'Pliki', () {
-            sideMenuNavigatorKey.currentState!
-                .pushReplacementNamed(SideMenuRoutes.files);
+            _openMenu(SideMenuRoutes.files);
           }),
           _SideMenuButton(Icons.search, 'Wyszukaj', () {
-            sideMenuNavigatorKey.currentState!
-                .pushReplacementNamed(SideMenuRoutes.search);
+            _openMenu(SideMenuRoutes.search);
           }),
           _SideMenuButton(Icons.account_tree, 'Kodowanie', () {
-            sideMenuNavigatorKey.currentState!
-                .pushReplacementNamed(SideMenuRoutes.codes);
+            _openMenu(SideMenuRoutes.codes);
           }),
           _SideMenuButton(Icons.sticky_note_2_outlined, 'Notatki', () {
-            sideMenuNavigatorKey.currentState!
-                .pushReplacementNamed(SideMenuRoutes.notes);
+            _openMenu(SideMenuRoutes.notes);
           }),
           _SideMenuButton(Icons.people_rounded, 'Współpraca', () {
-            sideMenuNavigatorKey.currentState!
-                .pushReplacementNamed(SideMenuRoutes.collaboration);
+            _openMenu(SideMenuRoutes.collaboration);
           }),
           const Spacer(),
           _SideMenuButton(Icons.settings_outlined, 'Ustawienia', () {
-            mainViewNavigatorKey.currentState!
-                .pushReplacementNamed(MainViewRoutes.settings);
+            _openMenu(MainViewRoutes.settings);
           }),
         ],
       ),
     );
+  }
+
+  void _openMenu(String name) {
+    if (name == MainViewRoutes.settings) {
+      mainViewNavigatorKey.currentState!.pushReplacementNamed(name);
+    } else if (name != _currentMenu) {
+      _currentMenu = name;
+      sideMenuNavigatorKey.currentState!.pushReplacementNamed(name);
+    }
   }
 }
 
