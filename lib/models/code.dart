@@ -4,10 +4,10 @@ import 'package:uuid/uuid.dart';
 
 class Code implements JsonEncodable {
   final String id;
-  final String name;
-  final Color color;
+  String name;
+  Color color;
 
-  const Code({
+  Code({
     required this.id,
     required this.name,
     required this.color,

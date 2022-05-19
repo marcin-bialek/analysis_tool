@@ -1,6 +1,7 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
+import 'package:analysis_tool/views/home/side_menu_codes.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/home/side_menu_notes.dart';
 import 'package:analysis_tool/views/home/side_menu_search.dart';
@@ -79,10 +80,7 @@ class _HomePageState extends State<HomePage> {
         return {
               SideMenuRoutes.files: const SideMenuFiles(),
               SideMenuRoutes.search: const SideMenuSearch(),
-              SideMenuRoutes.codes: const Text(
-                'kody',
-                style: TextStyle(color: Colors.white),
-              ),
+              SideMenuRoutes.codes: const SideMenuCodes(),
               SideMenuRoutes.notes: const SideMenuNotes(),
               SideMenuRoutes.collaboration: const Text(
                 'współpraca',

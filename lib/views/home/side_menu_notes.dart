@@ -1,5 +1,6 @@
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveNote;
 import 'package:flutter/material.dart';
 
 class SideMenuNotes extends StatefulWidget {
@@ -92,8 +93,11 @@ class _SideMenuNotesItem extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {
-              _projectService.removeNote(note);
+            onPressed: () async {
+              final result = await showDialogRemoveNote(context: context);
+              if (result == true) {
+                _projectService.removeNote(note);
+              }
             },
             icon: const Icon(
               Icons.remove_circle,

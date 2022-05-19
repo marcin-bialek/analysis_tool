@@ -1,4 +1,6 @@
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/services/project/project_service_exceptions.dart';
+import 'package:analysis_tool/views/dialogs.dart' show showDialogSaveProject;
 import 'package:flutter/material.dart';
 
 class StartPage extends StatefulWidget {
@@ -26,9 +28,16 @@ class _StartPageState extends State<StartPage> {
           ),
           const SizedBox(height: 20.0),
           TextButton.icon(
-            onPressed: () {
-              // TODO: handle ProjectAlreadyOpenError
-              _projectService.openProject();
+            onPressed: () async {
+              try {
+                await _projectService.openProject();
+              } on ProjectAlreadyOpenError {
+                final result = await showDialogSaveProject(context: context);
+                if (result == true) {
+                  await _projectService.saveProject();
+                }
+                _projectService.closeProject();
+              }
             },
             icon: const Icon(
               Icons.file_open,

@@ -4,9 +4,9 @@ import 'package:analysis_tool/models/json_encodable.dart';
 
 class Note implements JsonEncodable {
   final String id;
-  final String text;
+  String text;
 
-  const Note({
+  Note({
     required this.id,
     required this.text,
   });

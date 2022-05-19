@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:analysis_tool/extensions/random.dart';
+import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class ProjectService {
   static ProjectService? _instance;
@@ -16,9 +21,11 @@ class ProjectService {
   Project? _currentProject;
   String? _currentProjectPath;
   late final StreamController<List<TextFile>> _textFilesStreamController;
+  late final StreamController<List<Code>> _codesStreamController;
   late final StreamController<List<Note>> _notesStreamController;
 
   get filesStream => _textFilesStreamController.stream;
+  get codesStream => _codesStreamController.stream;
   get notesStream => _notesStreamController.stream;
 
   ProjectService._() {
@@ -26,6 +33,13 @@ class ProjectService {
       onListen: () {
         if (_currentProject != null) {
           _textFilesStreamController.add(_currentProject!.textFiles.toList());
+        }
+      },
+    );
+    _codesStreamController = StreamController<List<Code>>.broadcast(
+      onListen: () {
+        if (_currentProject != null) {
+          _codesStreamController.add(_currentProject!.codes.toList());
         }
       },
     );
@@ -73,9 +87,12 @@ class ProjectService {
     }
   }
 
-  Future<void> closeProject() async {
+  void closeProject() {
     _currentProject = null;
     _currentProjectPath = null;
+    _textFilesStreamController.add([]);
+    _codesStreamController.add([]);
+    _notesStreamController.add([]);
   }
 
   Future<void> saveProjectAs() async {
@@ -151,6 +168,34 @@ class ProjectService {
     return controller.stream;
   }
 
+  void addCode() {
+    final project = _getOrCreateProject();
+    final code = Code.withId(
+      name: 'Kod #${project.codes.length + 1}',
+      color: Random().element(ColorTools.primaryColors),
+    );
+    project.codes.add(code);
+    _codesStreamController.add(project.codes.toList());
+  }
+
+  void removeCode(Code code) {
+    final project = _getOrCreateProject();
+    for (final codingVersion in project.codingVersions) {
+      codingVersion.codings.removeWhere((c) => c.code == code);
+    }
+    project.codes.remove(code);
+    _codesStreamController.add(project.codes.toList());
+  }
+
+  void updateCode(Code code, {String? name, Color? color}) {
+    final project = _getOrCreateProject();
+    if ([name, color].any((e) => e != null)) {
+      code.name = name ?? code.name;
+      code.color = color ?? code.color;
+      _codesStreamController.add(project.codes.toList());
+    }
+  }
+
   void addEmptyNote() {
     final project = _getOrCreateProject();
     final note = Note.withId(text: 'Nowa notatka');
@@ -168,9 +213,7 @@ class ProjectService {
   void updateNote(Note note, String text) {
     final project = _getOrCreateProject();
     if (note.text != text) {
-      final newNote = Note(id: note.id, text: text);
-      project.notes.remove(note);
-      project.notes.add(newNote);
+      note.text = text;
       _notesStreamController.add(project.notes.toList());
     }
   }
