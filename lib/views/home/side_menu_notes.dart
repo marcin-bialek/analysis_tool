@@ -61,19 +61,40 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
   }
 }
 
-class _SideMenuNotesItem extends StatelessWidget {
+class _SideMenuNotesItem extends StatefulWidget {
   final Note note;
+
+  const _SideMenuNotesItem({
+    Key? key,
+    required this.note,
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _SideMenuNotesItemState();
+}
+
+class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
   final _projectService = ProjectService();
-  final _focusNode = FocusNode();
+  FocusNode? _focusNode;
   TextEditingController? _textController;
 
-  _SideMenuNotesItem({required this.note}) {
-    _textController = TextEditingController(text: note.text);
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        _projectService.updateNote(note, _textController!.text);
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _textController = TextEditingController(text: widget.note.text);
+    _focusNode!.addListener(() {
+      if (!_focusNode!.hasFocus) {
+        _projectService.updateNote(widget.note, _textController!.text);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _focusNode?.dispose();
+    _textController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -96,7 +117,7 @@ class _SideMenuNotesItem extends StatelessWidget {
             onPressed: () async {
               final result = await showDialogRemoveNote(context: context);
               if (result == true) {
-                _projectService.removeNote(note);
+                _projectService.removeNote(widget.note);
               }
             },
             icon: const Icon(
