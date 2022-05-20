@@ -7,6 +7,7 @@ import 'package:analysis_tool/extensions/random.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/project.dart';
+import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
 import 'package:file_picker/file_picker.dart';
@@ -168,6 +169,16 @@ class ProjectService {
     return controller.stream;
   }
 
+  void addCodingVersion(TextFile file) {
+    final project = _getOrCreateProject();
+    final version = TextCodingVersion.withId(
+      name: 'Wersja #${file.codingVersions.length + 1}',
+      file: file,
+    );
+    file.codingVersions.add(version);
+    _textFilesStreamController.add(project.textFiles.toList());
+  }
+
   void addCode() {
     final project = _getOrCreateProject();
     final code = Code.withId(
@@ -180,8 +191,10 @@ class ProjectService {
 
   void removeCode(Code code) {
     final project = _getOrCreateProject();
-    for (final codingVersion in project.codingVersions) {
-      codingVersion.codings.removeWhere((c) => c.code == code);
+    for (final file in project.textFiles) {
+      for (final codingVersion in file.codingVersions) {
+        codingVersion.codings.removeWhere((c) => c.code == code);
+      }
     }
     project.codes.remove(code);
     _codesStreamController.add(project.codes.toList());

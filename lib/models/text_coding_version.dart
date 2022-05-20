@@ -26,13 +26,11 @@ class TextCodingVersion implements JsonEncodable {
 
   factory TextCodingVersion.fromJson(
     Map<String, dynamic> json,
-    Iterable<TextFile> files,
+    TextFile file,
     Iterable<Code> codes,
   ) {
     final id = json[TextCodingVersionJsonKeys.id];
     final name = json[TextCodingVersionJsonKeys.name];
-    final fileId = json[TextCodingVersionJsonKeys.fileId];
-    final file = files.firstWhere((e) => e.id == fileId);
     final version = TextCodingVersion(id: id, name: name, file: file);
     final codings = json[TextCodingVersionJsonKeys.codings] as List;
     version.codings.addAll(codings.map((e) => TextCoding.fromJson(e, codes)));
@@ -44,7 +42,6 @@ class TextCodingVersion implements JsonEncodable {
     return {
       TextCodingVersionJsonKeys.id: id,
       TextCodingVersionJsonKeys.name: name,
-      TextCodingVersionJsonKeys.fileId: file.id,
       TextCodingVersionJsonKeys.codings:
           codings.map((e) => e.toJson()).toList(),
     };
@@ -62,6 +59,5 @@ class TextCodingVersion implements JsonEncodable {
 class TextCodingVersionJsonKeys {
   static const id = 'id';
   static const name = 'name';
-  static const fileId = 'fileId';
   static const codings = 'codings';
 }

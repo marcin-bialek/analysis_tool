@@ -112,22 +112,30 @@ class SideMenuFilesItem extends StatelessWidget {
           },
           onLongPress: () {},
         ),
-        // for (final v in file.codingVersions)
-        //   ListTile(
-        //     leading: Icon(Icons.arrow_right, color: Colors.white, size: 14.0),
-        //     title: Text(v.name,
-        //         style: TextStyle(color: Colors.white, fontSize: 13.0)),
-        //     dense: true,
-        //     contentPadding: EdgeInsets.only(left: 40.0),
-        //     horizontalTitleGap: 10.0,
-        //     minLeadingWidth: 0.0,
-        //     minVerticalPadding: 0.0,
-        //     visualDensity: VisualDensity(vertical: -4.0),
-        //     onTap: () {
-        //       AppState.mainMenuNavigatorKey.currentState
-        //           ?.pushReplacementNamed('/editor', arguments: v);
-        //     },
-        //   ),
+        for (final version in file.codingVersions)
+          ListTile(
+            leading: const Icon(
+              Icons.account_tree,
+              color: Colors.white,
+              size: 14.0,
+            ),
+            title: Text(
+              version.name,
+              style: const TextStyle(color: Colors.white, fontSize: 13.0),
+            ),
+            dense: true,
+            contentPadding: const EdgeInsets.only(left: 40.0),
+            horizontalTitleGap: 10.0,
+            minLeadingWidth: 0.0,
+            minVerticalPadding: 0.0,
+            visualDensity: const VisualDensity(vertical: -4.0),
+            onTap: () {
+              mainViewNavigatorKey.currentState!.pushReplacementNamed(
+                MainViewRoutes.codingEditor,
+                arguments: version,
+              );
+            },
+          ),
       ],
     );
   }

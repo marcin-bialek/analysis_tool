@@ -1,10 +1,13 @@
+import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:uuid/uuid.dart';
 
 class TextFile implements JsonEncodable {
   final String id;
   final String name;
   final List<String> textLines = [];
+  final Set<TextCodingVersion> codingVersions = {};
 
   TextFile({
     required this.id,
@@ -18,12 +21,16 @@ class TextFile implements JsonEncodable {
     return TextFile(id: id, name: name);
   }
 
-  factory TextFile.fromJson(Map<String, dynamic> json) {
+  factory TextFile.fromJson(Map<String, dynamic> json, Iterable<Code> codes) {
     final id = json[TextFileJsonKeys.id];
     final name = json[TextFileJsonKeys.name];
     final file = TextFile(id: id, name: name);
     final textLines = json[TextFileJsonKeys.textLines] as List;
     file.textLines.addAll(textLines.map((e) => e.toString()));
+    final codingVersions = json[TextFileJsonKeys.codingVersions] as List;
+    file.codingVersions.addAll(codingVersions.map(
+      (e) => TextCodingVersion.fromJson(e, file, codes),
+    ));
     return file;
   }
 
@@ -40,6 +47,8 @@ class TextFile implements JsonEncodable {
       TextFileJsonKeys.id: id,
       TextFileJsonKeys.name: name,
       TextFileJsonKeys.textLines: textLines,
+      TextFileJsonKeys.codingVersions:
+          codingVersions.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -61,4 +70,5 @@ class TextFileJsonKeys {
   static const id = 'id';
   static const name = 'name';
   static const textLines = 'textLines';
+  static const codingVersions = 'codingVersions';
 }
