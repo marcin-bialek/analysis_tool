@@ -24,10 +24,12 @@ class ProjectService {
   late final StreamController<List<TextFile>> _textFilesStreamController;
   late final StreamController<List<Code>> _codesStreamController;
   late final StreamController<List<Note>> _notesStreamController;
+  late final StreamController<Code> _codeRequestStreamController;
 
-  get filesStream => _textFilesStreamController.stream;
-  get codesStream => _codesStreamController.stream;
-  get notesStream => _notesStreamController.stream;
+  Stream<List<TextFile>> get filesStream => _textFilesStreamController.stream;
+  Stream<List<Code>> get codesStream => _codesStreamController.stream;
+  Stream<List<Note>> get notesStream => _notesStreamController.stream;
+  Stream<Code> get codeRequestStream => _codeRequestStreamController.stream;
 
   ProjectService._() {
     _textFilesStreamController = StreamController<List<TextFile>>.broadcast(
@@ -51,6 +53,7 @@ class ProjectService {
         }
       },
     );
+    _codeRequestStreamController = StreamController<Code>.broadcast();
   }
 
   factory ProjectService() {
@@ -133,7 +136,7 @@ class ProjectService {
       final text = const Utf8Decoder().convert(file.bytes!);
       switch (file.extension) {
         case 'txt':
-          final textFile = TextFile.fromText(file.name, text);
+          final textFile = TextFile.withId(name: file.name, rawText: text);
           project.textFiles.add(textFile);
           _textFilesStreamController.add(project.textFiles.toList());
           break;
@@ -158,9 +161,14 @@ class ProjectService {
           if (stopSearch) {
             return;
           }
-          final p = file.textLines[i].indexOf(text);
-          if (p >= 0) {
-            controller.add(TextSearchResult(file, i, p, text.length));
+          final offset = file.textLines[i].text.indexOf(text);
+          if (offset >= 0) {
+            controller.add(TextSearchResult(
+              file,
+              file.textLines[i],
+              offset,
+              text.length,
+            ));
           }
         }
       }
@@ -230,13 +238,17 @@ class ProjectService {
       _notesStreamController.add(project.notes.toList());
     }
   }
+
+  void sendCodeRequest(Code code) {
+    _codeRequestStreamController.add(code);
+  }
 }
 
 class TextSearchResult {
   final TextFile file;
-  final int line;
-  final int start;
+  final TextLine line;
+  final int offset;
   final int length;
 
-  TextSearchResult(this.file, this.line, this.start, this.length);
+  TextSearchResult(this.file, this.line, this.offset, this.length);
 }

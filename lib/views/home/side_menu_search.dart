@@ -79,7 +79,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                   ),
                 ),
                 title: Text(
-                  result.file.textLines[result.line].substring(result.start),
+                  result.line.text.substring(result.offset),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

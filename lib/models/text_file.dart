@@ -6,38 +6,48 @@ import 'package:uuid/uuid.dart';
 class TextFile implements JsonEncodable {
   final String id;
   final String name;
-  final List<String> textLines = [];
+  final String rawText;
+  final List<TextLine> textLines = [];
   final Set<TextCodingVersion> codingVersions = {};
 
   TextFile({
     required this.id,
     required this.name,
-  });
+    required this.rawText,
+  }) {
+    final lines = rawText
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    int offset = 0;
+    for (int i = 0; i < lines.length; i++) {
+      textLines.add(TextLine(
+        index: i,
+        offset: offset,
+        text: lines[i],
+      ));
+      offset += lines[i].length;
+    }
+  }
 
   factory TextFile.withId({
     required String name,
+    required String rawText,
   }) {
     final id = const Uuid().v4();
-    return TextFile(id: id, name: name);
+    return TextFile(id: id, name: name, rawText: rawText);
   }
 
   factory TextFile.fromJson(Map<String, dynamic> json, Iterable<Code> codes) {
     final id = json[TextFileJsonKeys.id];
     final name = json[TextFileJsonKeys.name];
-    final file = TextFile(id: id, name: name);
-    final textLines = json[TextFileJsonKeys.textLines] as List;
-    file.textLines.addAll(textLines.map((e) => e.toString()));
+    final text = json[TextFileJsonKeys.text];
+    final file = TextFile(id: id, name: name, rawText: text);
     final codingVersions = json[TextFileJsonKeys.codingVersions] as List;
     file.codingVersions.addAll(codingVersions.map(
       (e) => TextCodingVersion.fromJson(e, file, codes),
     ));
-    return file;
-  }
-
-  factory TextFile.fromText(String name, String text) {
-    final file = TextFile.withId(name: name);
-    file.textLines.addAll(
-        text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty));
     return file;
   }
 
@@ -46,7 +56,7 @@ class TextFile implements JsonEncodable {
     return {
       TextFileJsonKeys.id: id,
       TextFileJsonKeys.name: name,
-      TextFileJsonKeys.textLines: textLines,
+      TextFileJsonKeys.text: rawText,
       TextFileJsonKeys.codingVersions:
           codingVersions.map((e) => e.toJson()).toList(),
     };
@@ -69,6 +79,19 @@ class TextFile implements JsonEncodable {
 class TextFileJsonKeys {
   static const id = 'id';
   static const name = 'name';
-  static const textLines = 'textLines';
+  static const text = 'text';
   static const codingVersions = 'codingVersions';
+}
+
+class TextLine {
+  final int index;
+  final int offset;
+  final String text;
+  int get endOffset => offset + text.length;
+
+  TextLine({
+    required this.index,
+    required this.offset,
+    required this.text,
+  });
 }

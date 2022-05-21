@@ -137,9 +137,14 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
             widget.code.name,
             style: const TextStyle(color: Colors.white),
           ),
-          trailing: Icon(
-            Icons.check,
-            color: widget.code.color,
+          trailing: IconButton(
+            icon: Icon(
+              Icons.check,
+              color: widget.code.color,
+            ),
+            onPressed: () {
+              _projectService.sendCodeRequest(widget.code);
+            },
           ),
         ),
         if (_isExpanded) ...[
