@@ -71,7 +71,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
               return ListTile(
                 dense: true,
                 leading: Text(
-                  '${result.file.name}:${result.line}',
+                  '${result.file.name.value}:${result.line.index}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13.0,
@@ -90,7 +90,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(
                     MainViewRoutes.textEditor,
-                    arguments: <dynamic>[result.file, result.line],
+                    arguments: <dynamic>[result.file, result.line.index],
                   );
                 },
               );
