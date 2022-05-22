@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
@@ -19,9 +20,32 @@ class CodingEditor extends StatefulWidget {
   State<CodingEditor> createState() => _CodingEditorState();
 }
 
+class _EnabledCoding {
+  TextCoding? coding;
+  bool entireCode;
+
+  _EnabledCoding([this.coding, this.entireCode = false]);
+
+  bool shouldEnable(TextCoding coding) {
+    return this.coding == null ||
+        (entireCode ? this.coding!.code == coding.code : this.coding == coding);
+  }
+}
+
 class _CodingEditorState extends State<CodingEditor> {
-  Code? enabledCode;
-  TextCoding? enabledCoding;
+  final _enabledCoding = Observable(_EnabledCoding());
+
+  @override
+  void initState() {
+    super.initState();
+    _enabledCoding.addListener(_onEnabledCodingChange);
+  }
+
+  @override
+  void dispose() {
+    _enabledCoding.removeListener(_onEnabledCodingChange);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +84,13 @@ class _CodingEditorState extends State<CodingEditor> {
                   return _CodingEditorLine(
                     codingVersion: widget.codingVersion,
                     codingLine: codingLine,
+                    enabledCoding: _enabledCoding,
                   );
                 },
                 separatorBuilder: (context, index) {
                   return const Divider();
                 },
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
               );
             }),
           ),
@@ -72,16 +98,24 @@ class _CodingEditorState extends State<CodingEditor> {
       ],
     );
   }
+
+  void _onEnabledCodingChange(_EnabledCoding enabledCoding) {
+    for (final codingLine in widget.codingVersion.codingLines.value) {
+      codingLine.codings.notify();
+    }
+  }
 }
 
 class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
+  final Observable<_EnabledCoding> enabledCoding;
 
   const _CodingEditorLine({
     Key? key,
     required this.codingVersion,
     required this.codingLine,
+    required this.enabledCoding,
   }) : super(key: key);
 
   @override
@@ -163,7 +197,10 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
               spacing: 2.0,
               runSpacing: 2.0,
               children: codings.map((c) {
-                return _CodingButton(coding: c);
+                return _CodingButton(
+                  coding: c,
+                  enabledCoding: widget.enabledCoding,
+                );
               }).toList(),
             );
           }),
@@ -182,8 +219,10 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
     }
     final List<_CodingMark> marks = [];
     for (final c in codings) {
-      marks.add(_CodingMark(_CodingMarkType.start, c.start - offset, c.code));
-      marks.add(_CodingMark(_CodingMarkType.end, c.end - offset, c.code));
+      if (widget.enabledCoding.value.shouldEnable(c)) {
+        marks.add(_CodingMark(_CodingMarkType.start, c.start - offset, c.code));
+        marks.add(_CodingMark(_CodingMarkType.end, c.end - offset, c.code));
+      }
     }
     marks.sort((a, b) => a.offset.compareTo(b.offset));
     marks.add(_CodingMark(
@@ -229,55 +268,61 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
 
 class _CodingButton extends StatelessWidget {
   final TextCoding coding;
-  final bool enabled;
-  final void Function()? onPressed;
-  final void Function()? onLongPress;
+  final Observable<_EnabledCoding> enabledCoding;
 
   const _CodingButton({
     Key? key,
     required this.coding,
-    this.enabled = true,
-    this.onPressed,
-    this.onLongPress,
+    required this.enabledCoding,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final nameText = coding.code.name.observe((name) {
-      return Text(
-        name,
-        style: const TextStyle(color: Colors.black),
-        overflow: TextOverflow.ellipsis,
-      );
-    });
     return coding.code.color.observe((color) {
-      return Container(
-        decoration: BoxDecoration(
-          color: enabled ? color : Colors.grey,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(5.0),
+      return enabledCoding.observe((enabledCoding) {
+        return Container(
+          decoration: BoxDecoration(
+            color: enabledCoding.shouldEnable(coding) ? color : Colors.grey,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(5.0),
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: onPressed,
-              onLongPress: onLongPress,
-              child: nameText,
-            ),
-            IconButton(
-              onPressed: () {},
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(
-                Icons.remove_circle,
-                size: 15.0,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () {
+                  if (enabledCoding.coding != null &&
+                      enabledCoding.shouldEnable(coding)) {
+                    this.enabledCoding.value = _EnabledCoding();
+                  } else {
+                    this.enabledCoding.value = _EnabledCoding(coding, false);
+                  }
+                },
+                onLongPress: () {
+                  this.enabledCoding.value = _EnabledCoding(coding, true);
+                },
+                child: coding.code.name.observe((name) {
+                  return Text(
+                    name,
+                    style: const TextStyle(color: Colors.black),
+                    overflow: TextOverflow.ellipsis,
+                  );
+                }),
               ),
-            ),
-          ],
-        ),
-      );
+              IconButton(
+                onPressed: () {},
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.remove_circle,
+                  size: 15.0,
+                ),
+              ),
+            ],
+          ),
+        );
+      });
     });
   }
 }

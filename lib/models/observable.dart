@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class Observable<T> {
   T _value;
   late final StreamController<T> _controller = StreamController.broadcast();
+  final _listeners = <void Function(T value)>{};
 
   T get value => _value;
   Stream<T> get stream => _controller.stream;
@@ -37,5 +38,16 @@ class Observable<T> {
 
   void notify() {
     _controller.add(_value);
+    for (final callback in _listeners) {
+      callback(_value);
+    }
+  }
+
+  void addListener(void Function(T value) callback) {
+    _listeners.add(callback);
+  }
+
+  void removeListener(void Function(T value) callback) {
+    _listeners.remove(callback);
   }
 }
