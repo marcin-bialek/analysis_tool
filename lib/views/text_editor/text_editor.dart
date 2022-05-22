@@ -45,13 +45,15 @@ class _TextEditorState extends State<TextEditor> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                Text(
-                  widget.file.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                widget.file.name.observe((name) {
+                  return Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                }),
                 const Spacer(),
               ],
             ),
@@ -61,9 +63,9 @@ class _TextEditorState extends State<TextEditor> {
           child: Container(
             color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
             child: ScrollablePositionedList.separated(
-              itemCount: widget.file.textLines.length,
+              itemCount: widget.file.textLines.value.length,
               itemBuilder: (context, index) {
-                final line = widget.file.textLines[index];
+                final line = widget.file.textLines.value[index];
                 return Row(
                   children: [
                     Container(
@@ -73,7 +75,7 @@ class _TextEditorState extends State<TextEditor> {
                     ),
                     Expanded(
                       child: Text(
-                        line,
+                        line.text,
                         softWrap: true,
                       ),
                     ),
