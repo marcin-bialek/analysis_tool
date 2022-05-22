@@ -124,15 +124,16 @@ class ProjectService {
         if (stopSearch) {
           return;
         }
-        for (int i = 0; i < file.textLines.length; i++) {
+        final textLines = file.textLines.value;
+        for (int i = 0; i < textLines.length; i++) {
           if (stopSearch) {
             return;
           }
-          final offset = file.textLines[i].text.indexOf(text);
+          final offset = textLines[i].text.indexOf(text);
           if (offset >= 0) {
             controller.add(TextSearchResult(
               file,
-              file.textLines[i],
+              textLines[i],
               offset,
               text.length,
             ));
@@ -146,10 +147,11 @@ class ProjectService {
 
   void addCodingVersion(TextFile file) {
     final version = TextCodingVersion.withId(
-      name: 'Wersja #${file.codingVersions.length + 1}',
+      name: 'Wersja #${file.codingVersions.value.length + 1}',
       file: file,
     );
-    file.codingVersions.add(version);
+    file.codingVersions.value.add(version);
+    file.codingVersions.notify();
   }
 
   void addCode() {
@@ -165,12 +167,21 @@ class ProjectService {
   void removeCode(Code code) {
     final project = _getOrCreateProject();
     for (final file in project.textFiles.value) {
-      for (final codingVersion in file.codingVersions) {
-        codingVersion.codings.removeWhere((c) => c.code == code);
+      for (final codingVersion in file.codingVersions.value) {
+        codingVersion.removeCode(code);
       }
     }
     project.codes.value.remove(code);
     project.codes.notify();
+  }
+
+  void updatedCode(Code code) {
+    final project = _getOrCreateProject();
+    for (final textFile in project.textFiles.value) {
+      for (var codingVersion in textFile.codingVersions.value) {
+        codingVersion.updatedCode(code);
+      }
+    }
   }
 
   void addEmptyNote() {

@@ -1,35 +1,29 @@
-import 'dart:async';
-
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:uuid/uuid.dart';
 
 class TextCodingVersion implements JsonEncodable {
   final String id;
-  final String name;
   final TextFile file;
-  final Set<TextCoding> codings = {};
-  List<TextCodingLine>? _codingLines;
-  late final StreamController<List<TextCodingLine>>
-      _codingLinesStreamController;
-
-  Stream<List<TextCodingLine>> get codingLinesStream =>
-      _codingLinesStreamController.stream;
+  final Observable<String> name;
+  final codings = Observable<Set<TextCoding>>({});
+  Observable<List<TextCodingLine>>? _codingLines;
+  Observable<List<TextCodingLine>> get codingLines {
+    if (_codingLines == null) {
+      _codingLines = Observable<List<TextCodingLine>>([]);
+      _makeCodingLines();
+    }
+    return _codingLines!;
+  }
 
   TextCodingVersion({
     required this.id,
-    required this.name,
     required this.file,
-  }) {
-    _codingLinesStreamController = StreamController.broadcast(
-      onListen: () async {
-        final codingLines = await _getCodingLines();
-        _codingLinesStreamController.add(codingLines);
-      },
-    );
-  }
+    required String name,
+  }) : name = Observable(name);
 
   factory TextCodingVersion.withId({
     required String name,
@@ -48,7 +42,8 @@ class TextCodingVersion implements JsonEncodable {
     final name = json[TextCodingVersionJsonKeys.name];
     final version = TextCodingVersion(id: id, name: name, file: file);
     final codings = json[TextCodingVersionJsonKeys.codings] as List;
-    version.codings.addAll(codings.map((e) => TextCoding.fromJson(e, codes)));
+    version.codings.value
+        .addAll(codings.map((e) => TextCoding.fromJson(e, codes)));
     return version;
   }
 
@@ -56,9 +51,9 @@ class TextCodingVersion implements JsonEncodable {
   Map<String, dynamic> toJson() {
     return {
       TextCodingVersionJsonKeys.id: id,
-      TextCodingVersionJsonKeys.name: name,
+      TextCodingVersionJsonKeys.name: name.value,
       TextCodingVersionJsonKeys.codings:
-          codings.map((e) => e.toJson()).toList(),
+          codings.value.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -70,30 +65,50 @@ class TextCodingVersion implements JsonEncodable {
   @override
   int get hashCode => id.hashCode;
 
-  Future<List<TextCodingLine>> _getCodingLines() async {
-    if (_codingLines != null) {
-      return _codingLines!;
-    }
-    final List<TextCodingLine> codingLines = [];
-    for (final line in file.textLines) {
-      final codingLine = TextCodingLine(index: line.index);
-      for (final coding in codings) {
+  Future<void> _makeCodingLines() async {
+    _codingLines?.value.clear();
+    for (final line in file.textLines.value) {
+      final codingLine = TextCodingLine(textLine: line);
+      for (final coding in codings.value) {
         if (line.offset <= coding.start && coding.start < line.endOffset) {
-          codingLine.codings.add(coding);
-        } else if (line.offset <= coding.end && coding.end < line.endOffset) {
-          codingLine.codings.add(coding);
+          codingLine.codings.value.add(coding);
+        } else if (line.offset < coding.end && coding.end < line.endOffset) {
+          codingLine.codings.value.add(coding);
         }
       }
-      codingLines.add(codingLine);
+      _codingLines?.value.add(codingLine);
     }
-    _codingLines = codingLines;
-    return codingLines;
+  }
+
+  void removeCode(Code code) {
+    if (_codingLines != null) {
+      for (final line in _codingLines!.value) {
+        line.codings.value.removeWhere((c) => c.code == code);
+        line.codings.notify();
+      }
+    }
+    codings.value.removeWhere((c) => c.code == code);
+    codings.notify();
   }
 
   void addCoding(TextCodingLine line, Code code, int offset, int length) {
-    final coding = TextCoding(code: code, start: offset, length: length);
-    line.codings.add(coding);
-    _codingLinesStreamController.add(_codingLines!);
+    final coding = TextCoding(
+      code: code,
+      start: line.textLine.offset + offset,
+      length: length,
+    );
+    line.codings.value.add(coding);
+    line.codings.notify();
+    codings.value.add(coding);
+    codings.notify();
+  }
+
+  void updatedCode(Code code) {
+    for (var line in _codingLines?.value ?? []) {
+      if (line.codings.value.map((c) => c.code).contains(code)) {
+        line.codings.notify();
+      }
+    }
   }
 }
 
@@ -104,8 +119,8 @@ class TextCodingVersionJsonKeys {
 }
 
 class TextCodingLine {
-  final int index;
-  final Set<TextCoding> codings = {};
+  final TextLine textLine;
+  final codings = Observable<Set<TextCoding>>({});
 
-  TextCodingLine({required this.index});
+  TextCodingLine({required this.textLine});
 }

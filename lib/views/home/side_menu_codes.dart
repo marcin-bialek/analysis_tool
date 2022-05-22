@@ -158,6 +158,7 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               },
               onColorChanged: (color) {
                 widget.code.color.value = color;
+                _projectService.updatedCode(widget.code);
               },
               borderRadius: 15.0,
               height: 30.0,

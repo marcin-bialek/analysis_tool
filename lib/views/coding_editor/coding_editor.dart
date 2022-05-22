@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
-import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:flutter/material.dart';
 
@@ -35,13 +34,15 @@ class _CodingEditorState extends State<CodingEditor> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                Text(
-                  widget.codingVersion.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                widget.codingVersion.name.observe((name) {
+                  return Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                }),
                 const Spacer(),
               ],
             ),
@@ -50,45 +51,22 @@ class _CodingEditorState extends State<CodingEditor> {
         Expanded(
           child: Container(
             color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
-            // child: ListView.separated(
-            //   key: UniqueKey(),
-            //   itemCount: widget.codingVersion.file.textLines.length,
-            //   itemBuilder: (context, index) {
-            //     final text = widget.codingVersion.file.textLines[index];
-            //     return _CodingEditorLine(
-            //       codingVersion: widget.codingVersion,
-            //       index: index,
-            //       text: text.text,
-            //     );
-            //   },
-            //   separatorBuilder: (context, index) {
-            //     return const Divider();
-            //   },
-            // ),
-            child: StreamBuilder<List<TextCodingLine>>(
-              stream: widget.codingVersion.codingLinesStream,
-              builder: (context, snap) {
-                switch (snap.connectionState) {
-                  case ConnectionState.active:
-                    return ListView.separated(
-                      key: UniqueKey(),
-                      itemCount: snap.data!.length,
-                      itemBuilder: (context, index) {
-                        final codingLine = snap.data![index];
-                        return _CodingEditorLine(
-                          codingVersion: widget.codingVersion,
-                          codingLine: codingLine,
-                        );
-                      },
-                      separatorBuilder: (context, index) {
-                        return const Divider();
-                      },
-                    );
-                  default:
-                    return Container();
-                }
-              },
-            ),
+            child: widget.codingVersion.codingLines.observe((codingLines) {
+              return ListView.separated(
+                key: UniqueKey(),
+                itemCount: codingLines.length,
+                itemBuilder: (context, index) {
+                  final codingLine = codingLines[index];
+                  return _CodingEditorLine(
+                    codingVersion: widget.codingVersion,
+                    codingLine: codingLine,
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return const Divider();
+                },
+              );
+            }),
           ),
         ),
       ],
@@ -99,15 +77,12 @@ class _CodingEditorState extends State<CodingEditor> {
 class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
-  late final TextLine textLine;
 
-  _CodingEditorLine({
+  const _CodingEditorLine({
     Key? key,
     required this.codingVersion,
     required this.codingLine,
-  }) : super(key: key) {
-    textLine = codingVersion.file.textLines[codingLine.index];
-  }
+  }) : super(key: key);
 
   @override
   State<_CodingEditorLine> createState() => _CodingEditorLineState();
@@ -149,46 +124,106 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
         Container(
           width: 50.0,
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Text('${widget.textLine.index + 1}'),
+          child: Text('${widget.codingLine.textLine.index + 1}'),
         ),
         Expanded(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: SelectableText.rich(
-              TextSpan(children: [
+            child: widget.codingLine.codings.observe((codings) {
+              return SelectableText.rich(
                 TextSpan(
-                  text: widget.textLine.text,
+                  children: _makeSpans(
+                    widget.codingLine.textLine.text,
+                    widget.codingLine.textLine.offset,
+                    codings,
+                  ),
                 ),
-              ]),
-              maxLines: null,
-              style: const TextStyle(fontSize: 15.0),
-              onSelectionChanged: (selection, _) {
-                if (selection.baseOffset != selection.extentOffset) {
-                  _selectionStart =
-                      min(selection.baseOffset, selection.extentOffset);
-                  _selectionEnd =
-                      max(selection.baseOffset, selection.extentOffset);
-                } else {
-                  _selectionStart = null;
-                  _selectionEnd = null;
-                }
-              },
-            ),
+                maxLines: null,
+                style: const TextStyle(fontSize: 15.0),
+                onSelectionChanged: (selection, _) {
+                  if (selection.baseOffset != selection.extentOffset) {
+                    _selectionStart =
+                        min(selection.baseOffset, selection.extentOffset);
+                    _selectionEnd =
+                        max(selection.baseOffset, selection.extentOffset);
+                  } else {
+                    _selectionStart = null;
+                    _selectionEnd = null;
+                  }
+                },
+              );
+            }),
           ),
         ),
         Container(
           width: 250.0,
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Wrap(
-            spacing: 2.0,
-            runSpacing: 2.0,
-            children: widget.codingLine.codings.map((c) {
-              return _CodingButton(coding: c);
-            }).toList(),
-          ),
+          child: widget.codingLine.codings.observe((codings) {
+            return Wrap(
+              spacing: 2.0,
+              runSpacing: 2.0,
+              children: codings.map((c) {
+                return _CodingButton(coding: c);
+              }).toList(),
+            );
+          }),
         ),
       ],
     );
+  }
+
+  List<InlineSpan> _makeSpans(
+    String text,
+    int offset,
+    Iterable<TextCoding> codings,
+  ) {
+    if (codings.isEmpty) {
+      return [TextSpan(text: text)];
+    }
+    final List<_CodingMark> marks = [];
+    for (final c in codings) {
+      marks.add(_CodingMark(_CodingMarkType.start, c.start - offset, c.code));
+      marks.add(_CodingMark(_CodingMarkType.end, c.end - offset, c.code));
+    }
+    marks.sort((a, b) => a.offset.compareTo(b.offset));
+    marks.add(_CodingMark(
+      _CodingMarkType.end,
+      text.length,
+      Code.withId(name: '', color: Colors.white),
+    ));
+    List<InlineSpan> spans = [];
+    Set<Code> currentCodes = {};
+    for (int i = 0, j = 0, a = 0; i <= text.length && j < marks.length; i++) {
+      if (i == marks[j].offset) {
+        if (currentCodes.isNotEmpty) {
+          final v =
+              currentCodes.fold<int>(0, (p, c) => p + c.color.value.value) /
+                  currentCodes.length;
+          spans.add(
+            TextSpan(
+              text: text.substring(a, i),
+              style: TextStyle(backgroundColor: Color(v.toInt())),
+            ),
+          );
+        } else {
+          spans.add(
+            TextSpan(
+              text: text.substring(a, i),
+            ),
+          );
+        }
+        while (j < marks.length && i == marks[j].offset) {
+          if (marks[j].type == _CodingMarkType.start) {
+            currentCodes.add(marks[j].code);
+          } else {
+            currentCodes.remove(marks[j].code);
+          }
+          j += 1;
+        }
+        a = i;
+      }
+    }
+    return spans;
   }
 }
 
@@ -208,6 +243,13 @@ class _CodingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nameText = coding.code.name.observe((name) {
+      return Text(
+        name,
+        style: const TextStyle(color: Colors.black),
+        overflow: TextOverflow.ellipsis,
+      );
+    });
     return coding.code.color.observe((color) {
       return Container(
         decoration: BoxDecoration(
@@ -222,11 +264,7 @@ class _CodingButton extends StatelessWidget {
             TextButton(
               onPressed: onPressed,
               onLongPress: onLongPress,
-              child: Text(
-                coding.code.name.value,
-                style: const TextStyle(color: Colors.black),
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: nameText,
             ),
             IconButton(
               onPressed: () {},
@@ -242,4 +280,25 @@ class _CodingButton extends StatelessWidget {
       );
     });
   }
+}
+
+class _CodingMark {
+  final _CodingMarkType type;
+  final int offset;
+  final Code code;
+
+  _CodingMark(this.type, this.offset, this.code);
+
+  @override
+  String toString() {
+    if (type == _CodingMarkType.start) {
+      return '_CodingMark: start, $offset';
+    }
+    return '_CodingMark: end, $offset';
+  }
+}
+
+enum _CodingMarkType {
+  start,
+  end;
 }

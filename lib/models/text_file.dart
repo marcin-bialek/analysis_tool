@@ -1,22 +1,22 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:uuid/uuid.dart';
 
 class TextFile implements JsonEncodable {
   final String id;
-
-  // TODO: convert to observables
-  final String name;
-  final String rawText;
-  final List<TextLine> textLines = [];
-  final Set<TextCodingVersion> codingVersions = {};
+  final Observable<String> name;
+  final Observable<String> rawText;
+  final textLines = Observable<List<TextLine>>([]);
+  final codingVersions = Observable<Set<TextCodingVersion>>({});
 
   TextFile({
     required this.id,
-    required this.name,
-    required this.rawText,
-  }) {
+    required String name,
+    required String rawText,
+  })  : name = Observable(name),
+        rawText = Observable(rawText) {
     final lines = rawText
         .split('\n')
         .map((e) => e.trim())
@@ -24,7 +24,7 @@ class TextFile implements JsonEncodable {
         .toList();
     int offset = 0;
     for (int i = 0; i < lines.length; i++) {
-      textLines.add(TextLine(
+      textLines.value.add(TextLine(
         index: i,
         offset: offset,
         text: lines[i],
@@ -47,7 +47,7 @@ class TextFile implements JsonEncodable {
     final text = json[TextFileJsonKeys.text];
     final file = TextFile(id: id, name: name, rawText: text);
     final codingVersions = json[TextFileJsonKeys.codingVersions] as List;
-    file.codingVersions.addAll(codingVersions.map(
+    file.codingVersions.value.addAll(codingVersions.map(
       (e) => TextCodingVersion.fromJson(e, file, codes),
     ));
     return file;
@@ -57,10 +57,10 @@ class TextFile implements JsonEncodable {
   Map<String, dynamic> toJson() {
     return {
       TextFileJsonKeys.id: id,
-      TextFileJsonKeys.name: name,
-      TextFileJsonKeys.text: rawText,
+      TextFileJsonKeys.name: name.value,
+      TextFileJsonKeys.text: rawText.value,
       TextFileJsonKeys.codingVersions:
-          codingVersions.map((e) => e.toJson()).toList(),
+          codingVersions.value.map((e) => e.toJson()).toList(),
     };
   }
 
