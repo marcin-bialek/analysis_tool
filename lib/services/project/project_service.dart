@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:analysis_tool/extensions/random.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
@@ -13,48 +14,18 @@ import 'package:analysis_tool/services/project/project_service_exceptions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 class ProjectService {
   static ProjectService? _instance;
   static const projectFileExtension = 'atool';
 
-  Project? _currentProject;
+  final project = Observable<Project?>(null);
   String? _currentProjectPath;
-  late final StreamController<List<TextFile>> _textFilesStreamController;
-  late final StreamController<List<Code>> _codesStreamController;
-  late final StreamController<List<Note>> _notesStreamController;
-  late final StreamController<Code> _codeRequestStreamController;
+  final _codeRequestStreamController = StreamController<Code>.broadcast();
 
-  Stream<List<TextFile>> get filesStream => _textFilesStreamController.stream;
-  Stream<List<Code>> get codesStream => _codesStreamController.stream;
-  Stream<List<Note>> get notesStream => _notesStreamController.stream;
   Stream<Code> get codeRequestStream => _codeRequestStreamController.stream;
 
-  ProjectService._() {
-    _textFilesStreamController = StreamController<List<TextFile>>.broadcast(
-      onListen: () {
-        if (_currentProject != null) {
-          _textFilesStreamController.add(_currentProject!.textFiles.toList());
-        }
-      },
-    );
-    _codesStreamController = StreamController<List<Code>>.broadcast(
-      onListen: () {
-        if (_currentProject != null) {
-          _codesStreamController.add(_currentProject!.codes.toList());
-        }
-      },
-    );
-    _notesStreamController = StreamController<List<Note>>.broadcast(
-      onListen: () {
-        if (_currentProject != null) {
-          _notesStreamController.add(_currentProject!.notes.toList());
-        }
-      },
-    );
-    _codeRequestStreamController = StreamController<Code>.broadcast();
-  }
+  ProjectService._();
 
   factory ProjectService() {
     _instance ??= ProjectService._();
@@ -62,12 +33,12 @@ class ProjectService {
   }
 
   Project _getOrCreateProject() {
-    _currentProject ??= Project.withId(name: 'new-project');
-    return _currentProject!;
+    project.value ??= Project.withId(name: 'new-project');
+    return project.value!;
   }
 
   Future<Project?> openProject() async {
-    if (_currentProject != null) {
+    if (project.value != null) {
       throw ProjectAlreadyOpenError();
     }
     final result = await FilePicker.platform.pickFiles(
@@ -75,28 +46,24 @@ class ProjectService {
       allowedExtensions: [projectFileExtension],
       withData: true,
     );
-    if (result == null) {
-      return null;
+    if (result != null) {
+      try {
+        final file = const Utf8Decoder().convert(result.files.first.bytes!);
+        final project = Project.fromJson(jsonDecode(file));
+        this.project.value = project;
+        _currentProjectPath = result.files.first.path;
+        return project;
+      } catch (e) {
+        print(e);
+        throw InvalidFileError();
+      }
     }
-    try {
-      final file = const Utf8Decoder().convert(result.files.first.bytes!);
-      final project = Project.fromJson(jsonDecode(file));
-      _currentProject = project;
-      _currentProjectPath = result.files.first.path;
-      _textFilesStreamController.add(project.textFiles.toList());
-      return project;
-    } catch (e) {
-      print(e);
-      throw InvalidFileError();
-    }
+    return null;
   }
 
   void closeProject() {
-    _currentProject = null;
+    project.value = null;
     _currentProjectPath = null;
-    _textFilesStreamController.add([]);
-    _codesStreamController.add([]);
-    _notesStreamController.add([]);
   }
 
   Future<void> saveProjectAs() async {
@@ -137,8 +104,8 @@ class ProjectService {
       switch (file.extension) {
         case 'txt':
           final textFile = TextFile.withId(name: file.name, rawText: text);
-          project.textFiles.add(textFile);
-          _textFilesStreamController.add(project.textFiles.toList());
+          project.textFiles.value.add(textFile);
+          project.textFiles.notify();
           break;
         default:
           throw UnsupportedFileError();
@@ -153,7 +120,7 @@ class ProjectService {
       stopSearch = true;
     });
     (() async {
-      for (final file in project.textFiles) {
+      for (final file in project.textFiles.value) {
         if (stopSearch) {
           return;
         }
@@ -178,64 +145,45 @@ class ProjectService {
   }
 
   void addCodingVersion(TextFile file) {
-    final project = _getOrCreateProject();
     final version = TextCodingVersion.withId(
       name: 'Wersja #${file.codingVersions.length + 1}',
       file: file,
     );
     file.codingVersions.add(version);
-    _textFilesStreamController.add(project.textFiles.toList());
   }
 
   void addCode() {
     final project = _getOrCreateProject();
     final code = Code.withId(
-      name: 'Kod #${project.codes.length + 1}',
+      name: 'Kod #${project.codes.value.length + 1}',
       color: Random().element(ColorTools.primaryColors),
     );
-    project.codes.add(code);
-    _codesStreamController.add(project.codes.toList());
+    project.codes.value.add(code);
+    project.codes.notify();
   }
 
   void removeCode(Code code) {
     final project = _getOrCreateProject();
-    for (final file in project.textFiles) {
+    for (final file in project.textFiles.value) {
       for (final codingVersion in file.codingVersions) {
         codingVersion.codings.removeWhere((c) => c.code == code);
       }
     }
-    project.codes.remove(code);
-    _codesStreamController.add(project.codes.toList());
-  }
-
-  void updateCode(Code code, {String? name, Color? color}) {
-    final project = _getOrCreateProject();
-    if ([name, color].any((e) => e != null)) {
-      code.name = name ?? code.name;
-      code.color = color ?? code.color;
-      _codesStreamController.add(project.codes.toList());
-    }
+    project.codes.value.remove(code);
+    project.codes.notify();
   }
 
   void addEmptyNote() {
     final project = _getOrCreateProject();
     final note = Note.withId(text: 'Nowa notatka');
-    project.notes.add(note);
-    _notesStreamController.add(project.notes.toList());
+    project.notes.value.add(note);
+    project.notes.notify();
   }
 
   void removeNote(Note note) {
     final project = _getOrCreateProject();
-    if (project.notes.remove(note)) {
-      _notesStreamController.add(project.notes.toList());
-    }
-  }
-
-  void updateNote(Note note, String text) {
-    final project = _getOrCreateProject();
-    if (note.text != text) {
-      note.text = text;
-      _notesStreamController.add(project.notes.toList());
+    if (project.notes.value.remove(note)) {
+      project.notes.notify();
     }
   }
 

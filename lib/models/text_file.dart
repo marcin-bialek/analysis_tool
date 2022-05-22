@@ -5,6 +5,8 @@ import 'package:uuid/uuid.dart';
 
 class TextFile implements JsonEncodable {
   final String id;
+
+  // TODO: convert to observables
   final String name;
   final String rawText;
   final List<TextLine> textLines = [];

@@ -1,17 +1,19 @@
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 class Code implements JsonEncodable {
   final String id;
-  String name;
-  Color color;
+  final Observable<String> name;
+  final Observable<Color> color;
 
   Code({
     required this.id,
-    required this.name,
-    required this.color,
-  });
+    required String name,
+    required Color color,
+  })  : name = Observable(name),
+        color = Observable(color);
 
   factory Code.withId({
     required String name,
@@ -32,8 +34,8 @@ class Code implements JsonEncodable {
   Map<String, dynamic> toJson() {
     return {
       CodeJsonKeys.id: id,
-      CodeJsonKeys.name: name,
-      CodeJsonKeys.color: color.value,
+      CodeJsonKeys.name: name.value,
+      CodeJsonKeys.color: color.value.value,
     };
   }
 

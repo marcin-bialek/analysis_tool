@@ -1,15 +1,16 @@
+import 'package:analysis_tool/models/observable.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:analysis_tool/models/json_encodable.dart';
 
 class Note implements JsonEncodable {
   final String id;
-  String text;
+  final Observable<String> text;
 
   Note({
     required this.id,
-    required this.text,
-  });
+    required String text,
+  }) : text = Observable(text);
 
   factory Note.withId({required String text}) {
     final id = const Uuid().v4();
@@ -26,7 +27,7 @@ class Note implements JsonEncodable {
   Map<String, dynamic> toJson() {
     return {
       NoteJsonKeys.id: id,
-      NoteJsonKeys.text: text,
+      NoteJsonKeys.text: text.value,
     };
   }
 

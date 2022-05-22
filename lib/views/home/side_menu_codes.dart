@@ -40,32 +40,28 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
           ],
         ),
         Expanded(
-          child: StreamBuilder<List<Code>>(
-            stream: _projectService.codesStream,
-            initialData: const [],
-            builder: (context, snap) {
-              switch (snap.connectionState) {
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  return ListView.builder(
-                    itemCount: snap.data!.length,
-                    itemBuilder: (context, index) {
-                      final code = snap.data![index];
-                      return _SideMenuCodesItem(
-                        code: code,
-                        index: index,
-                        tileOpenedStream: _tileOpenedStream.stream,
-                        onOpen: () {
-                          _tileOpenedStream.add(index);
-                        },
-                      );
+          child: _projectService.project.observe((project) {
+            if (project == null) {
+              return Container();
+            }
+            return project.codes.observe((value) {
+              final codes = value.toList();
+              return ListView.builder(
+                itemCount: codes.length,
+                itemBuilder: (context, index) {
+                  final code = codes[index];
+                  return _SideMenuCodesItem(
+                    code: code,
+                    index: index,
+                    tileOpenedStream: _tileOpenedStream.stream,
+                    onOpen: () {
+                      _tileOpenedStream.add(index);
                     },
                   );
-                default:
-                  return Container();
-              }
-            },
-          ),
+                },
+              );
+            });
+          }),
         ),
       ],
     );
@@ -119,10 +115,12 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
       children: [
         ListTile(
           leading: IconButton(
-            icon: Icon(
-              Icons.circle,
-              color: widget.code.color,
-              size: 20.0,
+            icon: widget.code.color.observe(
+              (color) => Icon(
+                Icons.circle,
+                color: color,
+                size: 20.0,
+              ),
             ),
             onPressed: () {
               setState(() {
@@ -133,14 +131,18 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               }
             },
           ),
-          title: Text(
-            widget.code.name,
-            style: const TextStyle(color: Colors.white),
+          title: widget.code.name.observe(
+            (name) => Text(
+              name,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           trailing: IconButton(
-            icon: Icon(
-              Icons.check,
-              color: widget.code.color,
+            icon: widget.code.color.observe(
+              (color) => Icon(
+                Icons.check,
+                color: color,
+              ),
             ),
             onPressed: () {
               _projectService.sendCodeRequest(widget.code);
@@ -148,24 +150,26 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
           ),
         ),
         if (_isExpanded) ...[
-          ColorPicker(
-            color: widget.code.color,
-            pickersEnabled: const {
-              ColorPickerType.accent: false,
-            },
-            onColorChanged: (color) {
-              _projectService.updateCode(widget.code, color: color);
-            },
-            borderRadius: 15.0,
-            height: 30.0,
-            width: 30.0,
-            heading: const Text(
-              'Kolor',
-              style: TextStyle(color: Colors.white),
-            ),
-            subheading: const Text(
-              'Odcień',
-              style: TextStyle(color: Colors.white),
+          widget.code.color.observe(
+            (color) => ColorPicker(
+              color: color,
+              pickersEnabled: const {
+                ColorPickerType.accent: false,
+              },
+              onColorChanged: (color) {
+                widget.code.color.value = color;
+              },
+              borderRadius: 15.0,
+              height: 30.0,
+              width: 30.0,
+              heading: const Text(
+                'Kolor',
+                style: TextStyle(color: Colors.white),
+              ),
+              subheading: const Text(
+                'Odcień',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           TextButton(

@@ -36,25 +36,20 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
           ],
         ),
         Expanded(
-          child: StreamBuilder<List<Note>>(
-            stream: _projectService.notesStream,
-            initialData: const [],
-            builder: (context, snap) {
-              switch (snap.connectionState) {
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  return ListView.builder(
-                    itemCount: snap.data!.length,
-                    itemBuilder: (context, index) {
-                      final note = snap.data![index];
-                      return _SideMenuNotesItem(note: note);
-                    },
-                  );
-                default:
-                  return Container();
-              }
-            },
-          ),
+          child: _projectService.project.observe((project) {
+            if (project == null) {
+              return Container();
+            }
+            return project.notes.observe((value) {
+              final notes = value.toList();
+              return ListView.builder(
+                itemCount: notes.length,
+                itemBuilder: (context, index) {
+                  return _SideMenuNotesItem(note: notes[index]);
+                },
+              );
+            });
+          }),
         ),
       ],
     );
@@ -82,10 +77,10 @@ class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    _textController = TextEditingController(text: widget.note.text);
+    _textController = TextEditingController(text: widget.note.text.value);
     _focusNode!.addListener(() {
       if (!_focusNode!.hasFocus) {
-        _projectService.updateNote(widget.note, _textController!.text);
+        widget.note.text.value = _textController!.text;
       }
     });
   }

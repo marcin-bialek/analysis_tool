@@ -45,25 +45,21 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
           ],
         ),
         Expanded(
-          child: StreamBuilder<List<TextFile>>(
-            stream: _projectService.filesStream,
-            initialData: const [],
-            builder: (context, snap) {
-              switch (snap.connectionState) {
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  return ListView.builder(
-                    itemCount: snap.data!.length,
-                    itemBuilder: (context, index) {
-                      final file = snap.data![index];
-                      return SideMenuFilesItem(file: file);
-                    },
-                  );
-                default:
-                  return Container();
-              }
-            },
-          ),
+          child: _projectService.project.observe((project) {
+            if (project == null) {
+              return Container();
+            }
+            return project.textFiles.observe((value) {
+              final textFiles = value.toList();
+              return ListView.builder(
+                itemCount: textFiles.length,
+                itemBuilder: (context, index) {
+                  final file = textFiles[index];
+                  return SideMenuFilesItem(file: file);
+                },
+              );
+            });
+          }),
         ),
       ],
     );

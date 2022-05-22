@@ -1,15 +1,16 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
 import 'package:analysis_tool/models/note.dart';
+import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:uuid/uuid.dart';
 
 class Project implements JsonEncodable {
   final String id;
   final String name;
-  final Set<TextFile> textFiles = {};
-  final Set<Code> codes = {};
-  final Set<Note> notes = {};
+  final textFiles = Observable<Set<TextFile>>({});
+  final codes = Observable<Set<Code>>({});
+  final notes = Observable<Set<Note>>({});
 
   Project({
     required this.id,
@@ -28,12 +29,12 @@ class Project implements JsonEncodable {
     final name = json[ProjectJsonKeys.name];
     final project = Project(id: id, name: name);
     final codes = json[ProjectJsonKeys.codes] as List;
-    project.codes.addAll(codes.map((e) => Code.fromJson(e)));
+    project.codes.value.addAll(codes.map((e) => Code.fromJson(e)));
     final textFiles = json[ProjectJsonKeys.textFiles] as List;
-    project.textFiles
-        .addAll(textFiles.map((e) => TextFile.fromJson(e, project.codes)));
+    project.textFiles.value.addAll(
+        textFiles.map((e) => TextFile.fromJson(e, project.codes.value)));
     final notes = json[ProjectJsonKeys.notes] as List;
-    project.notes.addAll(notes.map((e) => Note.fromJson(e)));
+    project.notes.value.addAll(notes.map((e) => Note.fromJson(e)));
     return project;
   }
 
@@ -42,9 +43,10 @@ class Project implements JsonEncodable {
     return {
       ProjectJsonKeys.id: id,
       ProjectJsonKeys.name: name,
-      ProjectJsonKeys.textFiles: textFiles.map((e) => e.toJson()).toList(),
-      ProjectJsonKeys.codes: codes.map((e) => e.toJson()).toList(),
-      ProjectJsonKeys.notes: notes.map((e) => e.toJson()).toList(),
+      ProjectJsonKeys.textFiles:
+          textFiles.value.map((e) => e.toJson()).toList(),
+      ProjectJsonKeys.codes: codes.value.map((e) => e.toJson()).toList(),
+      ProjectJsonKeys.notes: notes.value.map((e) => e.toJson()).toList(),
     };
   }
 

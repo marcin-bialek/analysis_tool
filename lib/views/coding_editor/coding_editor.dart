@@ -208,36 +208,38 @@ class _CodingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: enabled ? coding.code.color : Colors.grey,
-        borderRadius: const BorderRadius.all(
-          Radius.circular(5.0),
+    return coding.code.color.observe((color) {
+      return Container(
+        decoration: BoxDecoration(
+          color: enabled ? color : Colors.grey,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(5.0),
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextButton(
-            onPressed: onPressed,
-            onLongPress: onLongPress,
-            child: Text(
-              coding.code.name,
-              style: const TextStyle(color: Colors.black),
-              overflow: TextOverflow.ellipsis,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(
+              onPressed: onPressed,
+              onLongPress: onLongPress,
+              child: Text(
+                coding.code.name.value,
+                style: const TextStyle(color: Colors.black),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: const Icon(
-              Icons.remove_circle,
-              size: 15.0,
+            IconButton(
+              onPressed: () {},
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(
+                Icons.remove_circle,
+                size: 15.0,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
