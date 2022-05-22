@@ -2,6 +2,7 @@ import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/views/editable_text.dart';
 import 'package:flutter/material.dart';
 
 class SideMenuFiles extends StatefulWidget {
@@ -85,12 +86,15 @@ class SideMenuFilesItem extends StatelessWidget {
             size: 14.0,
           ),
           title: file.name.observe(
-            (name) => Text(
-              name,
+            (name) => TextEditable(
+              text: name,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13.0,
               ),
+              edited: (text) {
+                file.name.value = text;
+              },
             ),
           ),
           dense: true,
@@ -120,9 +124,12 @@ class SideMenuFilesItem extends StatelessWidget {
                   size: 14.0,
                 ),
                 title: version.name.observe((name) {
-                  return Text(
-                    name,
+                  return TextEditable(
+                    text: name,
                     style: const TextStyle(color: Colors.white, fontSize: 13.0),
+                    edited: (text) {
+                      version.name.value = text;
+                    },
                   );
                 }),
                 dense: true,

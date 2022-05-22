@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveCode;
+import 'package:analysis_tool/views/editable_text.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -132,9 +133,12 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
             },
           ),
           title: widget.code.name.observe(
-            (name) => Text(
-              name,
+            (name) => TextEditable(
+              text: name,
               style: const TextStyle(color: Colors.white),
+              edited: (text) {
+                widget.code.name.value = text;
+              },
             ),
           ),
           trailing: IconButton(
