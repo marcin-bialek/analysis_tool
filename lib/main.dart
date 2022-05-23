@@ -4,6 +4,7 @@ import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_codes.dart';
+import 'package:analysis_tool/views/home/side_menu_collaboration.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/home/side_menu_notes.dart';
 import 'package:analysis_tool/views/home/side_menu_search.dart';
@@ -84,10 +85,7 @@ class _HomePageState extends State<HomePage> {
               SideMenuRoutes.search: const SideMenuSearch(),
               SideMenuRoutes.codes: const SideMenuCodes(),
               SideMenuRoutes.notes: const SideMenuNotes(),
-              SideMenuRoutes.collaboration: const Text(
-                'współpraca',
-                style: TextStyle(color: Colors.white),
-              ),
+              SideMenuRoutes.collaboration: const SideMenuCollaboration(),
             }[settings.name] ??
             Container();
       },

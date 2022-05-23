@@ -1,0 +1,1 @@
+class CouldNotConnectError implements Exception {}

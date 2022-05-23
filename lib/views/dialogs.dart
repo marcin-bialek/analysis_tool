@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 Future<T?> showGenericDialog<T>({
   required BuildContext context,
   required String title,
-  required String text,
+  required Widget content,
   required Map<String, T> actions,
 }) {
   return showDialog<T?>(
@@ -12,7 +12,7 @@ Future<T?> showGenericDialog<T>({
     builder: (context) {
       return AlertDialog(
         title: Text(title),
-        content: Text(text),
+        content: content,
         actions: actions.keys.map((k) {
           final v = actions[k];
           return TextButton(
@@ -31,7 +31,7 @@ Future<bool?> showDialogSaveProject({required BuildContext context}) {
   return showGenericDialog<bool>(
     context: context,
     title: 'Zapisywanie projektu',
-    text: 'Czy zapisać obecny projekt?',
+    content: const Text('Czy zapisać obecny projekt?'),
     actions: {
       'Tak': true,
       'Nie': false,
@@ -46,7 +46,7 @@ Future<bool?> showDialogRemoveCode({
   return showGenericDialog<bool>(
     context: context,
     title: 'Usuwanie kodu',
-    text: 'Czy usunąć kod ${code.name}?',
+    content: Text('Czy usunąć kod ${code.name}?'),
     actions: {
       'Tak': true,
       'Nie': false,
@@ -58,10 +58,24 @@ Future<bool?> showDialogRemoveNote({required BuildContext context}) {
   return showGenericDialog<bool>(
     context: context,
     title: 'Usuwanie notatki',
-    text: 'Czy usunąć notatkę?',
+    content: const Text('Czy usunąć notatkę?'),
     actions: {
       'Tak': true,
       'Nie': false,
+    },
+  );
+}
+
+Future<bool?> showDialogCouldNotConnect({
+  required BuildContext context,
+  required String address,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Błąd połączenia',
+    content: Text('Nie udało się połączyć z serwerem $address'),
+    actions: {
+      'Ok': true,
     },
   );
 }
