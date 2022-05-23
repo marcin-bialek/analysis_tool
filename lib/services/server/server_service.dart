@@ -1,5 +1,9 @@
 import 'package:analysis_tool/models/observable.dart';
-import 'package:analysis_tool/models/project.dart';
+import 'package:analysis_tool/models/server_events/event_clients.dart';
+import 'package:analysis_tool/models/server_events/event_get_project.dart';
+import 'package:analysis_tool/models/server_events/event_hello.dart';
+import 'package:analysis_tool/models/server_events/server_event.dart';
+import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:uuid/uuid.dart';
@@ -7,6 +11,7 @@ import 'package:uuid/uuid.dart';
 class ServerService {
   static ServerService? _instance;
   final connectionInfo = ConnectionInfo();
+  final clientId = const Uuid().v4();
   socket_io.Socket? _socket;
 
   ServerService._();
@@ -16,42 +21,69 @@ class ServerService {
     return _instance!;
   }
 
-  Future<void> publishProject(String address, Project project) async {}
+  void _sendEvent(ServerEvent event) {
+    _socket?.emit('event', event.toJson());
+  }
 
-  Future<ConnectionInfo> connect(String address, String passcode) async {
+  Future<ConnectionInfo> _connect(String address) async {
     address = address.trim();
     final options =
-        socket_io.OptionBuilder().setTransports(['websocket']).setExtraHeaders({
-      'atool-passcode': passcode,
-      'atool-username': 'dupa',
-      'atool-userid': const Uuid().v4(),
-    }).build();
+        socket_io.OptionBuilder().setTransports(['websocket']).build();
     final socket = socket_io.io(address.trim(), options);
     connectionInfo.state.value = ServerConnectionState.connecting;
-    _socket = socket;
     socket.onConnect((_) {
+      _socket = socket;
+      connectionInfo.address.value = address;
       connectionInfo.state.value = ServerConnectionState.connected;
+      _sendEvent(EventHello(clientId: clientId, username: 'dupa'));
     });
     socket.onConnectError((error) {
-      print(error);
+      _socket = null;
       connectionInfo.state.value = ServerConnectionState.disconnected;
     });
-    socket.on('message', _handleMessage);
+    socket.onDisconnect((data) {
+      _socket = null;
+      connectionInfo.state.value = ServerConnectionState.disconnected;
+    });
+    socket.on('event', _handleEvent);
     while (connectionInfo.state.value == ServerConnectionState.connecting) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
     if (connectionInfo.state.value == ServerConnectionState.disconnected) {
       socket.close();
+      _socket = null;
       throw CouldNotConnectError();
     }
     return connectionInfo;
   }
 
-  void _handleMessage(dynamic data) {
-    print('message ${data.runtimeType}');
-    if (data is Map<String, dynamic>) {
-      connectionInfo.users.value = data.cast();
+  void _handleEvent(dynamic e) {
+    final event = ServerEvent.parse(e);
+    if (event is EventClients) {
+      connectionInfo.users.value = event.clients;
+    } else {
+      print(event);
     }
+  }
+
+  Future<void> publishProject(String address) async {
+    final project = ProjectService().project.value;
+    if (project != null) {
+      await _connect(address);
+      _socket?.send([project.toJson()]);
+    }
+  }
+
+  Future<void> connect(String address, String passcode) async {
+    await _connect(address);
+    _sendEvent(EventGetProject(passcode: passcode));
+  }
+
+  void disconnect() {
+    _socket?.close();
+    connectionInfo.address.value = '';
+    connectionInfo.state.value = ServerConnectionState.disconnected;
+    connectionInfo.users.value = {};
   }
 }
 

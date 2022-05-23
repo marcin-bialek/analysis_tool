@@ -1,3 +1,4 @@
+import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
 import 'package:analysis_tool/views/dialogs.dart';
@@ -11,12 +12,15 @@ class SideMenuCollaboration extends StatefulWidget {
 }
 
 class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
+  final _projectService = ProjectService();
   final _serverService = ServerService();
   final _serverAddressController = TextEditingController();
+  final _passcodeController = TextEditingController();
 
   @override
   void dispose() {
     _serverAddressController.dispose();
+    _passcodeController.dispose();
     super.dispose();
   }
 
@@ -47,9 +51,13 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
               <ServerConnectionState, String>{
                 ServerConnectionState.disconnected: 'Połącz z serwerem',
                 ServerConnectionState.connecting: 'Łączenie...',
-                ServerConnectionState.connected: 'Połączono',
+                ServerConnectionState.connected:
+                    'Połączono z ${_serverService.connectionInfo.address.value}',
               }[state]!,
-              style: const TextStyle(color: Colors.green),
+              style: const TextStyle(
+                color: Colors.green,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             trailing: state == ServerConnectionState.connecting
                 ? const SizedBox(
@@ -58,31 +66,43 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                     child: CircularProgressIndicator(color: Colors.green),
                   )
                 : null,
-            onTap: () {
-              _connectToServer(context: context);
-            },
+            onTap: _connectToServer,
           );
         }),
         _serverService.connectionInfo.state.observe((state) {
-          return ListTile(
-            enabled: state == ServerConnectionState.disconnected,
-            dense: true,
-            leading:
-                const Icon(Icons.ios_share, size: 20.0, color: Colors.blue),
-            title: const Text(
-              'Wyślij na serwer',
-              style: TextStyle(color: Colors.blue),
-            ),
-            // trailing: const SizedBox(
-            //   width: 20.0,
-            //   height: 20.0,
-            //   child: CircularProgressIndicator(color: Colors.green),
-            // ),
-            onTap: () {
-              // _connectToServer(context: context);
-            },
-          );
+          switch (state) {
+            case ServerConnectionState.disconnected:
+              return _projectService.project.observe((project) {
+                if (project == null) {
+                  return const SizedBox.shrink();
+                }
+                return ListTile(
+                  dense: true,
+                  leading:
+                      const Icon(Icons.backup, size: 20.0, color: Colors.blue),
+                  title: const Text(
+                    'Wyślij na serwer',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  onTap: _publishProject,
+                );
+              });
+            case ServerConnectionState.connected:
+              return ListTile(
+                dense: true,
+                leading:
+                    const Icon(Icons.cancel, size: 20.0, color: Colors.red),
+                title: const Text(
+                  'Rozłącz',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: _serverService.disconnect,
+              );
+            default:
+              return const SizedBox.shrink();
+          }
         }),
+        const SizedBox(height: 20.0),
         SizedBox(
           height: 40.0,
           child: Row(
@@ -102,9 +122,15 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
               children: users.entries.map(
                 (e) {
                   return ListTile(
-                    leading: const Icon(Icons.person, color: Colors.white),
+                    dense: true,
+                    leading: const Icon(
+                      Icons.person,
+                      size: 20.0,
+                      color: Colors.white,
+                    ),
                     title: Text(
-                      e.value,
+                      e.value +
+                          (e.key == _serverService.clientId ? ' (Ty)' : ''),
                       style: const TextStyle(color: Colors.white),
                     ),
                   );
@@ -117,15 +143,26 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
   }
 
-  void _connectToServer({required BuildContext context}) async {
+  Future<void> _connectToServer() async {
     final result = await showGenericDialog<bool>(
       context: context,
       title: 'Połącz z serwerem',
-      content: TextField(
-        controller: _serverAddressController,
-        decoration: const InputDecoration(
-          hintText: 'Podaj adres serwera',
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _serverAddressController,
+            decoration: const InputDecoration(
+              hintText: 'Podaj adres serwera',
+            ),
+          ),
+          TextField(
+            controller: _passcodeController,
+            decoration: const InputDecoration(
+              hintText: 'Podaj kod projektu',
+            ),
+          ),
+        ],
       ),
       actions: {
         'Połącz': true,
@@ -134,8 +171,34 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
     if (result == true) {
       final address = _serverAddressController.text;
+      final passcode = _passcodeController.text;
       try {
-        await ServerService().connect(address, '');
+        await _serverService.connect(address, passcode);
+      } on CouldNotConnectError {
+        await showDialogCouldNotConnect(context: context, address: address);
+      }
+    }
+  }
+
+  Future<void> _publishProject() async {
+    final result = await showGenericDialog<bool>(
+      context: context,
+      title: 'Wyślij projekt na serwer',
+      content: TextField(
+        controller: _serverAddressController,
+        decoration: const InputDecoration(
+          hintText: 'Podaj adres serwera',
+        ),
+      ),
+      actions: {
+        'Wyślij': true,
+        'Anuluj': false,
+      },
+    );
+    if (result == true) {
+      final address = _serverAddressController.text;
+      try {
+        await _serverService.publishProject(address);
       } on CouldNotConnectError {
         await showDialogCouldNotConnect(context: context, address: address);
       }
