@@ -1,5 +1,7 @@
 import 'package:analysis_tool/models/json_encodable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
+import 'package:analysis_tool/models/server_events/event_project.dart';
+import 'package:analysis_tool/models/server_events/event_published.dart';
 
 abstract class ServerEvent implements JsonEncodable {
   static ServerEvent? parse(dynamic event) {
@@ -13,6 +15,10 @@ abstract class ServerEvent implements JsonEncodable {
       switch (name) {
         case EventClients.name:
           return EventClients.fromJson(event);
+        case EventProject.name:
+          return EventProject.fromJson(event);
+        case EventPublished.name:
+          return EventPublished.fromJson(event);
         default:
           return null;
       }

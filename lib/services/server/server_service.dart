@@ -2,6 +2,9 @@ import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
+import 'package:analysis_tool/models/server_events/event_project.dart';
+import 'package:analysis_tool/models/server_events/event_publish_project.dart';
+import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
@@ -61,6 +64,10 @@ class ServerService {
     final event = ServerEvent.parse(e);
     if (event is EventClients) {
       connectionInfo.users.value = event.clients;
+    } else if (event is EventProject) {
+      ProjectService().project.value = event.project;
+    } else if (event is EventPublished) {
+      print('Published: passcode = ${event.passcode}');
     } else {
       print(event);
     }
@@ -70,7 +77,7 @@ class ServerService {
     final project = ProjectService().project.value;
     if (project != null) {
       await _connect(address);
-      _socket?.send([project.toJson()]);
+      _sendEvent(EventPublishProject(project: project));
     }
   }
 
@@ -84,6 +91,7 @@ class ServerService {
     connectionInfo.address.value = '';
     connectionInfo.state.value = ServerConnectionState.disconnected;
     connectionInfo.users.value = {};
+    _socket = null;
   }
 }
 
