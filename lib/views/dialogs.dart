@@ -96,3 +96,53 @@ Future<bool?> showDialogCouldNotConnect({
     },
   );
 }
+
+Future<bool?> showDialogConnectionInfo({
+  required BuildContext context,
+  required String address,
+  required String passcode,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Połączono',
+    content: Table(
+      columnWidths: const {
+        0: IntrinsicColumnWidth(),
+        1: IntrinsicColumnWidth(),
+      },
+      children: [
+        TableRow(children: [
+          const TableCell(
+            child: Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text('Adres:'),
+            ),
+          ),
+          TableCell(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: SelectableText(address),
+            ),
+          ),
+        ]),
+        TableRow(children: [
+          const TableCell(
+            child: Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text('Kod projektu:'),
+            ),
+          ),
+          TableCell(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: SelectableText(passcode),
+            ),
+          ),
+        ]),
+      ],
+    ),
+    actions: {
+      'Ok': true,
+    },
+  );
+}

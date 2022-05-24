@@ -82,7 +82,7 @@ class ServerService {
     } else if (event is EventProject) {
       projectService.project.value = event.project;
     } else if (event is EventPublished) {
-      print('Published: passcode = ${event.passcode}');
+      connectionInfo.passcode.value = event.passcode;
     }
 
     // TextFile events
@@ -139,11 +139,13 @@ class ServerService {
 
   Future<void> connect(String address, String passcode) async {
     await _connect(address);
+    connectionInfo.passcode.value = passcode;
     sendEvent(EventGetProject(passcode: passcode));
   }
 
   void disconnect() {
     connectionInfo.address.value = '';
+    connectionInfo.passcode.value = '';
     connectionInfo.state.value = ServerConnectionState.disconnected;
     connectionInfo.users.value = {};
     _socket?.dispose();
@@ -153,6 +155,7 @@ class ServerService {
 
 class ConnectionInfo {
   final address = Observable('');
+  final passcode = Observable('');
   final state = Observable(ServerConnectionState.disconnected);
   final users = Observable<Map<String, String>>({});
 }

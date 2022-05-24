@@ -47,7 +47,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
         ),
         _serverService.connectionInfo.state.observe((state) {
           return ListTile(
-            enabled: state == ServerConnectionState.disconnected,
+            enabled: state != ServerConnectionState.connecting,
             dense: true,
             leading: const Icon(Icons.cloud, size: 20.0, color: Colors.green),
             title: Text(
@@ -69,7 +69,17 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                     child: CircularProgressIndicator(color: Colors.green),
                   )
                 : null,
-            onTap: _connectToServer,
+            onTap: () async {
+              if (state == ServerConnectionState.disconnected) {
+                await _connectToServer();
+              } else if (state == ServerConnectionState.connected) {
+                await showDialogConnectionInfo(
+                  context: context,
+                  address: _serverService.connectionInfo.address.value,
+                  passcode: _serverService.connectionInfo.passcode.value,
+                );
+              }
+            },
           );
         }),
         _serverService.connectionInfo.state.observe((state) {
