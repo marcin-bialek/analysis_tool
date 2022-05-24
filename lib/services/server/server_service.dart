@@ -29,32 +29,35 @@ class ServerService {
   }
 
   Future<ConnectionInfo> _connect(String address) async {
+    if (_socket != null) {
+      return connectionInfo;
+    }
     address = address.trim();
-    final options =
-        socket_io.OptionBuilder().setTransports(['websocket']).build();
+    final options = socket_io.OptionBuilder()
+        .setTransports(['websocket'])
+        .enableForceNew()
+        .build();
     final socket = socket_io.io(address.trim(), options);
+    _socket = socket;
+    connectionInfo.address.value = address;
     connectionInfo.state.value = ServerConnectionState.connecting;
     socket.onConnect((_) {
-      _socket = socket;
-      connectionInfo.address.value = address;
       connectionInfo.state.value = ServerConnectionState.connected;
       _sendEvent(EventHello(clientId: clientId, username: 'dupa'));
     });
-    socket.onConnectError((error) {
-      _socket = null;
-      connectionInfo.state.value = ServerConnectionState.disconnected;
-    });
-    socket.onDisconnect((data) {
-      _socket = null;
-      connectionInfo.state.value = ServerConnectionState.disconnected;
-    });
+    socket.onConnectError((error) => disconnect());
+    socket.onDisconnect((_) => disconnect());
     socket.on('event', _handleEvent);
+    int time = 0;
     while (connectionInfo.state.value == ServerConnectionState.connecting) {
       await Future.delayed(const Duration(milliseconds: 100));
+      time += 100;
+      if (time >= 10000) {
+        break;
+      }
     }
-    if (connectionInfo.state.value == ServerConnectionState.disconnected) {
-      socket.close();
-      _socket = null;
+    if (connectionInfo.state.value != ServerConnectionState.connected) {
+      disconnect();
       throw CouldNotConnectError();
     }
     return connectionInfo;
@@ -87,10 +90,10 @@ class ServerService {
   }
 
   void disconnect() {
-    _socket?.close();
     connectionInfo.address.value = '';
     connectionInfo.state.value = ServerConnectionState.disconnected;
     connectionInfo.users.value = {};
+    _socket?.dispose();
     _socket = null;
   }
 }
