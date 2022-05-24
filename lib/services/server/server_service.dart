@@ -2,6 +2,7 @@ import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
+import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
@@ -84,7 +85,20 @@ class ServerService {
           .value
           .where((c) => c.id == event.codeId);
       if (codes != null && codes.isNotEmpty) {
-        ProjectService().removeCode(codes.first);
+        ProjectService().removeCode(codes.first, sendToServer: false);
+      }
+    } else if (event is EventCodeUpdate) {
+      final codes = ProjectService()
+          .project
+          .value
+          ?.codes
+          .value
+          .where((c) => c.id == event.codeId);
+      if (codes != null && codes.isNotEmpty) {
+        final code = codes.first;
+        if (event.codeName != null) code.name.value = event.codeName!;
+        if (event.codeColor != null) code.color.value = event.codeColor!;
+        ProjectService().updatedCode(code, sendToServer: false);
       }
     } else {
       print(event);

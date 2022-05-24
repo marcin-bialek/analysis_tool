@@ -14,8 +14,11 @@ class SideMenuCollaboration extends StatefulWidget {
 class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
   final _projectService = ProjectService();
   final _serverService = ServerService();
-  final _serverAddressController = TextEditingController();
-  final _passcodeController = TextEditingController();
+  // TODO: remove values
+  final _serverAddressController =
+      TextEditingController(text: 'http://localhost:8080');
+  final _passcodeController =
+      TextEditingController(text: '628c1fae5e3fe762ca38e722');
 
   @override
   void dispose() {

@@ -138,6 +138,7 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               style: const TextStyle(color: Colors.white),
               edited: (text) {
                 widget.code.name.value = text;
+                _projectService.updatedCode(widget.code);
               },
             ),
           ),

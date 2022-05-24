@@ -10,6 +10,7 @@ import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
+import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -157,7 +158,7 @@ class ProjectService {
     file.codingVersions.notify();
   }
 
-  void addCode() {
+  void addCode({bool sendToServer = true}) {
     final project = _getOrCreateProject();
     final code = Code.withId(
       name: 'Kod #${project.codes.value.length + 1}',
@@ -165,10 +166,12 @@ class ProjectService {
     );
     project.codes.value.add(code);
     project.codes.notify();
-    ServerService().sendEvent(EventCodeAdd(code: code));
+    if (sendToServer) {
+      ServerService().sendEvent(EventCodeAdd(code: code));
+    }
   }
 
-  void removeCode(Code code) {
+  void removeCode(Code code, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
     if (project.codes.value.remove(code)) {
       for (final file in project.textFiles.value) {
@@ -177,16 +180,25 @@ class ProjectService {
         }
       }
       project.codes.notify();
-      ServerService().sendEvent(EventCodeRemove(codeId: code.id));
+      if (sendToServer) {
+        ServerService().sendEvent(EventCodeRemove(codeId: code.id));
+      }
     }
   }
 
-  void updatedCode(Code code) {
+  void updatedCode(Code code, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
     for (final textFile in project.textFiles.value) {
       for (var codingVersion in textFile.codingVersions.value) {
         codingVersion.updatedCode(code);
       }
+    }
+    if (sendToServer) {
+      ServerService().sendEvent(EventCodeUpdate(
+        codeId: code.id,
+        codeName: code.name.value,
+        codeColor: code.color.value,
+      ));
     }
   }
 

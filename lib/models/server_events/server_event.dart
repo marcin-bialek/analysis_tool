@@ -2,6 +2,7 @@ import 'package:analysis_tool/models/json_encodable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
+import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 
@@ -25,6 +26,8 @@ abstract class ServerEvent implements JsonEncodable {
           return EventCodeAdd.fromJson(event);
         case EventCodeRemove.name:
           return EventCodeRemove.fromJson(event);
+        case EventCodeUpdate.name:
+          return EventCodeUpdate.fromJson(event);
         default:
           print('Unknown event: $name');
           return null;
