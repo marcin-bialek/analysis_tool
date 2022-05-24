@@ -1,5 +1,6 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
+import 'package:analysis_tool/services/server/server_service.dart';
 import 'package:flutter/material.dart';
 
 class SideMenu extends StatefulWidget {
@@ -36,8 +37,17 @@ class _SideMenuState extends State<SideMenu> {
           _SideMenuButton(Icons.sticky_note_2_outlined, 'Notatki', () {
             _openMenu(SideMenuRoutes.notes);
           }),
-          _SideMenuButton(Icons.people_rounded, 'Współpraca', () {
-            _openMenu(SideMenuRoutes.collaboration);
+          ServerService().connectionInfo.state.observe((state) {
+            return _SideMenuButton(
+              Icons.people_rounded,
+              'Współpraca',
+              () {
+                _openMenu(SideMenuRoutes.collaboration);
+              },
+              color: state == ServerConnectionState.connected
+                  ? Colors.green
+                  : null,
+            );
           }),
           const Spacer(),
           _SideMenuButton(Icons.settings_outlined, 'Ustawienia', () {
@@ -61,9 +71,10 @@ class _SideMenuState extends State<SideMenu> {
 class _SideMenuButton extends StatelessWidget {
   final IconData data;
   final String tooltip;
+  final Color? color;
   final void Function()? onPressed;
 
-  const _SideMenuButton(this.data, this.tooltip, this.onPressed);
+  const _SideMenuButton(this.data, this.tooltip, this.onPressed, {this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +82,7 @@ class _SideMenuButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(
         data,
-        color: Colors.white70,
+        color: color ?? Colors.white70,
         size: 25.0,
       ),
       tooltip: tooltip,
