@@ -1,5 +1,7 @@
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
+import 'package:analysis_tool/models/server_events/event_code_add.dart';
+import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
@@ -24,7 +26,7 @@ class ServerService {
     return _instance!;
   }
 
-  void _sendEvent(ServerEvent event) {
+  void sendEvent(ServerEvent event) {
     _socket?.emit('event', event.toJson());
   }
 
@@ -43,7 +45,7 @@ class ServerService {
     connectionInfo.state.value = ServerConnectionState.connecting;
     socket.onConnect((_) {
       connectionInfo.state.value = ServerConnectionState.connected;
-      _sendEvent(EventHello(clientId: clientId, username: 'dupa'));
+      sendEvent(EventHello(clientId: clientId, username: 'dupa'));
     });
     socket.onConnectError((error) => disconnect());
     socket.onDisconnect((_) => disconnect());
@@ -71,6 +73,19 @@ class ServerService {
       ProjectService().project.value = event.project;
     } else if (event is EventPublished) {
       print('Published: passcode = ${event.passcode}');
+    } else if (event is EventCodeAdd) {
+      ProjectService().project.value?.codes.value.add(event.code);
+      ProjectService().project.value?.codes.notify();
+    } else if (event is EventCodeRemove) {
+      final codes = ProjectService()
+          .project
+          .value
+          ?.codes
+          .value
+          .where((c) => c.id == event.codeId);
+      if (codes != null && codes.isNotEmpty) {
+        ProjectService().removeCode(codes.first);
+      }
     } else {
       print(event);
     }
@@ -80,13 +95,13 @@ class ServerService {
     final project = ProjectService().project.value;
     if (project != null) {
       await _connect(address);
-      _sendEvent(EventPublishProject(project: project));
+      sendEvent(EventPublishProject(project: project));
     }
   }
 
   Future<void> connect(String address, String passcode) async {
     await _connect(address);
-    _sendEvent(EventGetProject(passcode: passcode));
+    sendEvent(EventGetProject(passcode: passcode));
   }
 
   void disconnect() {

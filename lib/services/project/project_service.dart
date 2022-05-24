@@ -8,9 +8,12 @@ import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/project.dart';
+import 'package:analysis_tool/models/server_events/event_code_add.dart';
+import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
+import 'package:analysis_tool/services/server/server_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
 import 'package:flutter/foundation.dart';
@@ -162,17 +165,20 @@ class ProjectService {
     );
     project.codes.value.add(code);
     project.codes.notify();
+    ServerService().sendEvent(EventCodeAdd(code: code));
   }
 
   void removeCode(Code code) {
     final project = _getOrCreateProject();
-    for (final file in project.textFiles.value) {
-      for (final codingVersion in file.codingVersions.value) {
-        codingVersion.removeCode(code);
+    if (project.codes.value.remove(code)) {
+      for (final file in project.textFiles.value) {
+        for (final codingVersion in file.codingVersions.value) {
+          codingVersion.removeCode(code);
+        }
       }
+      project.codes.notify();
+      ServerService().sendEvent(EventCodeRemove(codeId: code.id));
     }
-    project.codes.value.remove(code);
-    project.codes.notify();
   }
 
   void updatedCode(Code code) {
