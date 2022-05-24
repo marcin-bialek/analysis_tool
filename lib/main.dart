@@ -115,6 +115,7 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.compare:
             return const Text('porównywanie',
                 style: TextStyle(color: Colors.white));
+          case MainViewRoutes.none:
           default:
             return Container();
         }

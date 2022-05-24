@@ -13,6 +13,7 @@ import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_publish_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
@@ -88,6 +89,8 @@ class ServerService {
     else if (event is EventTextFileAdd) {
       project?.textFiles.value.add(event.textFile);
       project?.textFiles.notify();
+    } else if (event is EventTextFileRemove) {
+      projectService.removeTextFileById(event.textFileId, sendToServer: false);
     }
 
     // Code events

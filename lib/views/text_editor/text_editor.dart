@@ -1,4 +1,8 @@
+import 'package:analysis_tool/constants/keys.dart';
+import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
+import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveTextFile;
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -55,6 +59,21 @@ class _TextEditorState extends State<TextEditor> {
                   );
                 }),
                 const Spacer(),
+                TextButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Dodaj kodowanie'),
+                  onPressed: () {
+                    ProjectService().addCodingVersion(widget.file);
+                  },
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  label: const Text(
+                    'Usuń plik',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: _removeTextFile,
+                ),
               ],
             ),
           ),
@@ -91,5 +110,15 @@ class _TextEditorState extends State<TextEditor> {
         ),
       ],
     );
+  }
+
+  void _removeTextFile() async {
+    final result =
+        await showDialogRemoveTextFile(context: context, textFile: widget.file);
+    if (result == true) {
+      ProjectService().removeTextFile(widget.file);
+      await mainViewNavigatorKey.currentState!
+          .pushReplacementNamed(MainViewRoutes.none);
+    }
   }
 }

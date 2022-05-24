@@ -15,6 +15,7 @@ import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -119,6 +120,25 @@ class ProjectService {
         default:
           throw UnsupportedFileError();
       }
+    }
+  }
+
+  void removeTextFile(TextFile textFile, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    if (project.textFiles.value.remove(textFile)) {
+      project.textFiles.notify();
+      if (sendToServer) {
+        ServerService().sendEvent(EventTextFileRemove(textFileId: textFile.id));
+      }
+    }
+  }
+
+  void removeTextFileById(String id, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    final textFile =
+        project.textFiles.value.firstWhereOrNull((e) => e.id == id);
+    if (textFile != null) {
+      removeTextFile(textFile, sendToServer: sendToServer);
     }
   }
 

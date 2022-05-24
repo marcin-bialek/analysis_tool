@@ -10,6 +10,7 @@ import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 
 abstract class ServerEvent implements JsonEncodable {
   static ServerEvent? parse(dynamic event, {Iterable<Code>? codes}) {
@@ -31,6 +32,8 @@ abstract class ServerEvent implements JsonEncodable {
         // TextFile events
         case EventTextFileAdd.name:
           return codes != null ? EventTextFileAdd.fromJson(event, codes) : null;
+        case EventTextFileRemove.name:
+          return EventTextFileRemove.fromJson(event);
 
         // Code events
         case EventCodeAdd.name:

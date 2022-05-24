@@ -1,6 +1,4 @@
 class SideMenuRoutes {
-  SideMenuRoutes._();
-
   static const files = '/side-menu/files';
   static const search = '/side-menu/search';
   static const codes = '/side-menu/codes';
@@ -9,8 +7,7 @@ class SideMenuRoutes {
 }
 
 class MainViewRoutes {
-  MainViewRoutes._();
-
+  static const none = '/main-view/none';
   static const start = '/main-view/start';
   static const settings = '/main-view/settings';
   static const textEditor = '/main-view/text-editor';

@@ -1,4 +1,5 @@
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/text_file.dart';
 import 'package:flutter/material.dart';
 
 Future<T?> showGenericDialog<T>({
@@ -32,6 +33,22 @@ Future<bool?> showDialogSaveProject({required BuildContext context}) {
     context: context,
     title: 'Zapisywanie projektu',
     content: const Text('Czy zapisać obecny projekt?'),
+    actions: {
+      'Tak': true,
+      'Nie': false,
+    },
+  );
+}
+
+Future<bool?> showDialogRemoveTextFile({
+  required BuildContext context,
+  required TextFile textFile,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Usuwanie pliku',
+    content: Text('Czy usunąć plik ${textFile.name.value}? '
+        'Kodowania wszystkich użytkowników również zostaną usunięte.'),
     actions: {
       'Tak': true,
       'Nie': false,
