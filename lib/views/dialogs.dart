@@ -46,7 +46,7 @@ Future<bool?> showDialogRemoveCode({
   return showGenericDialog<bool>(
     context: context,
     title: 'Usuwanie kodu',
-    content: Text('Czy usunąć kod ${code.name}?'),
+    content: Text('Czy usunąć kod ${code.name.value}?'),
     actions: {
       'Tak': true,
       'Nie': false,
