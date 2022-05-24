@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:analysis_tool/constants/keys.dart';
+import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/views/dialogs.dart';
 import 'package:flutter/material.dart';
 
 class CodingEditor extends StatefulWidget {
@@ -68,6 +71,14 @@ class _CodingEditorState extends State<CodingEditor> {
                   );
                 }),
                 const Spacer(),
+                TextButton.icon(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  label: const Text(
+                    'Usuń kodowanie',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: _removeCodingVersion,
+                ),
               ],
             ),
           ),
@@ -102,6 +113,18 @@ class _CodingEditorState extends State<CodingEditor> {
   void _onEnabledCodingChange(_EnabledCoding enabledCoding) {
     for (final codingLine in widget.codingVersion.codingLines.value) {
       codingLine.codings.notify();
+    }
+  }
+
+  void _removeCodingVersion() async {
+    final result = await showDialogRemoveTextCodingVersion(
+      context: context,
+      codingVersion: widget.codingVersion,
+    );
+    if (result == true) {
+      ProjectService().removeCodingVersion(widget.codingVersion);
+      await mainViewNavigatorKey.currentState!
+          .pushReplacementNamed(MainViewRoutes.none);
     }
   }
 }

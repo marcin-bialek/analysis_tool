@@ -12,6 +12,8 @@ import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
@@ -181,6 +183,34 @@ class ProjectService {
     );
     file.codingVersions.value.add(version);
     file.codingVersions.notify();
+    ServerService().sendEvent(EventCodingVersionAdd(
+      textFileId: file.id,
+      codingVersion: version,
+    ));
+  }
+
+  void removeCodingVersion(TextCodingVersion version,
+      {bool sendToServer = true}) {
+    if (version.file.codingVersions.value.remove(version)) {
+      version.file.codingVersions.notify();
+      if (sendToServer) {
+        ServerService().sendEvent(EventCodingVersionRemove(
+          textFileId: version.file.id,
+          codingVersionId: version.id,
+        ));
+      }
+    }
+  }
+
+  void removeCodingVersionById(String id, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    for (final textFile in project.textFiles.value) {
+      final version =
+          textFile.codingVersions.value.firstWhereOrNull((e) => e.id == id);
+      if (version != null) {
+        return removeCodingVersion(version, sendToServer: sendToServer);
+      }
+    }
   }
 
   void addCode({bool sendToServer = true}) {

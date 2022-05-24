@@ -4,6 +4,8 @@ import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_update.dart';
@@ -11,9 +13,11 @@ import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
+import 'package:analysis_tool/models/text_file.dart';
 
 abstract class ServerEvent implements JsonEncodable {
-  static ServerEvent? parse(dynamic event, {Iterable<Code>? codes}) {
+  static ServerEvent? parse(dynamic event,
+      {Iterable<Code>? codes, Iterable<TextFile>? textFiles}) {
     if (!(event is Map<String, dynamic> &&
         event.containsKey(ServerEventJsonKeys.name) &&
         event[ServerEventJsonKeys.name] is String)) {
@@ -34,6 +38,14 @@ abstract class ServerEvent implements JsonEncodable {
           return codes != null ? EventTextFileAdd.fromJson(event, codes) : null;
         case EventTextFileRemove.name:
           return EventTextFileRemove.fromJson(event);
+
+        // TextCodingVersion events
+        case EventCodingVersionAdd.name:
+          return codes != null && textFiles != null
+              ? EventCodingVersionAdd.fromJson(event, textFiles, codes)
+              : null;
+        case EventCodingVersionRemove.name:
+          return EventCodingVersionRemove.fromJson(event);
 
         // Code events
         case EventCodeAdd.name:

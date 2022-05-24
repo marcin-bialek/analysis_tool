@@ -1,4 +1,5 @@
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:flutter/material.dart';
 
@@ -49,6 +50,21 @@ Future<bool?> showDialogRemoveTextFile({
     title: 'Usuwanie pliku',
     content: Text('Czy usunąć plik ${textFile.name.value}? '
         'Kodowania wszystkich użytkowników również zostaną usunięte.'),
+    actions: {
+      'Tak': true,
+      'Nie': false,
+    },
+  );
+}
+
+Future<bool?> showDialogRemoveTextCodingVersion({
+  required BuildContext context,
+  required TextCodingVersion codingVersion,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Usuwanie kodowania',
+    content: Text('Czy usunąć kodowanie ${codingVersion.name.value}?'),
     actions: {
       'Tak': true,
       'Nie': false,

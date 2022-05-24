@@ -4,6 +4,8 @@ import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
@@ -76,10 +78,14 @@ class ServerService {
     return connectionInfo;
   }
 
-  void _handleEvent(dynamic e) {
+  void _handleEvent(dynamic json) {
     final projectService = ProjectService();
     final project = projectService.project.value;
-    final event = ServerEvent.parse(e, codes: project?.codes.value);
+    final event = ServerEvent.parse(
+      json,
+      codes: project?.codes.value,
+      textFiles: project?.textFiles.value,
+    );
 
     if (event is EventClients) {
       connectionInfo.users.value = event.clients;
@@ -95,6 +101,17 @@ class ServerService {
       project?.textFiles.notify();
     } else if (event is EventTextFileRemove) {
       projectService.removeTextFileById(event.textFileId, sendToServer: false);
+    }
+
+    // TextCodingVersion events
+    else if (event is EventCodingVersionAdd) {
+      final textFile = project?.textFiles.value
+          .firstWhereOrNull((e) => e.id == event.textFileId);
+      textFile?.codingVersions.value.add(event.codingVersion);
+      textFile?.codingVersions.notify();
+    } else if (event is EventCodingVersionRemove) {
+      projectService.removeCodingVersionById(event.codingVersionId,
+          sendToServer: false);
     }
 
     // Code events
