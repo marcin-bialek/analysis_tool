@@ -1,5 +1,7 @@
 import 'package:analysis_tool/models/note.dart';
+import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/services/server/server_service.dart';
 import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveNote;
 import 'package:flutter/material.dart';
 
@@ -81,12 +83,18 @@ class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
     _focusNode!.addListener(() {
       if (!_focusNode!.hasFocus) {
         widget.note.text.value = _textController!.text;
+        ServerService().sendEvent(EventNoteUpdate(
+          noteId: widget.note.id,
+          text: widget.note.text.value,
+        ));
       }
     });
+    widget.note.text.addListener(_onNoteUpdate);
   }
 
   @override
   void dispose() {
+    widget.note.text.removeListener(_onNoteUpdate);
     _focusNode?.dispose();
     _textController?.dispose();
     super.dispose();
@@ -125,5 +133,9 @@ class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
         ],
       ),
     );
+  }
+
+  void _onNoteUpdate(String value) {
+    _textController?.text = value;
   }
 }

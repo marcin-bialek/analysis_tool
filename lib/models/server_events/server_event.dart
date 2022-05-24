@@ -3,6 +3,9 @@ import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 
@@ -28,6 +31,12 @@ abstract class ServerEvent implements JsonEncodable {
           return EventCodeRemove.fromJson(event);
         case EventCodeUpdate.name:
           return EventCodeUpdate.fromJson(event);
+        case EventNoteAdd.name:
+          return EventNoteAdd.fromJson(event);
+        case EventNoteRemove.name:
+          return EventNoteRemove.fromJson(event);
+        case EventNoteUpdate.name:
+          return EventNoteUpdate.fromJson(event);
         default:
           print('Unknown event: $name');
           return null;

@@ -1,3 +1,4 @@
+import 'package:analysis_tool/extensions/iterable.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
@@ -5,6 +6,9 @@ import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
+import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_publish_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
@@ -78,27 +82,40 @@ class ServerService {
       ProjectService().project.value?.codes.value.add(event.code);
       ProjectService().project.value?.codes.notify();
     } else if (event is EventCodeRemove) {
-      final codes = ProjectService()
+      final code = ProjectService()
           .project
           .value
           ?.codes
           .value
-          .where((c) => c.id == event.codeId);
-      if (codes != null && codes.isNotEmpty) {
-        ProjectService().removeCode(codes.first, sendToServer: false);
+          .firstWhereOrNull((c) => c.id == event.codeId);
+      if (code != null) {
+        ProjectService().removeCode(code, sendToServer: false);
       }
     } else if (event is EventCodeUpdate) {
-      final codes = ProjectService()
+      final code = ProjectService()
           .project
           .value
           ?.codes
           .value
-          .where((c) => c.id == event.codeId);
-      if (codes != null && codes.isNotEmpty) {
-        final code = codes.first;
+          .firstWhereOrNull((c) => c.id == event.codeId);
+      if (code != null) {
         if (event.codeName != null) code.name.value = event.codeName!;
         if (event.codeColor != null) code.color.value = event.codeColor!;
         ProjectService().updatedCode(code, sendToServer: false);
+      }
+    } else if (event is EventNoteAdd) {
+      ProjectService().addNote(event.note, sendToServer: false);
+    } else if (event is EventNoteRemove) {
+      ProjectService().removeNoteById(event.noteId, sendToServer: false);
+    } else if (event is EventNoteUpdate) {
+      final note = ProjectService()
+          .project
+          .value
+          ?.notes
+          .value
+          .firstWhereOrNull((n) => n.id == event.noteId);
+      if (note != null) {
+        if (event.text != null) note.text.value = event.text!;
       }
     } else {
       print(event);

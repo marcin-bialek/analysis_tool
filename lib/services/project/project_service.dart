@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:analysis_tool/extensions/iterable.dart';
 import 'package:analysis_tool/extensions/random.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
@@ -11,6 +12,8 @@ import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -202,17 +205,35 @@ class ProjectService {
     }
   }
 
-  void addEmptyNote() {
+  void addNote(Note note, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
-    final note = Note.withId(text: 'Nowa notatka');
     project.notes.value.add(note);
     project.notes.notify();
+    if (sendToServer) {
+      ServerService().sendEvent(EventNoteAdd(note: note));
+    }
   }
 
-  void removeNote(Note note) {
+  void addEmptyNote() {
+    final note = Note.withId(text: 'Nowa notatka');
+    addNote(note);
+  }
+
+  void removeNote(Note note, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
     if (project.notes.value.remove(note)) {
       project.notes.notify();
+    }
+    if (sendToServer) {
+      ServerService().sendEvent(EventNoteRemove(noteId: note.id));
+    }
+  }
+
+  void removeNoteById(String id, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    final note = project.notes.value.firstWhereOrNull((e) => e.id == id);
+    if (note != null) {
+      removeNote(note, sendToServer: sendToServer);
     }
   }
 
