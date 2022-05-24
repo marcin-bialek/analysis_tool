@@ -12,6 +12,7 @@ import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_publish_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
@@ -71,49 +72,52 @@ class ServerService {
   }
 
   void _handleEvent(dynamic e) {
-    final event = ServerEvent.parse(e);
+    final projectService = ProjectService();
+    final project = projectService.project.value;
+    final event = ServerEvent.parse(e, codes: project?.codes.value);
+
     if (event is EventClients) {
       connectionInfo.users.value = event.clients;
     } else if (event is EventProject) {
-      ProjectService().project.value = event.project;
+      projectService.project.value = event.project;
     } else if (event is EventPublished) {
       print('Published: passcode = ${event.passcode}');
-    } else if (event is EventCodeAdd) {
-      ProjectService().project.value?.codes.value.add(event.code);
-      ProjectService().project.value?.codes.notify();
+    }
+
+    // TextFile events
+    else if (event is EventTextFileAdd) {
+      project?.textFiles.value.add(event.textFile);
+      project?.textFiles.notify();
+    }
+
+    // Code events
+    else if (event is EventCodeAdd) {
+      project?.codes.value.add(event.code);
+      project?.codes.notify();
     } else if (event is EventCodeRemove) {
-      final code = ProjectService()
-          .project
-          .value
-          ?.codes
-          .value
-          .firstWhereOrNull((c) => c.id == event.codeId);
+      final code =
+          project?.codes.value.firstWhereOrNull((c) => c.id == event.codeId);
       if (code != null) {
-        ProjectService().removeCode(code, sendToServer: false);
+        projectService.removeCode(code, sendToServer: false);
       }
     } else if (event is EventCodeUpdate) {
-      final code = ProjectService()
-          .project
-          .value
-          ?.codes
-          .value
-          .firstWhereOrNull((c) => c.id == event.codeId);
+      final code =
+          project?.codes.value.firstWhereOrNull((c) => c.id == event.codeId);
       if (code != null) {
         if (event.codeName != null) code.name.value = event.codeName!;
         if (event.codeColor != null) code.color.value = event.codeColor!;
-        ProjectService().updatedCode(code, sendToServer: false);
+        projectService.updatedCode(code, sendToServer: false);
       }
-    } else if (event is EventNoteAdd) {
-      ProjectService().addNote(event.note, sendToServer: false);
+    }
+
+    // Note events
+    else if (event is EventNoteAdd) {
+      projectService.addNote(event.note, sendToServer: false);
     } else if (event is EventNoteRemove) {
-      ProjectService().removeNoteById(event.noteId, sendToServer: false);
+      projectService.removeNoteById(event.noteId, sendToServer: false);
     } else if (event is EventNoteUpdate) {
-      final note = ProjectService()
-          .project
-          .value
-          ?.notes
-          .value
-          .firstWhereOrNull((n) => n.id == event.noteId);
+      final note =
+          project?.notes.value.firstWhereOrNull((n) => n.id == event.noteId);
       if (note != null) {
         if (event.text != null) note.text.value = event.text!;
       }

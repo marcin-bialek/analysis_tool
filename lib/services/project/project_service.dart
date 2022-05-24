@@ -14,6 +14,7 @@ import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -113,6 +114,7 @@ class ProjectService {
           final textFile = TextFile.withId(name: file.name, rawText: text);
           project.textFiles.value.add(textFile);
           project.textFiles.notify();
+          ServerService().sendEvent(EventTextFileAdd(textFile: textFile));
           break;
         default:
           throw UnsupportedFileError();
