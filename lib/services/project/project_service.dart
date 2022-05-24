@@ -12,12 +12,15 @@ import 'package:analysis_tool/models/project.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_coding_add.dart';
+import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
+import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
@@ -211,6 +214,54 @@ class ProjectService {
         return removeCodingVersion(version, sendToServer: sendToServer);
       }
     }
+  }
+
+  void addCoding(
+      TextCodingVersion version, TextCodingLine line, TextCoding coding,
+      {bool sendToServer = true}) {
+    line.codings.value.add(coding);
+    line.codings.notify();
+    version.codings.value.add(coding);
+    version.codings.notify();
+    if (sendToServer) {
+      ServerService().sendEvent(EventCodingAdd(
+        textFileId: version.file.id,
+        codingVersionId: version.id,
+        codingLineIndex: line.textLine.index,
+        coding: coding,
+      ));
+    }
+  }
+
+  void removeCoding(TextCodingVersion version, TextCoding coding,
+      {bool sendToServer = true}) {
+    if (version.codings.value.remove(coding)) {
+      version.codings.notify();
+      for (final line in version.codingLines.value) {
+        if (line.codings.value.remove(coding)) {
+          line.codings.notify();
+          break;
+        }
+      }
+      if (sendToServer) {
+        ServerService().sendEvent(EventCodingRemove(
+          textFileId: version.file.id,
+          codingVersionId: version.id,
+          coding: coding,
+        ));
+      }
+    }
+  }
+
+  void addNewCoding(TextCodingVersion version, TextCodingLine line, Code code,
+      int offset, int length,
+      {bool sendToServer = true}) {
+    final coding = TextCoding(
+      code: code,
+      start: line.textLine.offset + offset,
+      length: length,
+    );
+    addCoding(version, line, coding, sendToServer: sendToServer);
   }
 
   void addCode({bool sendToServer = true}) {

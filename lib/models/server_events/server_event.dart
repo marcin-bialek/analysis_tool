@@ -4,6 +4,8 @@ import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
 import 'package:analysis_tool/models/server_events/event_code_update.dart';
+import 'package:analysis_tool/models/server_events/event_coding_add.dart';
+import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
@@ -46,6 +48,14 @@ abstract class ServerEvent implements JsonEncodable {
               : null;
         case EventCodingVersionRemove.name:
           return EventCodingVersionRemove.fromJson(event);
+
+        // TextCoding events
+        case EventCodingAdd.name:
+          return codes != null ? EventCodingAdd.fromJson(event, codes) : null;
+        case EventCodingRemove.name:
+          return codes != null
+              ? EventCodingRemove.fromJson(event, codes)
+              : null;
 
         // Code events
         case EventCodeAdd.name:

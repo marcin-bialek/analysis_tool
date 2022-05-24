@@ -1,0 +1,53 @@
+import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/server_events/server_event.dart';
+import 'package:analysis_tool/models/text_coding.dart';
+
+class EventCodingAdd extends ServerEvent {
+  static const name = 'codingAdd';
+  final String textFileId;
+  final String codingVersionId;
+  final int codingLineIndex;
+  final TextCoding coding;
+
+  EventCodingAdd({
+    required this.textFileId,
+    required this.codingVersionId,
+    required this.codingLineIndex,
+    required this.coding,
+  });
+
+  factory EventCodingAdd.fromJson(
+    Map<String, dynamic> json,
+    Iterable<Code> codes,
+  ) {
+    final textFileId = json[EventCodingAddJsonKeys.textFileId];
+    final codingVersionId = json[EventCodingAddJsonKeys.codingVersionId];
+    final coding = json[EventCodingAddJsonKeys.coding] as Map<String, dynamic>;
+    final codingLineIndex = json[EventCodingAddJsonKeys.codingLineIndex];
+    return EventCodingAdd(
+      textFileId: textFileId,
+      codingVersionId: codingVersionId,
+      codingLineIndex: codingLineIndex,
+      coding: TextCoding.fromJson(coding, codes),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      EventCodingAddJsonKeys.name: name,
+      EventCodingAddJsonKeys.textFileId: textFileId,
+      EventCodingAddJsonKeys.codingVersionId: codingVersionId,
+      EventCodingAddJsonKeys.codingLineIndex: codingLineIndex,
+      EventCodingAddJsonKeys.coding: coding.toJson(),
+    };
+  }
+}
+
+class EventCodingAddJsonKeys {
+  static const name = 'name';
+  static const textFileId = 'textFileId';
+  static const codingVersionId = 'codingVersionId';
+  static const codingLineIndex = 'codingLineIndex';
+  static const coding = 'coding';
+}

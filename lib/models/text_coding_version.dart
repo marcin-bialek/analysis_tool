@@ -91,18 +91,6 @@ class TextCodingVersion implements JsonEncodable {
     codings.notify();
   }
 
-  void addCoding(TextCodingLine line, Code code, int offset, int length) {
-    final coding = TextCoding(
-      code: code,
-      start: line.textLine.offset + offset,
-      length: length,
-    );
-    line.codings.value.add(coding);
-    line.codings.notify();
-    codings.value.add(coding);
-    codings.notify();
-  }
-
   void updatedCode(Code code) {
     for (var line in _codingLines?.value ?? []) {
       if (line.codings.value.map((c) => c.code).contains(code)) {

@@ -156,7 +156,8 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
     _codeRequestSubscription = ProjectService().codeRequestStream.listen(
       (code) {
         if (_selectionStart != null && _selectionEnd != null) {
-          widget.codingVersion.addCoding(
+          ProjectService().addNewCoding(
+            widget.codingVersion,
             widget.codingLine,
             code,
             _selectionStart!,
@@ -223,6 +224,9 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                 return _CodingButton(
                   coding: c,
                   enabledCoding: widget.enabledCoding,
+                  onRemove: () {
+                    ProjectService().removeCoding(widget.codingVersion, c);
+                  },
                 );
               }).toList(),
             );
@@ -292,11 +296,13 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
 class _CodingButton extends StatelessWidget {
   final TextCoding coding;
   final Observable<_EnabledCoding> enabledCoding;
+  final void Function()? onRemove;
 
   const _CodingButton({
     Key? key,
     required this.coding,
     required this.enabledCoding,
+    this.onRemove,
   }) : super(key: key);
 
   @override
@@ -334,7 +340,7 @@ class _CodingButton extends StatelessWidget {
                 }),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: onRemove,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 icon: const Icon(
