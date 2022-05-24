@@ -8,6 +8,7 @@ import 'package:analysis_tool/views/home/side_menu_collaboration.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/home/side_menu_notes.dart';
 import 'package:analysis_tool/views/home/side_menu_search.dart';
+import 'package:analysis_tool/views/settings/settings_view.dart';
 import 'package:analysis_tool/views/start/start_page.dart';
 import 'package:analysis_tool/views/text_editor/text_editor.dart';
 import 'package:flutter/material.dart';
@@ -101,8 +102,7 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.start:
             return const StartPage();
           case MainViewRoutes.settings:
-            return const Text('ustawienia',
-                style: TextStyle(color: Colors.white));
+            return const SettingsView();
           case MainViewRoutes.textEditor:
             final args = settings.arguments as List;
             return TextEditor(file: args[0], line: args[1]);

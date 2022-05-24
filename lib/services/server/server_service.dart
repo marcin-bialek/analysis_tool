@@ -17,6 +17,7 @@ import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
+import 'package:analysis_tool/services/settings/settings_service.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:uuid/uuid.dart';
 
@@ -52,7 +53,10 @@ class ServerService {
     connectionInfo.state.value = ServerConnectionState.connecting;
     socket.onConnect((_) {
       connectionInfo.state.value = ServerConnectionState.connected;
-      sendEvent(EventHello(clientId: clientId, username: 'dupa'));
+      sendEvent(EventHello(
+        clientId: clientId,
+        username: SettingsService().username,
+      ));
     });
     socket.onConnectError((error) => disconnect());
     socket.onDisconnect((_) => disconnect());
