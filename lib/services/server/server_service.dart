@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:analysis_tool/extensions/iterable.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
@@ -21,7 +24,9 @@ import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
+import 'package:analysis_tool/services/server/unsecure_http_overrides.dart';
 import 'package:analysis_tool/services/settings/settings_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:uuid/uuid.dart';
 
@@ -31,7 +36,11 @@ class ServerService {
   final clientId = const Uuid().v4();
   socket_io.Socket? _socket;
 
-  ServerService._();
+  ServerService._() {
+    if (kDebugMode) {
+      HttpOverrides.global = UnsecureHttpOverrides();
+    }
+  }
 
   factory ServerService() {
     _instance ??= ServerService._();
@@ -46,38 +55,41 @@ class ServerService {
     if (_socket != null) {
       return connectionInfo;
     }
+
     address = address.trim();
+    final uri = Uri.parse(address);
+    final completer = Completer<ConnectionInfo>();
     final options = socket_io.OptionBuilder()
         .setTransports(['websocket'])
         .enableForceNew()
         .build();
-    final socket = socket_io.io(address.trim(), options);
+    final socket = socket_io.io(address, options);
     _socket = socket;
     connectionInfo.address.value = address;
     connectionInfo.state.value = ServerConnectionState.connecting;
+
     socket.onConnect((_) {
+      socket.onDisconnect((_) => disconnect());
+      socket.on('event', _handleEvent);
       connectionInfo.state.value = ServerConnectionState.connected;
+      if (uri.scheme == 'https' || uri.scheme == 'wss') {
+        connectionInfo.secure.value = true;
+      }
       sendEvent(EventHello(
         clientId: clientId,
         username: SettingsService().username,
       ));
+      completer.complete(connectionInfo);
     });
-    socket.onConnectError((error) => disconnect());
-    socket.onDisconnect((_) => disconnect());
-    socket.on('event', _handleEvent);
-    int time = 0;
-    while (connectionInfo.state.value == ServerConnectionState.connecting) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      time += 100;
-      if (time >= 10000) {
-        break;
-      }
-    }
-    if (connectionInfo.state.value != ServerConnectionState.connected) {
+
+    socket.onConnectError((error) {
       disconnect();
-      throw CouldNotConnectError();
-    }
-    return connectionInfo;
+      if (!completer.isCompleted) {
+        completer.completeError(CouldNotConnectError(error));
+      }
+    });
+
+    return completer.future;
   }
 
   void _handleEvent(dynamic json) {
@@ -196,6 +208,7 @@ class ServerService {
     connectionInfo.passcode.value = '';
     connectionInfo.state.value = ServerConnectionState.disconnected;
     connectionInfo.users.value = {};
+    connectionInfo.secure.value = false;
     _socket?.dispose();
     _socket = null;
   }
@@ -206,6 +219,7 @@ class ConnectionInfo {
   final passcode = Observable('');
   final state = Observable(ServerConnectionState.disconnected);
   final users = Observable<Map<String, String>>({});
+  final secure = Observable(false);
 }
 
 enum ServerConnectionState { disconnected, connecting, connected }

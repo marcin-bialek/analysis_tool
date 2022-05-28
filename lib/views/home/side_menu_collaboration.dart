@@ -16,7 +16,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
   final _serverService = ServerService();
   // TODO: remove values
   final _serverAddressController =
-      TextEditingController(text: 'http://localhost:8080');
+      TextEditingController(text: 'https://localhost:8080');
   final _passcodeController =
       TextEditingController(text: '628c1fae5e3fe762ca38e722');
 
@@ -49,7 +49,12 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
           return ListTile(
             enabled: state != ServerConnectionState.connecting,
             dense: true,
-            leading: const Icon(Icons.cloud, size: 20.0, color: Colors.green),
+            leading: Icon(
+                _serverService.connectionInfo.secure.value
+                    ? Icons.lock
+                    : Icons.cloud,
+                size: 20.0,
+                color: Colors.green),
             title: Text(
               <ServerConnectionState, String>{
                 ServerConnectionState.disconnected: 'Połącz z serwerem',
