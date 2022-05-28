@@ -370,6 +370,24 @@ class ProjectService {
     return stats;
   }
 
+  Future<Map<Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>>
+      getGroupedCodeStats() async {
+    final stats = await getCodeStats();
+    final codes = stats.map((s) => s.code).toSet();
+    return Map.fromEntries(codes.map((code) {
+      final statsCode = stats.where((s) => s.code == code);
+      final files = statsCode.map((s) => s.textFile).toSet();
+      return MapEntry(code, Map.fromEntries(files.map((file) {
+        final statsFile = statsCode.where((s) => s.textFile == file);
+        final versions = statsFile.map((s) => s.codingVersion).toSet();
+        return MapEntry(file, Map.fromEntries(versions.map((v) {
+          return MapEntry(
+              v, statsFile.where((s) => s.codingVersion == v).toList());
+        })));
+      })));
+    }));
+  }
+
   Future<void> saveCodeStatsAsCSV() async {
     final stats = await getCodeStats();
     stats.sort((a, b) => a.code.id.compareTo(b.code.id));

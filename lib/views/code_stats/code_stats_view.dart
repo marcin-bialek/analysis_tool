@@ -1,3 +1,6 @@
+import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/text_coding_version.dart';
+import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:flutter/material.dart';
 
@@ -17,9 +20,10 @@ class _CodeStatsViewState extends State<CodeStatsView> {
     if (project == null) {
       return Container();
     }
-    return FutureBuilder<List<CodeStats>>(
-      future: projectService.getCodeStats(),
-      initialData: const [],
+    return FutureBuilder<
+        Map<Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>>(
+      future: projectService.getGroupedCodeStats(),
+      initialData: const {},
       builder: (context, snap) {
         switch (snap.connectionState) {
           case ConnectionState.done:
@@ -55,12 +59,13 @@ class _CodeStatsViewState extends State<CodeStatsView> {
     );
   }
 
-  Widget _makeCodeStatsList(List<CodeStats> stats) {
-    final codes = projectService.project.value!.codes.value.toList();
+  Widget _makeCodeStatsList(
+      Map<Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>> stats) {
     return ListView.builder(
-      itemCount: codes.length,
+      itemCount: stats.keys.length,
       itemBuilder: (context, index) {
-        final code = codes[index];
+        final code = stats.keys.elementAt(index);
+        final fileStats = stats.values.elementAt(index);
         return ExpansionTile(
           leading: code.color.observe((color) {
             return Icon(
@@ -71,7 +76,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
           }),
           title: code.name.observe((name) {
             return Text(
-              name,
+              '$name (liczba plików: ${fileStats.length})',
               style: const TextStyle(color: Colors.white),
             );
           }),
@@ -111,31 +116,65 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                 ],
               ),
             ),
-            ...stats.where((s) => s.code == code).map((s) {
-              return Container(
-                color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 100.0,
-                      child: Text(s.textFile.name.value),
+            ...fileStats
+                .map((textFile, versionStats) {
+                  final w = ListTileTheme(
+                    tileColor: Colors.black,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 10.0),
+                    dense: true,
+                    child: ExpansionTile(
+                      initiallyExpanded: true,
+                      title: Text(
+                          '${textFile.name.value} (Liczba wersji: ${versionStats.length})'),
+                      backgroundColor:
+                          const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+                      collapsedBackgroundColor:
+                          const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+                      children: versionStats
+                          .map((version, lines) {
+                            final w = ExpansionTile(
+                              initiallyExpanded: true,
+                              leading: Text(textFile.name.value),
+                              title: Text(
+                                  '${version.name.value} (Liczba wystąpień: ${lines.length})'),
+                              children: lines.map((s) {
+                                return Container(
+                                  color: const Color.fromARGB(
+                                      0xff, 0xee, 0xee, 0xee),
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 100.0,
+                                        child: Text(s.textFile.name.value),
+                                      ),
+                                      SizedBox(
+                                        width: 100.0,
+                                        child: Text(s.codingVersion.name.value),
+                                      ),
+                                      SizedBox(
+                                        width: 50.0,
+                                        child: Text('${s.line + 1}'),
+                                      ),
+                                      Expanded(
+                                        child: Text(s.text),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                            return MapEntry(version, w);
+                          })
+                          .values
+                          .toList(),
                     ),
-                    SizedBox(
-                      width: 100.0,
-                      child: Text(s.codingVersion.name.value),
-                    ),
-                    SizedBox(
-                      width: 50.0,
-                      child: Text('${s.line + 1}'),
-                    ),
-                    Expanded(
-                      child: Text(s.text),
-                    ),
-                  ],
-                ),
-              );
-            }).toList()
+                  );
+                  return MapEntry(textFile, w);
+                })
+                .values
+                .toList(),
           ],
         );
       },
