@@ -25,6 +25,7 @@ import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service_exceptions.dart';
 import 'package:analysis_tool/services/server/server_service.dart';
+import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
 import 'package:flutter/foundation.dart';
@@ -343,6 +344,56 @@ class ProjectService {
   void sendCodeRequest(Code code) {
     _codeRequestStreamController.add(code);
   }
+
+  Future<List<CodeStats>> getCodeStats() async {
+    final project = _getOrCreateProject();
+    final stats = <CodeStats>[];
+    for (final textFile in project.textFiles.value) {
+      for (final codingVersion in textFile.codingVersions.value) {
+        for (final line in codingVersion.codingLines.value) {
+          for (var coding in line.codings.value) {
+            final text = line.textLine.text.substring(
+              coding.start - line.textLine.offset,
+              coding.end - line.textLine.offset,
+            );
+            stats.add(CodeStats(
+              coding.code,
+              textFile,
+              codingVersion,
+              line.textLine.index,
+              text,
+            ));
+          }
+        }
+      }
+    }
+    return stats;
+  }
+
+  Future<void> saveCodeStatsAsCSV() async {
+    final stats = await getCodeStats();
+    stats.sort((a, b) => a.code.id.compareTo(b.code.id));
+    final csv = const ListToCsvConverter().convert([
+      ['Kod', 'Plik', 'Kodowanie', 'Linia', 'Tekst'],
+      ...stats.map(
+        (s) => [
+          s.code.name.value,
+          s.textFile.name.value,
+          s.codingVersion.name.value,
+          s.line + 1,
+          s.text,
+        ],
+      ),
+    ]);
+    final path = await FilePicker.platform.saveFile(
+      type: FileType.custom,
+      fileName: 'kody.csv',
+      allowedExtensions: ['csv'],
+    );
+    if (path != null) {
+      await File(path).writeAsString(csv);
+    }
+  }
 }
 
 class TextSearchResult {
@@ -352,4 +403,14 @@ class TextSearchResult {
   final int length;
 
   TextSearchResult(this.file, this.line, this.offset, this.length);
+}
+
+class CodeStats {
+  final Code code;
+  final TextFile textFile;
+  final TextCodingVersion codingVersion;
+  final int line;
+  final String text;
+
+  CodeStats(this.code, this.textFile, this.codingVersion, this.line, this.text);
 }

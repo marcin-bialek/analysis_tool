@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:analysis_tool/constants/keys.dart';
+import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveCode;
@@ -38,6 +40,17 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
                 color: Colors.white,
               ),
             ),
+            if (_projectService.project.value?.codes.value.isNotEmpty == true)
+              IconButton(
+                onPressed: () {
+                  mainViewNavigatorKey.currentState!
+                      .pushReplacementNamed(MainViewRoutes.codeStats);
+                },
+                icon: const Icon(
+                  Icons.article,
+                  color: Colors.white,
+                ),
+              ),
           ],
         ),
         Expanded(

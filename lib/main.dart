@@ -1,6 +1,7 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
+import 'package:analysis_tool/views/code_stats/code_stats_view.dart';
 import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_codes.dart';
@@ -109,6 +110,8 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.codingEditor:
             return CodingEditor(
                 codingVersion: settings.arguments as TextCodingVersion);
+          case MainViewRoutes.codeStats:
+            return const CodeStatsView();
           case MainViewRoutes.codeGraph:
             return const Text('graf kodów',
                 style: TextStyle(color: Colors.white));
