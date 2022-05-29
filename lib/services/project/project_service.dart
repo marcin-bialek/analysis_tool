@@ -289,8 +289,10 @@ class ProjectService {
   }
 
   void addEmptyNote() {
-    final note = Note.withId(text: 'Nowa notatka');
-    addNote(note);
+    addNote(Note.withId(
+      title: 'Nowa notatka',
+      text: 'Nowa notatka',
+    ));
   }
 
   void removeNote(Note note, {bool sendToServer = true}) {

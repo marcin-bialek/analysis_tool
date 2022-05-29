@@ -1,8 +1,7 @@
+import 'package:analysis_tool/constants/keys.dart';
+import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/note.dart';
-import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
-import 'package:analysis_tool/services/server/server_service.dart';
-import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveNote;
 import 'package:flutter/material.dart';
 
 class SideMenuNotes extends StatefulWidget {
@@ -53,7 +52,7 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
                     feedback: Material(
                       child: Container(
                         width: 300.0,
-                        height: 100.0,
+                        height: 50.0,
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.white),
                         ),
@@ -72,7 +71,7 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
   }
 }
 
-class _SideMenuNotesItem extends StatefulWidget {
+class _SideMenuNotesItem extends StatelessWidget {
   final Note note;
 
   const _SideMenuNotesItem({
@@ -81,74 +80,29 @@ class _SideMenuNotesItem extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _SideMenuNotesItemState();
-}
-
-class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
-  final _projectService = ProjectService();
-  FocusNode? _focusNode;
-  TextEditingController? _textController;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-    _textController = TextEditingController(text: widget.note.text.value);
-    _focusNode!.addListener(() {
-      if (!_focusNode!.hasFocus) {
-        widget.note.text.value = _textController!.text;
-        ServerService().sendEvent(EventNoteUpdate(
-          noteId: widget.note.id,
-          text: widget.note.text.value,
-        ));
-      }
-    });
-    widget.note.text.addListener(_onNoteUpdate);
-  }
-
-  @override
-  void dispose() {
-    widget.note.text.removeListener(_onNoteUpdate);
-    _focusNode?.dispose();
-    _textController?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10.0),
       color: const Color.fromARGB(255, 30, 30, 30),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              focusNode: _focusNode,
+      child: TextButton(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: note.title.observe((title) {
+            return Text(
+              note.title.value,
               style: const TextStyle(color: Colors.white, fontSize: 13.0),
-              maxLines: null,
-            ),
-          ),
-          IconButton(
-            onPressed: () async {
-              final result = await showDialogRemoveNote(context: context);
-              if (result == true) {
-                _projectService.removeNote(widget.note);
-              }
-            },
-            icon: const Icon(
-              Icons.remove_circle,
-              size: 20.0,
-              color: Colors.white,
-            ),
-            padding: EdgeInsets.zero,
-          ),
-        ],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
+          }),
+        ),
+        onPressed: () {
+          mainViewNavigatorKey.currentState!.pushReplacementNamed(
+            MainViewRoutes.note,
+            arguments: note,
+          );
+        },
       ),
     );
-  }
-
-  void _onNoteUpdate(String value) {
-    _textController?.text = value;
   }
 }

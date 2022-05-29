@@ -15,4 +15,5 @@ class MainViewRoutes {
   static const codeStats = '/main-view/code-stats';
   static const codeGraph = '/main-view/code-graph';
   static const compare = '/main-view/compare';
+  static const note = '/main-view/note';
 }

@@ -417,11 +417,16 @@ class _NoteButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
-            child: note.text.observe((text) {
+            child: note.title.observe((title) {
               return TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  mainViewNavigatorKey.currentState!.pushReplacementNamed(
+                    MainViewRoutes.note,
+                    arguments: note,
+                  );
+                },
                 child: Text(
-                  note.text.value,
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white),

@@ -1,5 +1,6 @@
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/views/code_stats/code_stats_view.dart';
 import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
@@ -9,6 +10,7 @@ import 'package:analysis_tool/views/home/side_menu_collaboration.dart';
 import 'package:analysis_tool/views/home/side_menu_files.dart';
 import 'package:analysis_tool/views/home/side_menu_notes.dart';
 import 'package:analysis_tool/views/home/side_menu_search.dart';
+import 'package:analysis_tool/views/note_view/note_view.dart';
 import 'package:analysis_tool/views/settings/settings_view.dart';
 import 'package:analysis_tool/views/start/start_page.dart';
 import 'package:analysis_tool/views/text_editor/text_editor.dart';
@@ -118,6 +120,8 @@ class _HomePageState extends State<HomePage> {
           case MainViewRoutes.compare:
             return const Text('porównywanie',
                 style: TextStyle(color: Colors.white));
+          case MainViewRoutes.note:
+            return NoteView(note: settings.arguments as Note);
           case MainViewRoutes.none:
           default:
             return Container();
