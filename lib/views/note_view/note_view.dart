@@ -46,12 +46,27 @@ class _NoteViewState extends State<NoteView> {
         );
       }
     });
+    widget.note.title.addListener(_updateTitle);
+    widget.note.text.addListener(_updateText);
   }
 
   @override
   void dispose() {
+    widget.note.title.removeListener(_updateTitle);
+    widget.note.text.removeListener(_updateText);
+    titleFocusNode?.dispose();
+    textFocusNode?.dispose();
     titleController?.dispose();
+    textController?.dispose();
     super.dispose();
+  }
+
+  void _updateTitle(String title) {
+    titleController?.text = title;
+  }
+
+  void _updateText(String text) {
+    textController?.text = text;
   }
 
   @override
