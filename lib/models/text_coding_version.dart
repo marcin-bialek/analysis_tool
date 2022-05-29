@@ -1,5 +1,6 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_file.dart';
@@ -10,6 +11,7 @@ class TextCodingVersion implements JsonEncodable {
   final TextFile file;
   final Observable<String> name;
   final codings = Observable<Set<TextCoding>>({});
+  final notes = Observable<Map<int, Set<Note>>>({});
   Observable<List<TextCodingLine>>? _codingLines;
   Observable<List<TextCodingLine>> get codingLines {
     if (_codingLines == null) {
@@ -37,6 +39,7 @@ class TextCodingVersion implements JsonEncodable {
     Map<String, dynamic> json,
     TextFile file,
     Iterable<Code> codes,
+    Iterable<Note> notes,
   ) {
     final id = json[TextCodingVersionJsonKeys.id];
     final name = json[TextCodingVersionJsonKeys.name];
@@ -44,6 +47,15 @@ class TextCodingVersion implements JsonEncodable {
     final codings = json[TextCodingVersionJsonKeys.codings] as List;
     version.codings.value
         .addAll(codings.map((e) => TextCoding.fromJson(e, codes)));
+    for (final note in notes) {
+      final indices = note.codingLines[id];
+      if (indices != null) {
+        for (final index in indices) {
+          version.notes.value.putIfAbsent(index, () => <Note>{});
+          version.notes.value[index]!.add(note);
+        }
+      }
+    }
     return version;
   }
 
@@ -76,6 +88,10 @@ class TextCodingVersion implements JsonEncodable {
           codingLine.codings.value.add(coding);
         }
       }
+      final lineNotes = notes.value[line.index];
+      if (lineNotes != null) {
+        codingLine.notes.value.addAll(lineNotes);
+      }
       _codingLines?.value.add(codingLine);
     }
   }
@@ -98,6 +114,35 @@ class TextCodingVersion implements JsonEncodable {
       }
     }
   }
+
+  void removeNote(Note note) {
+    if (_codingLines != null) {
+      for (final line in _codingLines!.value) {
+        if (line.notes.value.remove(note)) {
+          line.notes.notify();
+        }
+      }
+    }
+    for (var notes in notes.value.values) {
+      notes.remove(note);
+    }
+    notes.notify();
+  }
+
+  void addNoteToLine(int lineIndex, Note note) {
+    notes.value.putIfAbsent(lineIndex, () => <Note>{});
+    notes.value[lineIndex]!.add(note);
+    notes.notify();
+    _codingLines?.value[lineIndex].notes.value.add(note);
+    _codingLines?.value[lineIndex].notes.notify();
+  }
+
+  void removeNoteFromLine(int lineIndex, Note note) {
+    notes.value[lineIndex]?.remove(note);
+    notes.notify();
+    _codingLines?.value[lineIndex].notes.value.remove(note);
+    _codingLines?.value[lineIndex].notes.notify();
+  }
 }
 
 class TextCodingVersionJsonKeys {
@@ -109,6 +154,7 @@ class TextCodingVersionJsonKeys {
 class TextCodingLine {
   final TextLine textLine;
   final codings = Observable<Set<TextCoding>>({});
+  final notes = Observable<Set<Note>>({});
 
   TextCodingLine({required this.textLine});
 }

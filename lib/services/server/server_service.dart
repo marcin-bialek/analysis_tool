@@ -14,7 +14,9 @@ import 'package:analysis_tool/models/server_events/event_coding_version_remove.d
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_add_to_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove_from_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_publish_project.dart';
@@ -97,8 +99,9 @@ class ServerService {
     final project = projectService.project.value;
     final event = ServerEvent.parse(
       json,
-      codes: project?.codes.value,
       textFiles: project?.textFiles.value,
+      codes: project?.codes.value,
+      notes: project?.notes.value,
     );
 
     if (event is EventClients) {
@@ -184,7 +187,24 @@ class ServerService {
       if (note != null) {
         if (event.text != null) note.text.value = event.text!;
       }
-    } else {
+    } else if (event is EventNoteAddToLine) {
+      projectService.addNoteToCodingLineByIds(
+        event.codingVersionId,
+        event.lineIndex,
+        event.noteId,
+        sendToServer: false,
+      );
+    } else if (event is EventNoteRemoveFromLine) {
+      projectService.removeNoteFromCodingLineByIds(
+        event.codingVersionId,
+        event.lineIndex,
+        event.noteId,
+        sendToServer: false,
+      );
+    }
+
+    // unknown event
+    else {
       print(event);
     }
   }

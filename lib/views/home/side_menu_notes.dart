@@ -47,7 +47,21 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
               return ListView.builder(
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
-                  return _SideMenuNotesItem(note: notes[index]);
+                  return Draggable(
+                    rootOverlay: true,
+                    data: notes[index],
+                    feedback: Material(
+                      child: Container(
+                        width: 300.0,
+                        height: 100.0,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white),
+                        ),
+                        child: _SideMenuNotesItem(note: notes[index]),
+                      ),
+                    ),
+                    child: _SideMenuNotesItem(note: notes[index]),
+                  );
                 },
               );
             });
@@ -103,7 +117,6 @@ class _SideMenuNotesItemState extends State<_SideMenuNotesItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
       padding: const EdgeInsets.all(10.0),
       color: const Color.fromARGB(255, 30, 30, 30),
       child: Row(

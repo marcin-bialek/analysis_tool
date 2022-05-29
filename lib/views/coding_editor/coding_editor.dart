@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
@@ -92,10 +93,23 @@ class _CodingEditorState extends State<CodingEditor> {
                 itemCount: codingLines.length,
                 itemBuilder: (context, index) {
                   final codingLine = codingLines[index];
-                  return _CodingEditorLine(
-                    codingVersion: widget.codingVersion,
-                    codingLine: codingLine,
-                    enabledCoding: _enabledCoding,
+                  return DragTarget<Note>(
+                    builder: (context, candidateData, rejectedData) {
+                      return _CodingEditorLine(
+                        codingVersion: widget.codingVersion,
+                        codingLine: codingLine,
+                        enabledCoding: _enabledCoding,
+                        backgroundColor:
+                            candidateData.isNotEmpty ? Colors.white54 : null,
+                      );
+                    },
+                    onAccept: (note) {
+                      ProjectService().addNoteToCodingLine(
+                        widget.codingVersion,
+                        codingLine.textLine.index,
+                        note,
+                      );
+                    },
                   );
                 },
                 separatorBuilder: (context, index) {
@@ -133,12 +147,14 @@ class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
   final Observable<_EnabledCoding> enabledCoding;
+  final Color? backgroundColor;
 
   const _CodingEditorLine({
     Key? key,
     required this.codingVersion,
     required this.codingLine,
     required this.enabledCoding,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -176,63 +192,83 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 50.0,
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Text('${widget.codingLine.textLine.index + 1}'),
-        ),
-        Expanded(
-          child: Container(
+    return Container(
+      color: widget.backgroundColor,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 50.0,
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: widget.codingLine.codings.observe((codings) {
-              return SelectableText.rich(
-                TextSpan(
-                  children: _makeSpans(
-                    widget.codingLine.textLine.text,
-                    widget.codingLine.textLine.offset,
-                    codings,
-                  ),
-                ),
-                maxLines: null,
-                style: const TextStyle(fontSize: 15.0),
-                onSelectionChanged: (selection, _) {
-                  if (selection.baseOffset != selection.extentOffset) {
-                    _selectionStart =
-                        min(selection.baseOffset, selection.extentOffset);
-                    _selectionEnd =
-                        max(selection.baseOffset, selection.extentOffset);
-                  } else {
-                    _selectionStart = null;
-                    _selectionEnd = null;
-                  }
-                },
-              );
-            }),
+            child: Text('${widget.codingLine.textLine.index + 1}'),
           ),
-        ),
-        Container(
-          width: 250.0,
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: widget.codingLine.codings.observe((codings) {
-            return Wrap(
-              spacing: 2.0,
-              runSpacing: 2.0,
-              children: codings.map((c) {
-                return _CodingButton(
-                  coding: c,
-                  enabledCoding: widget.enabledCoding,
-                  onRemove: () {
-                    ProjectService().removeCoding(widget.codingVersion, c);
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: widget.codingLine.codings.observe((codings) {
+                return SelectableText.rich(
+                  TextSpan(
+                    children: _makeSpans(
+                      widget.codingLine.textLine.text,
+                      widget.codingLine.textLine.offset,
+                      codings,
+                    ),
+                  ),
+                  maxLines: null,
+                  style: const TextStyle(fontSize: 15.0),
+                  onSelectionChanged: (selection, _) {
+                    if (selection.baseOffset != selection.extentOffset) {
+                      _selectionStart =
+                          min(selection.baseOffset, selection.extentOffset);
+                      _selectionEnd =
+                          max(selection.baseOffset, selection.extentOffset);
+                    } else {
+                      _selectionStart = null;
+                      _selectionEnd = null;
+                    }
                   },
                 );
-              }).toList(),
-            );
-          }),
-        ),
-      ],
+              }),
+            ),
+          ),
+          Container(
+            width: 250.0,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: widget.codingLine.notes.observe((notes) {
+              return widget.codingLine.codings.observe((codings) {
+                return Wrap(
+                  spacing: 2.0,
+                  runSpacing: 2.0,
+                  children: [
+                    ...codings.map((c) {
+                      return _CodingButton(
+                        coding: c,
+                        enabledCoding: widget.enabledCoding,
+                        onRemove: () {
+                          ProjectService()
+                              .removeCoding(widget.codingVersion, c);
+                        },
+                      );
+                    }),
+                    ...notes.map((n) {
+                      return _NoteButton(
+                        note: n,
+                        onRemove: () {
+                          ProjectService().removeNoteFromCodingLine(
+                            widget.codingVersion,
+                            widget.codingLine.textLine.index,
+                            n,
+                          );
+                        },
+                      );
+                    }),
+                  ],
+                );
+              });
+            }),
+          ),
+        ],
+      ),
     );
   }
 
@@ -319,25 +355,27 @@ class _CodingButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextButton(
-                onPressed: () {
-                  if (enabledCoding.coding != null &&
-                      enabledCoding.shouldEnable(coding)) {
-                    this.enabledCoding.value = _EnabledCoding();
-                  } else {
-                    this.enabledCoding.value = _EnabledCoding(coding, false);
-                  }
-                },
-                onLongPress: () {
-                  this.enabledCoding.value = _EnabledCoding(coding, true);
-                },
-                child: coding.code.name.observe((name) {
-                  return Text(
-                    name,
-                    style: const TextStyle(color: Colors.black),
-                    overflow: TextOverflow.ellipsis,
-                  );
-                }),
+              Flexible(
+                child: TextButton(
+                  onPressed: () {
+                    if (enabledCoding.coding != null &&
+                        enabledCoding.shouldEnable(coding)) {
+                      this.enabledCoding.value = _EnabledCoding();
+                    } else {
+                      this.enabledCoding.value = _EnabledCoding(coding, false);
+                    }
+                  },
+                  onLongPress: () {
+                    this.enabledCoding.value = _EnabledCoding(coding, true);
+                  },
+                  child: coding.code.name.observe((name) {
+                    return Text(
+                      name,
+                      style: const TextStyle(color: Colors.black),
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  }),
+                ),
               ),
               IconButton(
                 onPressed: onRemove,
@@ -353,6 +391,57 @@ class _CodingButton extends StatelessWidget {
         );
       });
     });
+  }
+}
+
+class _NoteButton extends StatelessWidget {
+  final Note note;
+  final void Function()? onRemove;
+
+  const _NoteButton({
+    Key? key,
+    required this.note,
+    this.onRemove,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 30, 30, 30),
+        borderRadius: BorderRadius.all(
+          Radius.circular(5.0),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: note.text.observe((text) {
+              return TextButton(
+                onPressed: () {},
+                child: Text(
+                  note.text.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              );
+            }),
+          ),
+          IconButton(
+            onPressed: onRemove,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(
+              Icons.remove_circle,
+              size: 15.0,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

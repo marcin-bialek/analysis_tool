@@ -17,7 +17,9 @@ import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_add_to_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove_from_line.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/text_coding.dart';
@@ -295,6 +297,11 @@ class ProjectService {
     final project = _getOrCreateProject();
     if (project.notes.value.remove(note)) {
       project.notes.notify();
+      for (final textFile in project.textFiles.value) {
+        for (var codingVersion in textFile.codingVersions.value) {
+          codingVersion.removeNote(note);
+        }
+      }
     }
     if (sendToServer) {
       ServerService().sendEvent(EventNoteRemove(noteId: note.id));
@@ -306,6 +313,79 @@ class ProjectService {
     final note = project.notes.value.firstWhereOrNull((e) => e.id == id);
     if (note != null) {
       removeNote(note, sendToServer: sendToServer);
+    }
+  }
+
+  void addNoteToCodingLine(TextCodingVersion version, int lineIndex, Note note,
+      {bool sendToServer = true}) {
+    note.codingLines.putIfAbsent(version.id, () => <int>{});
+    note.codingLines[version.id]!.add(lineIndex);
+    version.addNoteToLine(lineIndex, note);
+    if (sendToServer) {
+      ServerService().sendEvent(EventNoteAddToLine(
+        codingVersionId: version.id,
+        lineIndex: lineIndex,
+        noteId: note.id,
+      ));
+    }
+  }
+
+  void addNoteToCodingLineByIds(String versionId, int lineIndex, String noteId,
+      {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    TextCodingVersion? version;
+    for (final textFile in project.textFiles.value) {
+      version = textFile.codingVersions.value
+          .firstWhereOrNull((v) => v.id == versionId);
+      if (version != null) {
+        break;
+      }
+    }
+    final note = project.notes.value.firstWhereOrNull((n) => n.id == noteId);
+    if (version != null && note != null) {
+      addNoteToCodingLine(
+        version,
+        lineIndex,
+        note,
+        sendToServer: sendToServer,
+      );
+    }
+  }
+
+  void removeNoteFromCodingLine(
+      TextCodingVersion version, int lineIndex, Note note,
+      {bool sendToServer = true}) {
+    note.codingLines[version.id]?.remove(lineIndex);
+    version.removeNoteFromLine(lineIndex, note);
+    if (sendToServer) {
+      ServerService().sendEvent(EventNoteRemoveFromLine(
+        codingVersionId: version.id,
+        lineIndex: lineIndex,
+        noteId: note.id,
+      ));
+    }
+  }
+
+  void removeNoteFromCodingLineByIds(
+      String versionId, int lineIndex, String noteId,
+      {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    TextCodingVersion? version;
+    for (final textFile in project.textFiles.value) {
+      version = textFile.codingVersions.value
+          .firstWhereOrNull((v) => v.id == versionId);
+      if (version != null) {
+        break;
+      }
+    }
+    final note = project.notes.value.firstWhereOrNull((n) => n.id == noteId);
+    if (version != null && note != null) {
+      removeNoteFromCodingLine(
+        version,
+        lineIndex,
+        note,
+        sendToServer: sendToServer,
+      );
     }
   }
 

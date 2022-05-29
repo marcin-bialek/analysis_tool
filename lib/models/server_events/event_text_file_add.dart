@@ -1,4 +1,5 @@
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/models/text_file.dart';
 
@@ -13,10 +14,17 @@ class EventTextFileAdd extends ServerEvent {
   factory EventTextFileAdd.fromJson(
     Map<String, dynamic> json,
     Iterable<Code> codes,
+    Iterable<Note> notes,
   ) {
     final textFile =
         json[EventTextFileAddJsonKeys.textFile] as Map<String, dynamic>;
-    return EventTextFileAdd(textFile: TextFile.fromJson(textFile, codes));
+    return EventTextFileAdd(
+      textFile: TextFile.fromJson(
+        textFile,
+        codes,
+        notes,
+      ),
+    );
   }
 
   @override

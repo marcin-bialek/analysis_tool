@@ -6,6 +6,7 @@ import 'package:analysis_tool/models/json_encodable.dart';
 class Note implements JsonEncodable {
   final String id;
   final Observable<String> text;
+  final Map<String, Set<int>> codingLines = {};
 
   Note({
     required this.id,
@@ -20,7 +21,13 @@ class Note implements JsonEncodable {
   factory Note.fromJson(Map<String, dynamic> json) {
     final String id = json[NoteJsonKeys.id];
     final String text = json[NoteJsonKeys.text];
-    return Note(id: id, text: text);
+    final Map<String, dynamic> codingLines = json[NoteJsonKeys.codingLines];
+    final note = Note(id: id, text: text);
+    note.codingLines.addAll(codingLines.map((id, value) {
+      final indices = value as List<dynamic>;
+      return MapEntry(id, indices.map((e) => e as int).toSet());
+    }));
+    return note;
   }
 
   @override
@@ -28,6 +35,9 @@ class Note implements JsonEncodable {
     return {
       NoteJsonKeys.id: id,
       NoteJsonKeys.text: text.value,
+      NoteJsonKeys.codingLines: codingLines.map((k, v) {
+        return MapEntry(k, v.toList());
+      }),
     };
   }
 
@@ -43,4 +53,5 @@ class Note implements JsonEncodable {
 class NoteJsonKeys {
   static const id = 'id';
   static const text = 'text';
+  static const codingLines = 'codingLines';
 }

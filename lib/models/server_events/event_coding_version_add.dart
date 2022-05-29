@@ -1,4 +1,5 @@
 import 'package:analysis_tool/models/code.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/models/text_file.dart';
@@ -17,6 +18,7 @@ class EventCodingVersionAdd extends ServerEvent {
     Map<String, dynamic> json,
     Iterable<TextFile> files,
     Iterable<Code> codes,
+    Iterable<Note> notes,
   ) {
     final textFileId = json[EventCodingVersionAddJsonKeys.textFileId];
     final codingVersion = json[EventCodingVersionAddJsonKeys.codingVersion]
@@ -27,6 +29,7 @@ class EventCodingVersionAdd extends ServerEvent {
         codingVersion,
         files.firstWhere((e) => e.id == textFileId),
         codes,
+        notes,
       ),
     );
   }

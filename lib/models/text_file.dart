@@ -1,5 +1,6 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/observable.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:uuid/uuid.dart';
@@ -41,14 +42,18 @@ class TextFile implements JsonEncodable {
     return TextFile(id: id, name: name, rawText: rawText);
   }
 
-  factory TextFile.fromJson(Map<String, dynamic> json, Iterable<Code> codes) {
+  factory TextFile.fromJson(
+    Map<String, dynamic> json,
+    Iterable<Code> codes,
+    Iterable<Note> notes,
+  ) {
     final id = json[TextFileJsonKeys.id];
     final name = json[TextFileJsonKeys.name];
     final text = json[TextFileJsonKeys.text];
     final file = TextFile(id: id, name: name, rawText: text);
     final codingVersions = json[TextFileJsonKeys.codingVersions] as List;
     file.codingVersions.value.addAll(codingVersions.map(
-      (e) => TextCodingVersion.fromJson(e, file, codes),
+      (e) => TextCodingVersion.fromJson(e, file, codes, notes),
     ));
     return file;
   }

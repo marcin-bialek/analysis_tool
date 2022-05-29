@@ -1,5 +1,6 @@
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/server_events/event_clients.dart';
 import 'package:analysis_tool/models/server_events/event_code_add.dart';
 import 'package:analysis_tool/models/server_events/event_code_remove.dart';
@@ -9,7 +10,9 @@ import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
+import 'package:analysis_tool/models/server_events/event_note_add_to_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
+import 'package:analysis_tool/models/server_events/event_note_remove_from_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
@@ -18,8 +21,12 @@ import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/text_file.dart';
 
 abstract class ServerEvent implements JsonEncodable {
-  static ServerEvent? parse(dynamic event,
-      {Iterable<Code>? codes, Iterable<TextFile>? textFiles}) {
+  static ServerEvent? parse(
+    dynamic event, {
+    Iterable<TextFile>? textFiles,
+    Iterable<Code>? codes,
+    Iterable<Note>? notes,
+  }) {
     if (!(event is Map<String, dynamic> &&
         event.containsKey(ServerEventJsonKeys.name) &&
         event[ServerEventJsonKeys.name] is String)) {
@@ -37,14 +44,16 @@ abstract class ServerEvent implements JsonEncodable {
 
         // TextFile events
         case EventTextFileAdd.name:
-          return codes != null ? EventTextFileAdd.fromJson(event, codes) : null;
+          return codes != null && notes != null
+              ? EventTextFileAdd.fromJson(event, codes, notes)
+              : null;
         case EventTextFileRemove.name:
           return EventTextFileRemove.fromJson(event);
 
         // TextCodingVersion events
         case EventCodingVersionAdd.name:
-          return codes != null && textFiles != null
-              ? EventCodingVersionAdd.fromJson(event, textFiles, codes)
+          return codes != null && textFiles != null && notes != null
+              ? EventCodingVersionAdd.fromJson(event, textFiles, codes, notes)
               : null;
         case EventCodingVersionRemove.name:
           return EventCodingVersionRemove.fromJson(event);
@@ -72,7 +81,12 @@ abstract class ServerEvent implements JsonEncodable {
           return EventNoteRemove.fromJson(event);
         case EventNoteUpdate.name:
           return EventNoteUpdate.fromJson(event);
+        case EventNoteAddToLine.name:
+          return EventNoteAddToLine.fromJson(event);
+        case EventNoteRemoveFromLine.name:
+          return EventNoteRemoveFromLine.fromJson(event);
 
+        // unknown event
         default:
           print('Unknown event: $name');
           return null;
