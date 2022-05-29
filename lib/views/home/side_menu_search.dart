@@ -107,7 +107,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
       _results.clear();
       _searching = true;
     });
-    final result = _projectService.searchText(text);
+    final result = _projectService.searchText(text, ignoreCase: true);
     _searchResultSubscription = result.listen(
       (event) {
         setState(() {

@@ -148,38 +148,6 @@ class ProjectService {
     }
   }
 
-  Stream<TextSearchResult> searchText(String text) {
-    final project = _getOrCreateProject();
-    bool stopSearch = false;
-    final controller = StreamController<TextSearchResult>(onCancel: () {
-      stopSearch = true;
-    });
-    (() async {
-      for (final file in project.textFiles.value) {
-        if (stopSearch) {
-          return;
-        }
-        final textLines = file.textLines.value;
-        for (int i = 0; i < textLines.length; i++) {
-          if (stopSearch) {
-            return;
-          }
-          final offset = textLines[i].text.indexOf(text);
-          if (offset >= 0) {
-            controller.add(TextSearchResult(
-              file,
-              textLines[i],
-              offset,
-              text.length,
-            ));
-          }
-        }
-      }
-      await controller.close();
-    })();
-    return controller.stream;
-  }
-
   void addCodingVersion(TextFile file) {
     final version = TextCodingVersion.withId(
       name: 'Wersja #${file.codingVersions.value.length + 1}',
@@ -343,6 +311,46 @@ class ProjectService {
 
   void sendCodeRequest(Code code) {
     _codeRequestStreamController.add(code);
+  }
+
+  Stream<TextSearchResult> searchText(String text, {bool ignoreCase = false}) {
+    final project = _getOrCreateProject();
+    if (ignoreCase) {
+      text = text.toLowerCase();
+    }
+    bool stopSearch = false;
+    final controller = StreamController<TextSearchResult>(onCancel: () {
+      stopSearch = true;
+    });
+    (() async {
+      for (final file in project.textFiles.value) {
+        if (stopSearch) {
+          return;
+        }
+        final textLines = file.textLines.value;
+        for (int i = 0; i < textLines.length; i++) {
+          if (stopSearch) {
+            return;
+          }
+          int offset;
+          if (ignoreCase) {
+            offset = textLines[i].text.toLowerCase().indexOf(text);
+          } else {
+            offset = textLines[i].text.indexOf(text);
+          }
+          if (offset >= 0) {
+            controller.add(TextSearchResult(
+              file,
+              textLines[i],
+              offset,
+              text.length,
+            ));
+          }
+        }
+      }
+      await controller.close();
+    })();
+    return controller.stream;
   }
 
   Future<List<CodeStats>> getCodeStats() async {

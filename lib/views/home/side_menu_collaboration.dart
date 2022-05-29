@@ -96,8 +96,11 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                 }
                 return ListTile(
                   dense: true,
-                  leading:
-                      const Icon(Icons.backup, size: 20.0, color: Colors.blue),
+                  leading: const Icon(
+                    Icons.cloud_upload,
+                    size: 20.0,
+                    color: Colors.blue,
+                  ),
                   title: const Text(
                     'Wyślij na serwer',
                     style: TextStyle(color: Colors.blue),
