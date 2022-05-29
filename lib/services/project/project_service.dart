@@ -20,6 +20,7 @@ import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_add_to_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove_from_line.dart';
+import 'package:analysis_tool/models/server_events/event_note_update.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
 import 'package:analysis_tool/models/text_coding.dart';
@@ -315,6 +316,27 @@ class ProjectService {
     final note = project.notes.value.firstWhereOrNull((e) => e.id == id);
     if (note != null) {
       removeNote(note, sendToServer: sendToServer);
+    }
+  }
+
+  void updateNote(
+    String id, {
+    String? title,
+    String? text,
+    bool sendToServer = true,
+  }) {
+    final project = _getOrCreateProject();
+    final note = project.notes.value.firstWhereOrNull((e) => e.id == id);
+    if (note != null) {
+      if (title != null) note.title.value = title;
+      if (text != null) note.text.value = text;
+      if (sendToServer) {
+        ServerService().sendEvent(EventNoteUpdate(
+          noteId: id,
+          title: title,
+          text: text,
+        ));
+      }
     }
   }
 

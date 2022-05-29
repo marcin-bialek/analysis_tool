@@ -38,7 +38,7 @@ class Note implements JsonEncodable {
   Map<String, dynamic> toJson() {
     return {
       NoteJsonKeys.id: id,
-      NoteJsonKeys.title: title,
+      NoteJsonKeys.title: title.value,
       NoteJsonKeys.text: text.value,
       NoteJsonKeys.codingLines: codingLines.map((k, v) {
         return MapEntry(k, v.toList());

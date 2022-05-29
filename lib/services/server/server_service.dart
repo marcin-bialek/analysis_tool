@@ -182,11 +182,12 @@ class ServerService {
     } else if (event is EventNoteRemove) {
       projectService.removeNoteById(event.noteId, sendToServer: false);
     } else if (event is EventNoteUpdate) {
-      final note =
-          project?.notes.value.firstWhereOrNull((n) => n.id == event.noteId);
-      if (note != null) {
-        if (event.text != null) note.text.value = event.text!;
-      }
+      projectService.updateNote(
+        event.noteId,
+        title: event.title,
+        text: event.text,
+        sendToServer: false,
+      );
     } else if (event is EventNoteAddToLine) {
       projectService.addNoteToCodingLineByIds(
         event.codingVersionId,

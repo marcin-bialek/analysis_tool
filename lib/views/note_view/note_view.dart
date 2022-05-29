@@ -32,12 +32,18 @@ class _NoteViewState extends State<NoteView> {
     textFocusNode = FocusNode();
     titleFocusNode!.addListener(() {
       if (!titleFocusNode!.hasFocus) {
-        widget.note.title.value = titleController!.text;
+        ProjectService().updateNote(
+          widget.note.id,
+          title: titleController!.text,
+        );
       }
     });
     textFocusNode!.addListener(() {
       if (!textFocusNode!.hasFocus) {
-        widget.note.text.value = textController!.text;
+        ProjectService().updateNote(
+          widget.note.id,
+          text: textController!.text,
+        );
       }
     });
   }
