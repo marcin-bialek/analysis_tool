@@ -108,6 +108,9 @@ class ServerService {
       connectionInfo.users.value = event.clients;
     } else if (event is EventProject) {
       projectService.project.value = event.project;
+      if (event.project == null) {
+        disconnect();
+      }
     } else if (event is EventPublished) {
       connectionInfo.passcode.value = event.passcode;
     }
