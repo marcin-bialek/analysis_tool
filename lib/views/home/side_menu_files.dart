@@ -2,6 +2,7 @@ import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/text_file.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:analysis_tool/views/dialogs.dart';
 import 'package:analysis_tool/views/editable_text.dart';
 import 'package:flutter/material.dart';
 
@@ -30,19 +31,37 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
             const Spacer(),
             IconButton(
               onPressed: _projectService.addFile,
+              tooltip: 'Dodaj plik',
               icon: const Icon(
                 Icons.add,
                 color: Colors.white,
               ),
             ),
-            IconButton(
-              onPressed: _projectService.saveProject,
-              icon: const Icon(
-                Icons.save,
-                size: 20.0,
-                color: Colors.white,
-              ),
-            ),
+            _projectService.project.observe((project) {
+              if (project != null) {
+                return Row(children: [
+                  IconButton(
+                    onPressed: _projectService.saveProject,
+                    tooltip: 'Zapisz projekt',
+                    icon: const Icon(
+                      Icons.save,
+                      size: 20.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _closeProject,
+                    tooltip: 'Zamknij projekt',
+                    icon: const Icon(
+                      Icons.close,
+                      size: 20.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ]);
+              }
+              return const SizedBox.shrink();
+            }),
           ],
         ),
         Expanded(
@@ -64,6 +83,20 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
         ),
       ],
     );
+  }
+
+  Future<void> _closeProject() async {
+    final result = await showDialogSaveProject(context: context);
+    if (result != null) {
+      if (result == true) {
+        if (await _projectService.saveProject() == false) {
+          return;
+        }
+      }
+      _projectService.closeProject();
+      mainViewNavigatorKey.currentState!
+          .pushReplacementNamed(MainViewRoutes.start);
+    }
   }
 }
 

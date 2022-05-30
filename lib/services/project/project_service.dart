@@ -81,11 +81,12 @@ class ProjectService {
   }
 
   void closeProject() {
+    ServerService().disconnect();
     project.value = null;
     _currentProjectPath = null;
   }
 
-  Future<void> saveProjectAs() async {
+  Future<bool> saveProjectAs() async {
     final project = _getOrCreateProject();
     if (kIsWeb) {
       await saver.save('projekt.atool', jsonEncode(project.toJson()));
@@ -97,16 +98,20 @@ class ProjectService {
       if (path != null) {
         await saver.save(path, jsonEncode(project.toJson()));
         _currentProjectPath = path;
+      } else {
+        return false;
       }
     }
+    return true;
   }
 
-  Future<void> saveProject() async {
+  Future<bool> saveProject() async {
     final project = _getOrCreateProject();
     if (_currentProjectPath == null) {
       return await saveProjectAs();
     }
     await saver.save(_currentProjectPath!, jsonEncode(project.toJson()));
+    return true;
   }
 
   Future<void> addFile() async {

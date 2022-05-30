@@ -33,10 +33,13 @@ class _StartPageState extends State<StartPage> {
                 await _projectService.openProject();
               } on ProjectAlreadyOpenError {
                 final result = await showDialogSaveProject(context: context);
-                if (result == true) {
-                  await _projectService.saveProject();
+                if (result != null) {
+                  if (result == true) {
+                    await _projectService.saveProject();
+                  }
+                  _projectService.closeProject();
+                  await _projectService.openProject();
                 }
-                _projectService.closeProject();
               }
             },
             icon: const Icon(
