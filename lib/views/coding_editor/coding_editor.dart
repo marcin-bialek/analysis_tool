@@ -37,6 +37,7 @@ class _EnabledCoding {
 }
 
 class _CodingEditorState extends State<CodingEditor> {
+  final _selectedLine = Observable<_CodingEditorLine?>(null);
   final _enabledCoding = Observable(_EnabledCoding());
 
   @override
@@ -99,6 +100,7 @@ class _CodingEditorState extends State<CodingEditor> {
                         codingVersion: widget.codingVersion,
                         codingLine: codingLine,
                         enabledCoding: _enabledCoding,
+                        selectedLine: _selectedLine,
                         backgroundColor:
                             candidateData.isNotEmpty ? Colors.white54 : null,
                       );
@@ -147,6 +149,7 @@ class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
   final Observable<_EnabledCoding> enabledCoding;
+  final Observable<_CodingEditorLine?> selectedLine;
   final Color? backgroundColor;
 
   const _CodingEditorLine({
@@ -154,6 +157,7 @@ class _CodingEditorLine extends StatefulWidget {
     required this.codingVersion,
     required this.codingLine,
     required this.enabledCoding,
+    required this.selectedLine,
     this.backgroundColor,
   }) : super(key: key);
 
@@ -162,9 +166,11 @@ class _CodingEditorLine extends StatefulWidget {
 }
 
 class _CodingEditorLineState extends State<_CodingEditorLine> {
+  Key _selectableTextKey = UniqueKey();
   int? _selectionStart;
   int? _selectionEnd;
   StreamSubscription<Code>? _codeRequestSubscription;
+  StreamSubscription<_CodingEditorLine?>? _selectedLineSubscription;
 
   @override
   void initState() {
@@ -179,14 +185,29 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
             _selectionStart!,
             _selectionEnd! - _selectionStart!,
           );
+          setState(() {
+            _selectableTextKey = UniqueKey();
+          });
+          _selectionStart = null;
+          _selectionEnd = null;
         }
       },
     );
+    _selectedLineSubscription = widget.selectedLine.stream.listen((line) {
+      if (line != widget && _selectionStart != null && _selectionEnd != null) {
+        setState(() {
+          _selectableTextKey = UniqueKey();
+        });
+        _selectionStart = null;
+        _selectionEnd = null;
+      }
+    });
   }
 
   @override
   void dispose() {
     _codeRequestSubscription?.cancel();
+    _selectedLineSubscription?.cancel();
     super.dispose();
   }
 
@@ -206,27 +227,36 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: widget.codingLine.codings.observe((codings) {
-                return SelectableText.rich(
-                  TextSpan(
-                    children: _makeSpans(
-                      widget.codingLine.textLine.text,
-                      widget.codingLine.textLine.offset,
-                      codings,
-                    ),
+                return TextSelectionTheme(
+                  data: const TextSelectionThemeData(
+                    selectionColor: Colors.red,
                   ),
-                  maxLines: null,
-                  style: const TextStyle(fontSize: 15.0),
-                  onSelectionChanged: (selection, _) {
-                    if (selection.baseOffset != selection.extentOffset) {
-                      _selectionStart =
-                          min(selection.baseOffset, selection.extentOffset);
-                      _selectionEnd =
-                          max(selection.baseOffset, selection.extentOffset);
-                    } else {
-                      _selectionStart = null;
-                      _selectionEnd = null;
-                    }
-                  },
+                  child: SelectableText.rich(
+                    TextSpan(
+                      children: _makeSpans(
+                        widget.codingLine.textLine.text,
+                        widget.codingLine.textLine.offset,
+                        codings,
+                      ),
+                    ),
+                    key: _selectableTextKey,
+                    maxLines: null,
+                    style: const TextStyle(fontSize: 15.0),
+                    onSelectionChanged: (selection, _) {
+                      if (selection.baseOffset != selection.extentOffset) {
+                        _selectionStart =
+                            min(selection.baseOffset, selection.extentOffset);
+                        _selectionEnd =
+                            max(selection.baseOffset, selection.extentOffset);
+                      } else {
+                        _selectionStart = null;
+                        _selectionEnd = null;
+                      }
+                    },
+                    onTap: () {
+                      widget.selectedLine.value = widget;
+                    },
+                  ),
                 );
               }),
             ),
@@ -304,7 +334,9 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
           spans.add(
             TextSpan(
               text: text.substring(a, i),
-              style: TextStyle(backgroundColor: Color(v.toInt())),
+              style: TextStyle(
+                backgroundColor: Color(v.toInt()).withOpacity(0.8),
+              ),
             ),
           );
         } else {
