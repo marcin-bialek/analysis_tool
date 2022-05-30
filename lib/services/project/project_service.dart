@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
+import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
+    as saver;
 
 import 'package:analysis_tool/extensions/iterable.dart';
 import 'package:analysis_tool/extensions/random.dart';
@@ -87,16 +88,16 @@ class ProjectService {
   Future<void> saveProjectAs() async {
     final project = _getOrCreateProject();
     if (kIsWeb) {
-      // TODO: saving the project
-      return;
-    }
-    final path = await FilePicker.platform.saveFile(
-      type: FileType.custom,
-      allowedExtensions: [projectFileExtension],
-    );
-    if (path != null) {
-      await File(path).writeAsString(jsonEncode(project.toJson()));
-      _currentProjectPath = path;
+      await saver.save('projekt.atool', jsonEncode(project.toJson()));
+    } else {
+      final path = await FilePicker.platform.saveFile(
+        type: FileType.custom,
+        allowedExtensions: [projectFileExtension],
+      );
+      if (path != null) {
+        await saver.save(path, jsonEncode(project.toJson()));
+        _currentProjectPath = path;
+      }
     }
   }
 
@@ -105,8 +106,7 @@ class ProjectService {
     if (_currentProjectPath == null) {
       return await saveProjectAs();
     }
-    await File(_currentProjectPath!)
-        .writeAsString(jsonEncode(project.toJson()));
+    await saver.save(_currentProjectPath!, jsonEncode(project.toJson()));
   }
 
   Future<void> addFile() async {
@@ -515,13 +515,17 @@ class ProjectService {
         ],
       ),
     ]);
-    final path = await FilePicker.platform.saveFile(
-      type: FileType.custom,
-      fileName: 'kody.csv',
-      allowedExtensions: ['csv'],
-    );
-    if (path != null) {
-      await File(path).writeAsString(csv);
+    if (kIsWeb) {
+      await saver.save('kody.csv', csv);
+    } else {
+      final path = await FilePicker.platform.saveFile(
+        type: FileType.custom,
+        fileName: 'kody.csv',
+        allowedExtensions: ['csv'],
+      );
+      if (path != null) {
+        await saver.save(path, csv);
+      }
     }
   }
 }

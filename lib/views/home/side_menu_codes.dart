@@ -40,17 +40,16 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
                 color: Colors.white,
               ),
             ),
-            if (_projectService.project.value?.codes.value.isNotEmpty == true)
-              IconButton(
-                onPressed: () {
-                  mainViewNavigatorKey.currentState!
-                      .pushReplacementNamed(MainViewRoutes.codeStats);
-                },
-                icon: const Icon(
-                  Icons.article,
-                  color: Colors.white,
-                ),
+            IconButton(
+              onPressed: () {
+                mainViewNavigatorKey.currentState!
+                    .pushReplacementNamed(MainViewRoutes.codeStats);
+              },
+              icon: const Icon(
+                Icons.article,
+                color: Colors.white,
               ),
+            ),
           ],
         ),
         Expanded(
