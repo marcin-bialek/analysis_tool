@@ -251,14 +251,23 @@ class ProjectService {
     addCoding(version, line, coding, sendToServer: sendToServer);
   }
 
-  void addCode({bool sendToServer = true}) {
+  void addCode({Code? parent, bool sendToServer = true}) {
     final project = _getOrCreateProject();
+    final color = parent == null
+        ? Random().element(ColorTools.primaryColors)
+        : parent.color.value;
     final code = Code.withId(
       name: 'Kod #${project.codes.value.length + 1}',
-      color: Random().element(ColorTools.primaryColors),
+      color: color,
+      parentId: parent?.id,
     );
     project.codes.value.add(code);
-    project.codes.notify();
+    if (parent == null) {
+      project.codes.notify();
+    } else {
+      parent.children.value.add(code);
+      parent.children.notify();
+    }
     if (sendToServer) {
       ServerService().sendEvent(EventCodeAdd(code: code));
     }
@@ -267,12 +276,27 @@ class ProjectService {
   void removeCode(Code code, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
     if (project.codes.value.remove(code)) {
+      if (code.parentId == null) {
+        project.codes.value
+            .where((c) => c.parentId == code.id)
+            .toList()
+            .forEach((child) {
+          removeCode(child, sendToServer: sendToServer);
+        });
+        project.codes.notify();
+      } else {
+        final parent =
+            project.codes.value.firstWhereOrNull((c) => c.id == code.parentId);
+        if (parent != null) {
+          parent.children.value.remove(code);
+          parent.children.notify();
+        }
+      }
       for (final file in project.textFiles.value) {
         for (final codingVersion in file.codingVersions.value) {
           codingVersion.removeCode(code);
         }
       }
-      project.codes.notify();
       if (sendToServer) {
         ServerService().sendEvent(EventCodeRemove(codeId: code.id));
       }

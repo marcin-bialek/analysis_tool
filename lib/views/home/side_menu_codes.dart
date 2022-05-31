@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/code.dart';
@@ -18,7 +16,6 @@ class SideMenuCodes extends StatefulWidget {
 
 class _SideMenuCodesState extends State<SideMenuCodes> {
   final _projectService = ProjectService();
-  final _tileOpenedStream = StreamController<int>.broadcast();
 
   @override
   Widget build(BuildContext context) {
@@ -58,19 +55,12 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
               return Container();
             }
             return project.codes.observe((value) {
-              final codes = value.toList();
+              final codes = value.where((c) => c.parentId == null).toList();
               return ListView.builder(
                 itemCount: codes.length,
                 itemBuilder: (context, index) {
                   final code = codes[index];
-                  return _SideMenuCodesItem(
-                    code: code,
-                    index: index,
-                    tileOpenedStream: _tileOpenedStream.stream,
-                    onOpen: () {
-                      _tileOpenedStream.add(index);
-                    },
-                  );
+                  return _SideMenuCodesItem(code: code);
                 },
               );
             });
@@ -83,16 +73,12 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
 
 class _SideMenuCodesItem extends StatefulWidget {
   final Code code;
-  final int index;
-  final Stream<int>? tileOpenedStream;
-  final void Function()? onOpen;
+  final bool isChild;
 
   const _SideMenuCodesItem({
     Key? key,
     required this.code,
-    required this.index,
-    this.tileOpenedStream,
-    this.onOpen,
+    this.isChild = false,
   }) : super(key: key);
 
   @override
@@ -102,25 +88,7 @@ class _SideMenuCodesItem extends StatefulWidget {
 class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
   final _projectService = ProjectService();
   bool _isExpanded = false;
-  StreamSubscription<int>? _tileOpenedStreamSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _tileOpenedStreamSubscription = widget.tileOpenedStream?.listen((index) {
-      if (index != widget.index) {
-        setState(() {
-          _isExpanded = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _tileOpenedStreamSubscription?.cancel();
-    super.dispose();
-  }
+  bool _showChildren = true;
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +107,6 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               setState(() {
                 _isExpanded = !_isExpanded;
               });
-              if (_isExpanded) {
-                widget.onOpen?.call();
-              }
             },
           ),
           title: widget.code.name.observe(
@@ -165,6 +130,11 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               _projectService.sendCodeRequest(widget.code);
             },
           ),
+          onTap: () {
+            setState(() {
+              _showChildren = !_showChildren;
+            });
+          },
         ),
         if (_isExpanded) ...[
           widget.code.color.observe(
@@ -190,6 +160,13 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               ),
             ),
           ),
+          if (!widget.isChild)
+            TextButton(
+              child: const Text('Dodaj podkod'),
+              onPressed: () {
+                _projectService.addCode(parent: widget.code);
+              },
+            ),
           TextButton(
             child: const Text('Usuń kod'),
             onPressed: () async {
@@ -206,6 +183,29 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
             },
           ),
         ],
+        widget.code.children.observe((children) {
+          if (_showChildren) {
+            return Container(
+              padding: const EdgeInsets.only(left: 30.0),
+              child: Column(
+                children: children.map((child) {
+                  return _SideMenuCodesItem(code: child, isChild: true);
+                }).toList(),
+              ),
+            );
+          } else if (children.isNotEmpty) {
+            return TextButton(
+              onPressed: () {
+                setState(() {
+                  _showChildren = true;
+                });
+              },
+              child: const Text('...'),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        }),
       ],
     );
   }

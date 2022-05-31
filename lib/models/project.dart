@@ -30,6 +30,11 @@ class Project implements JsonEncodable {
     final project = Project(id: id, name: name);
     final codes = json[ProjectJsonKeys.codes] as List;
     project.codes.value.addAll(codes.map((e) => Code.fromJson(e)));
+    for (final code in project.codes.value) {
+      code.children.value.addAll(
+        project.codes.value.where((c) => c.parentId == code.id),
+      );
+    }
     final notes = json[ProjectJsonKeys.notes] as List;
     project.notes.value.addAll(notes.map((e) => Note.fromJson(e)));
     final textFiles = json[ProjectJsonKeys.textFiles] as List;
