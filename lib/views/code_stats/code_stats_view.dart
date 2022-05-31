@@ -13,6 +13,7 @@ class CodeStatsView extends StatefulWidget {
 
 class _CodeStatsViewState extends State<CodeStatsView> {
   final projectService = ProjectService();
+  bool groupAdjacentLines = true;
 
   @override
   Widget build(BuildContext context) {
@@ -20,42 +21,64 @@ class _CodeStatsViewState extends State<CodeStatsView> {
     if (project == null) {
       return Container();
     }
-    return FutureBuilder<
-        Map<Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>>(
-      future: projectService.getGroupedCodeStats(),
-      initialData: const {},
-      builder: (context, snap) {
-        switch (snap.connectionState) {
-          case ConnectionState.done:
-            final stats = snap.data;
-            if (stats != null) {
-              return Column(
-                children: [
-                  Container(
-                    height: 40.0,
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Row(
-                      children: [
-                        TextButton.icon(
-                          icon: const Icon(Icons.analytics, size: 20.0),
-                          label: const Text('Eksportuj do pliku CSV'),
-                          onPressed: () async {
-                            await projectService.saveCodeStatsAsCSV();
-                          },
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                  ),
-                  Expanded(child: _makeCodeStatsList(stats)),
-                ],
-              );
-            }
-            return Container();
-          default:
-            return const CircularProgressIndicator();
-        }
-      },
+    return Column(
+      children: [
+        Container(
+          height: 40.0,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            children: [
+              const Spacer(),
+              Checkbox(
+                value: groupAdjacentLines,
+                onChanged: (value) {
+                  setState(() {
+                    groupAdjacentLines = value ?? true;
+                  });
+                },
+              ),
+              const Text(
+                'Grupuj kody w przyległych liniach',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 20.0),
+              TextButton.icon(
+                icon: const Icon(Icons.analytics, size: 20.0),
+                label: const Text('Eksportuj do pliku CSV'),
+                onPressed: () async {
+                  await projectService.saveCodeStatsAsCSV(
+                    groupAdjacentLines: groupAdjacentLines,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<
+              Map<Code,
+                  Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>>(
+            future: projectService.getGroupedCodeStats(
+              groupAdjacentLines: groupAdjacentLines,
+            ),
+            initialData: const {},
+            builder: (context, snap) {
+              switch (snap.connectionState) {
+                case ConnectionState.done:
+                  final stats = snap.data;
+                  if (stats != null) {
+                    return _makeCodeStatsList(stats);
+                  }
+                  return Container();
+                default:
+                  return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -80,6 +103,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
               style: const TextStyle(color: Colors.white),
             );
           }),
+          initiallyExpanded: true,
           children: [
             Container(
               color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
@@ -153,10 +177,18 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                                         width: 100.0,
                                         child: Text(s.codingVersion.name.value),
                                       ),
-                                      SizedBox(
-                                        width: 50.0,
-                                        child: Text('${s.line + 1}'),
-                                      ),
+                                      if (s.startLine == s.endLine)
+                                        SizedBox(
+                                          width: 50.0,
+                                          child: Text('${s.startLine + 1}'),
+                                        ),
+                                      if (s.startLine != s.endLine)
+                                        SizedBox(
+                                          width: 50.0,
+                                          child: Text(
+                                            '${s.startLine + 1}-${s.endLine + 1}',
+                                          ),
+                                        ),
                                       Expanded(
                                         child: Text(s.text),
                                       ),

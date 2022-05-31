@@ -462,25 +462,98 @@ class ProjectService {
     return controller.stream;
   }
 
-  Future<List<CodeStats>> getCodeStats() async {
+  Future<Map<Code, List<CodeStats>>> getCodeStatsForVersion(
+    TextCodingVersion version, {
+    bool groupAdjacentLines = true,
+  }) async {
     final project = _getOrCreateProject();
-    final stats = <CodeStats>[];
-    for (final textFile in project.textFiles.value) {
-      for (final codingVersion in textFile.codingVersions.value) {
-        for (final line in codingVersion.codingLines.value) {
-          for (var coding in line.codings.value) {
-            final text = line.textLine.text.substring(
-              coding.start - line.textLine.offset,
-              coding.end - line.textLine.offset,
-            );
-            stats.add(CodeStats(
-              coding.code,
-              textFile,
-              codingVersion,
+    final stats = <Code, List<CodeStats>>{};
+    for (final code in project.codes.value) {
+      final codeStats = <CodeStats>[];
+      int? startLine;
+      int? lastLine;
+      String? text;
+
+      for (final line in version.codingLines.value) {
+        bool hasCode = false;
+        for (final coding in line.codings.value) {
+          if (coding.code != code) {
+            continue;
+          }
+          lastLine = line.textLine.index;
+          hasCode = true;
+          if (startLine != null && line.textLine.offset < coding.start) {
+            codeStats.add(CodeStats(code, version.file, version, startLine,
+                line.textLine.index, text!));
+            startLine = null;
+            text = null;
+          }
+          final t = line.textLine.text.substring(
+            coding.start - line.textLine.offset,
+            coding.end - line.textLine.offset,
+          );
+          if (text == null) {
+            text = t;
+          } else {
+            text += '\n$t';
+          }
+          if (coding.end < line.textLine.endOffset ||
+              groupAdjacentLines == false) {
+            codeStats.add(CodeStats(
+              code,
+              version.file,
+              version,
+              startLine ?? line.textLine.index,
               line.textLine.index,
               text,
             ));
+            startLine = null;
+            text = null;
+          } else {
+            startLine ??= line.textLine.index;
           }
+        }
+        if (startLine != null && !hasCode) {
+          codeStats.add(CodeStats(code, version.file, version, startLine,
+              line.textLine.index - 1, text!));
+          startLine = null;
+          text = null;
+        }
+      }
+
+      if (startLine != null && text != null && lastLine != null) {
+        codeStats.add(CodeStats(
+          code,
+          version.file,
+          version,
+          startLine,
+          lastLine,
+          text,
+        ));
+      }
+
+      stats[code] = codeStats;
+    }
+    return stats;
+  }
+
+  Future<Map<Code, Map<TextCodingVersion, List<CodeStats>>>>
+      getCodeStatsForTextFile(
+    TextFile textFile, {
+    bool groupAdjacentLines = true,
+  }) async {
+    final stats = <Code, Map<TextCodingVersion, List<CodeStats>>>{};
+    for (final version in textFile.codingVersions.value) {
+      final versionStats = await getCodeStatsForVersion(
+        version,
+        groupAdjacentLines: groupAdjacentLines,
+      );
+      for (final code in versionStats.keys) {
+        if (versionStats[code]!.isNotEmpty) {
+          if (!stats.containsKey(code)) {
+            stats[code] = {};
+          }
+          stats[code]![version] = versionStats[code]!;
         }
       }
     }
@@ -488,25 +561,46 @@ class ProjectService {
   }
 
   Future<Map<Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>>
-      getGroupedCodeStats() async {
-    final stats = await getCodeStats();
-    final codes = stats.map((s) => s.code).toSet();
-    return Map.fromEntries(codes.map((code) {
-      final statsCode = stats.where((s) => s.code == code);
-      final files = statsCode.map((s) => s.textFile).toSet();
-      return MapEntry(code, Map.fromEntries(files.map((file) {
-        final statsFile = statsCode.where((s) => s.textFile == file);
-        final versions = statsFile.map((s) => s.codingVersion).toSet();
-        return MapEntry(file, Map.fromEntries(versions.map((v) {
-          return MapEntry(
-              v, statsFile.where((s) => s.codingVersion == v).toList());
-        })));
-      })));
-    }));
+      getGroupedCodeStats({
+    bool groupAdjacentLines = true,
+  }) async {
+    final project = _getOrCreateProject();
+    final stats =
+        <Code, Map<TextFile, Map<TextCodingVersion, List<CodeStats>>>>{};
+    for (final textFile in project.textFiles.value) {
+      final fileStats = await getCodeStatsForTextFile(textFile,
+          groupAdjacentLines: groupAdjacentLines);
+      for (final code in fileStats.keys) {
+        if (fileStats[code]!.isNotEmpty) {
+          if (!stats.containsKey(code)) {
+            stats[code] = {};
+          }
+          stats[code]![textFile] = fileStats[code]!;
+        }
+      }
+    }
+    return stats;
   }
 
-  Future<void> saveCodeStatsAsCSV() async {
-    final stats = await getCodeStats();
+  Future<List<CodeStats>> getCodeStats({bool groupAdjacentLines = true}) async {
+    final project = _getOrCreateProject();
+    final stats = <CodeStats>[];
+    for (final textFile in project.textFiles.value) {
+      for (final version in textFile.codingVersions.value) {
+        final versionStats = await getCodeStatsForVersion(
+          version,
+          groupAdjacentLines: groupAdjacentLines,
+        );
+        for (final s in versionStats.values) {
+          stats.addAll(s);
+        }
+      }
+    }
+    return stats;
+  }
+
+  Future<void> saveCodeStatsAsCSV({bool groupAdjacentLines = true}) async {
+    final stats = await getCodeStats(groupAdjacentLines: groupAdjacentLines);
     stats.sort((a, b) => a.code.id.compareTo(b.code.id));
     final csv = const ListToCsvConverter().convert([
       ['Kod', 'Plik', 'Kodowanie', 'Linia', 'Tekst'],
@@ -515,7 +609,8 @@ class ProjectService {
           s.code.name.value,
           s.textFile.name.value,
           s.codingVersion.name.value,
-          s.line + 1,
+          if (s.startLine == s.endLine) s.startLine + 1,
+          if (s.startLine != s.endLine) '${s.startLine + 1}-${s.endLine + 1}',
           s.text,
         ],
       ),
@@ -548,8 +643,16 @@ class CodeStats {
   final Code code;
   final TextFile textFile;
   final TextCodingVersion codingVersion;
-  final int line;
+  final int startLine;
+  final int endLine;
   final String text;
 
-  CodeStats(this.code, this.textFile, this.codingVersion, this.line, this.text);
+  CodeStats(
+    this.code,
+    this.textFile,
+    this.codingVersion,
+    this.startLine,
+    this.endLine,
+    this.text,
+  );
 }
