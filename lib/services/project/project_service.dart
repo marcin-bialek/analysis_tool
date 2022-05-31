@@ -233,11 +233,21 @@ class ProjectService {
   void addNewCoding(TextCodingVersion version, TextCodingLine line, Code code,
       int offset, int length,
       {bool sendToServer = true}) {
-    final coding = TextCoding(
-      code: code,
-      start: line.textLine.offset + offset,
-      length: length,
-    );
+    offset += line.textLine.offset;
+    final end = offset + length;
+    final intersecting = line.codings.value.where((c) {
+      return c.code == code && offset <= c.end && c.start <= end;
+    }).toList();
+    final starts = intersecting.map((c) => c.start).toList();
+    starts.add(offset);
+    final s = starts.reduce((v, e) => v < e ? v : e);
+    final ends = intersecting.map((c) => c.end).toList();
+    ends.add(end);
+    final e = ends.reduce((v, e) => v > e ? v : e);
+    final coding = TextCoding(code: code, start: s, length: e - s);
+    for (final i in intersecting) {
+      removeCoding(version, i, sendToServer: sendToServer);
+    }
     addCoding(version, line, coding, sendToServer: sendToServer);
   }
 
