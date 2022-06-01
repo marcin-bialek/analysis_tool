@@ -30,16 +30,16 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Wyszukaj',
-                    hintStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Theme.of(context).hintColor),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
                   onChanged: (value) {
                     if (value.isEmpty) {
                       setState(() {
@@ -72,20 +72,16 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                 dense: true,
                 leading: Text(
                   '${result.file.name.value}:${result.line.index}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context)
+                      .primaryTextTheme
+                      .bodyText2!
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
                 title: Text(
                   result.line.text.substring(result.offset),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.0,
-                  ),
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
                 ),
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(

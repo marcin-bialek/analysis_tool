@@ -22,9 +22,12 @@ class _StartPageState extends State<StartPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Strona startowa',
-            style: TextStyle(color: Colors.white, fontSize: 18.0),
+            style: Theme.of(context)
+                .primaryTextTheme
+                .bodyText2!
+                .copyWith(fontSize: 18.0),
           ),
           const SizedBox(height: 20.0),
           TextButton.icon(
@@ -42,13 +45,13 @@ class _StartPageState extends State<StartPage> {
                 }
               }
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.file_open,
-              color: Colors.white,
+              color: Theme.of(context).primaryIconTheme.color,
             ),
-            label: const Text(
+            label: Text(
               'Otwórz projekt',
-              style: TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
             ),
           ),
         ],

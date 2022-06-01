@@ -59,17 +59,17 @@ class _SettingsViewState extends State<SettingsView> {
           // ),
           TableRow(
             children: [
-              const TableCell(
+              TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Text(
                   'Nazwa użytkownika:',
-                  style: TextStyle(color: Colors.white),
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
                 ),
               ),
               TableCell(
                 child: TextField(
                   controller: usernameController,
-                  style: const TextStyle(color: Colors.white, fontSize: 15.0),
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
                 ),
               ),
             ],

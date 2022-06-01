@@ -25,16 +25,16 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
         Row(
           children: [
             const SizedBox(width: 20.0),
-            const Text(
+            Text(
               'Kody',
-              style: TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
             ),
             const Spacer(),
             IconButton(
               onPressed: _projectService.addCode,
-              icon: const Icon(
+              icon: Icon(
                 Icons.add,
-                color: Colors.white,
+                color: Theme.of(context).primaryIconTheme.color,
               ),
             ),
             IconButton(
@@ -42,9 +42,9 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
                 mainViewNavigatorKey.currentState!
                     .pushReplacementNamed(MainViewRoutes.codeStats);
               },
-              icon: const Icon(
+              icon: Icon(
                 Icons.article,
-                color: Colors.white,
+                color: Theme.of(context).primaryIconTheme.color,
               ),
             ),
           ],
@@ -112,7 +112,7 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
           title: widget.code.name.observe(
             (name) => TextEditable(
               text: name,
-              style: const TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
               edited: (text) {
                 widget.code.name.value = text;
                 _projectService.updatedCode(widget.code);
@@ -150,13 +150,13 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
               borderRadius: 15.0,
               height: 30.0,
               width: 30.0,
-              heading: const Text(
+              heading: Text(
                 'Kolor',
-                style: TextStyle(color: Colors.white),
+                style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
-              subheading: const Text(
+              subheading: Text(
                 'Odcień',
-                style: TextStyle(color: Colors.white),
+                style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
             ),
           ),

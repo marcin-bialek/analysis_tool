@@ -22,16 +22,16 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
         Row(
           children: [
             const SizedBox(width: 20.0),
-            const Text(
+            Text(
               'Notatki',
-              style: TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
             ),
             const Spacer(),
             IconButton(
               onPressed: _projectService.addEmptyNote,
-              icon: const Icon(
+              icon: Icon(
                 Icons.add,
-                color: Colors.white,
+                color: Theme.of(context).primaryIconTheme.color,
               ),
             ),
           ],
@@ -83,14 +83,13 @@ class _SideMenuNotesItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10.0),
-      color: const Color.fromARGB(255, 30, 30, 30),
       child: TextButton(
         child: Align(
           alignment: Alignment.centerLeft,
           child: note.title.observe((title) {
             return Text(
               note.title.value,
-              style: const TextStyle(color: Colors.white, fontSize: 13.0),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             );

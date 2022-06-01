@@ -37,11 +37,9 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                   });
                 },
               ),
-              const Text(
+              Text(
                 'Grupuj kody w przyległych liniach',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+                style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
               const SizedBox(width: 20.0),
               TextButton.icon(
@@ -100,13 +98,13 @@ class _CodeStatsViewState extends State<CodeStatsView> {
           title: code.name.observe((name) {
             return Text(
               '$name (liczba plików: ${fileStats.length})',
-              style: const TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
             );
           }),
           initiallyExpanded: true,
           children: [
             Container(
-              color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+              color: Theme.of(context).canvasColor,
               padding: const EdgeInsets.all(10.0),
               child: Row(
                 children: const [
@@ -143,7 +141,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
             ...fileStats
                 .map((textFile, versionStats) {
                   final w = ListTileTheme(
-                    tileColor: Colors.black,
+                    tileColor: Theme.of(context).primaryColor,
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 10.0),
                     dense: true,
@@ -151,10 +149,8 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                       initiallyExpanded: true,
                       title: Text(
                           '${textFile.name.value} (Liczba wersji: ${versionStats.length})'),
-                      backgroundColor:
-                          const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
-                      collapsedBackgroundColor:
-                          const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+                      backgroundColor: Theme.of(context).canvasColor,
+                      collapsedBackgroundColor: Theme.of(context).canvasColor,
                       children: versionStats
                           .map((version, lines) {
                             final w = ExpansionTile(
@@ -164,8 +160,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                                   '${version.name.value} (Liczba wystąpień: ${lines.length})'),
                               children: lines.map((s) {
                                 return Container(
-                                  color: const Color.fromARGB(
-                                      0xff, 0xee, 0xee, 0xee),
+                                  color: Theme.of(context).canvasColor,
                                   padding: const EdgeInsets.all(10.0),
                                   child: Row(
                                     children: [

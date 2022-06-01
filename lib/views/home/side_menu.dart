@@ -19,7 +19,7 @@ class _SideMenuState extends State<SideMenu> {
   Widget build(BuildContext context) {
     return Container(
       width: 50.0,
-      color: const Color.fromARGB(255, 51, 51, 51),
+      color: Theme.of(context).primaryColorLight,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -87,8 +87,8 @@ class _SideMenuButton extends StatelessWidget {
       ),
       tooltip: tooltip,
       padding: const EdgeInsets.symmetric(vertical: 10.0),
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
+      splashColor: Theme.of(context).primaryColor,
+      highlightColor: Theme.of(context).primaryColor,
     );
   }
 }

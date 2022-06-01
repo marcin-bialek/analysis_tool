@@ -72,7 +72,7 @@ class _NoteViewState extends State<NoteView> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+      color: Theme.of(context).canvasColor,
       padding: const EdgeInsets.all(28.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -96,14 +96,16 @@ class _NoteViewState extends State<NoteView> {
                 ),
               ),
               TextButton.icon(
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete,
                   size: 20.0,
-                  color: Colors.red,
+                  color: Theme.of(context).errorColor,
                 ),
-                label: const Text(
+                label: Text(
                   'Usuń notatkę',
-                  style: TextStyle(color: Colors.red),
+                  style: Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
+                        color: Theme.of(context).errorColor,
+                      ),
                 ),
                 onPressed: () async {
                   final result = await showDialogRemoveNote(context: context);

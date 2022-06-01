@@ -30,7 +30,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Analysis Tool',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: const Color.fromARGB(255, 30, 30, 30),
+        primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
+        primaryTextTheme: const TextTheme(
+          bodyText2: TextStyle(color: Colors.white, fontSize: 13.0),
+        ),
+        primaryIconTheme: const IconThemeData(color: Colors.white),
+        canvasColor: const Color.fromARGB(255, 238, 238, 238),
+        textTheme: const TextTheme(
+          bodyText2: TextStyle(color: Colors.black, fontSize: 15.0),
+        ),
+        hintColor: Colors.white,
+        errorColor: Colors.red,
       ),
       home: const HomePage(),
     );
@@ -48,7 +59,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 30, 30, 30),
+      backgroundColor: Theme.of(context).primaryColor,
       body: Row(
         children: [
           const SideMenu(),
@@ -57,7 +68,7 @@ class _HomePageState extends State<HomePage> {
               data: MultiSplitViewThemeData(
                 dividerThickness: 2,
                 dividerPainter: DividerPainters.background(
-                  color: const Color.fromARGB(255, 51, 51, 51),
+                  color: Theme.of(context).primaryColorLight,
                 ),
               ),
               child: MultiSplitView(

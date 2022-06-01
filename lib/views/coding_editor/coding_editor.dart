@@ -58,7 +58,7 @@ class _CodingEditorState extends State<CodingEditor> {
       children: [
         Container(
           height: 40.0,
-          color: const Color.fromARGB(255, 51, 51, 51),
+          color: Theme.of(context).primaryColorLight,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -66,18 +66,21 @@ class _CodingEditorState extends State<CodingEditor> {
                 widget.codingVersion.name.observe((name) {
                   return Text(
                     name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style:
+                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                   );
                 }),
                 const Spacer(),
                 TextButton.icon(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text(
+                  icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
+                  label: Text(
                     'Usuń kodowanie',
-                    style: TextStyle(color: Colors.red),
+                    style:
+                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
+                              color: Theme.of(context).errorColor,
+                            ),
                   ),
                   onPressed: _removeCodingVersion,
                 ),
@@ -87,7 +90,7 @@ class _CodingEditorState extends State<CodingEditor> {
         ),
         Expanded(
           child: Container(
-            color: const Color.fromARGB(0xff, 0xee, 0xee, 0xee),
+            color: Theme.of(context).canvasColor,
             child: widget.codingVersion.codingLines.observe((codingLines) {
               return ListView.separated(
                 key: UniqueKey(),
@@ -404,7 +407,7 @@ class _CodingButton extends StatelessWidget {
                   child: coding.code.name.observe((name) {
                     return Text(
                       name,
-                      style: const TextStyle(color: Colors.black),
+                      style: Theme.of(context).textTheme.bodyText2,
                       overflow: TextOverflow.ellipsis,
                     );
                   }),
@@ -440,9 +443,9 @@ class _NoteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 30, 30, 30),
-        borderRadius: BorderRadius.all(
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        borderRadius: const BorderRadius.all(
           Radius.circular(5.0),
         ),
       ),
@@ -462,7 +465,7 @@ class _NoteButton extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white),
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
                 ),
               );
             }),

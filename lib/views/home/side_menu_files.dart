@@ -24,17 +24,17 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
         Row(
           children: [
             const SizedBox(width: 20.0),
-            const Text(
+            Text(
               'Pliki',
-              style: TextStyle(color: Colors.white),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
             ),
             const Spacer(),
             IconButton(
               onPressed: _projectService.addFile,
               tooltip: 'Dodaj plik',
-              icon: const Icon(
+              icon: Icon(
                 Icons.add,
-                color: Colors.white,
+                color: Theme.of(context).primaryIconTheme.color,
               ),
             ),
             _projectService.project.observe((project) {
@@ -43,19 +43,19 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
                   IconButton(
                     onPressed: _projectService.saveProject,
                     tooltip: 'Zapisz projekt',
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.save,
                       size: 20.0,
-                      color: Colors.white,
+                      color: Theme.of(context).primaryIconTheme.color,
                     ),
                   ),
                   IconButton(
                     onPressed: _closeProject,
                     tooltip: 'Zamknij projekt',
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close,
                       size: 20.0,
-                      color: Colors.white,
+                      color: Theme.of(context).primaryIconTheme.color,
                     ),
                   ),
                 ]);
@@ -113,18 +113,15 @@ class SideMenuFilesItem extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(
+          leading: Icon(
             Icons.file_copy,
-            color: Colors.white,
+            color: Theme.of(context).primaryIconTheme.color,
             size: 14.0,
           ),
           title: file.name.observe(
             (name) => TextEditable(
               text: name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13.0,
-              ),
+              style: Theme.of(context).primaryTextTheme.bodyText2,
               edited: (text) {
                 file.name.value = text;
               },
@@ -151,15 +148,15 @@ class SideMenuFilesItem extends StatelessWidget {
           return Column(
             children: versions.map((version) {
               return ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.account_tree,
-                  color: Colors.white,
+                  color: Theme.of(context).primaryIconTheme.color,
                   size: 14.0,
                 ),
                 title: version.name.observe((name) {
                   return TextEditable(
                     text: name,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.0),
+                    style: Theme.of(context).primaryTextTheme.bodyText2,
                     edited: (text) {
                       version.name.value = text;
                     },

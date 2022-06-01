@@ -32,13 +32,13 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
         SizedBox(
           height: 40.0,
           child: Row(
-            children: const [
-              SizedBox(width: 20.0),
+            children: [
+              const SizedBox(width: 20.0),
               Text(
                 'Współpraca',
-                style: TextStyle(color: Colors.white),
+                style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),
@@ -124,13 +124,13 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
         SizedBox(
           height: 40.0,
           child: Row(
-            children: const [
-              SizedBox(width: 20.0),
+            children: [
+              const SizedBox(width: 20.0),
               Text(
                 'Użytkownicy',
-                style: TextStyle(color: Colors.white),
+                style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),
@@ -141,15 +141,15 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                 (e) {
                   return ListTile(
                     dense: true,
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.person,
                       size: 20.0,
-                      color: Colors.white,
+                      color: Theme.of(context).primaryIconTheme.color,
                     ),
                     title: Text(
                       e.value +
                           (e.key == _serverService.clientId ? ' (Ty)' : ''),
-                      style: const TextStyle(color: Colors.white),
+                      style: Theme.of(context).primaryTextTheme.bodyText2,
                     ),
                   );
                 },
