@@ -272,6 +272,7 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                   children: [
                     ...codings.map((c) {
                       return _CodingButton(
+                        key: UniqueKey(),
                         coding: c,
                         enabledCoding: widget.enabledCoding,
                         onRemove: () {
