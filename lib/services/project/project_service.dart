@@ -311,7 +311,26 @@ class ProjectService {
     addCoding(version, line, coding, sendToServer: sendToServer);
   }
 
-  void addCode({Code? parent, bool sendToServer = true}) {
+  void addCode(Code code, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    if (code.parentId == null) {
+      project.codes.value.add(code);
+      project.codes.notify();
+    } else {
+      final parent =
+          project.codes.value.firstWhereOrNull((e) => e.id == code.parentId);
+      if (parent != null) {
+        project.codes.value.add(code);
+        parent.children.value.add(code);
+        parent.children.notify();
+      }
+    }
+    if (sendToServer) {
+      ServerService().sendEvent(EventCodeAdd(code: code));
+    }
+  }
+
+  void addNewCode({Code? parent, bool sendToServer = true}) {
     final project = _getOrCreateProject();
     final color = parent == null
         ? Random().element(ColorTools.primaryColors)
@@ -321,16 +340,7 @@ class ProjectService {
       color: color,
       parentId: parent?.id,
     );
-    project.codes.value.add(code);
-    if (parent == null) {
-      project.codes.notify();
-    } else {
-      parent.children.value.add(code);
-      parent.children.notify();
-    }
-    if (sendToServer) {
-      ServerService().sendEvent(EventCodeAdd(code: code));
-    }
+    addCode(code, sendToServer: sendToServer);
   }
 
   void removeCode(Code code, {bool sendToServer = true}) {

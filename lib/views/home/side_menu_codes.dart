@@ -31,7 +31,7 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
             ),
             const Spacer(),
             IconButton(
-              onPressed: _projectService.addCode,
+              onPressed: _projectService.addNewCode,
               icon: Icon(
                 Icons.add,
                 color: Theme.of(context).primaryIconTheme.color,
@@ -164,7 +164,7 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
             TextButton(
               child: const Text('Dodaj podkod'),
               onPressed: () {
-                _projectService.addCode(parent: widget.code);
+                _projectService.addNewCode(parent: widget.code);
               },
             ),
           TextButton(

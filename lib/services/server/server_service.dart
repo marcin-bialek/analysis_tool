@@ -171,8 +171,7 @@ class ServerService {
 
     // Code events
     else if (event is EventCodeAdd) {
-      project?.codes.value.add(event.code);
-      project?.codes.notify();
+      projectService.addCode(event.code, sendToServer: false);
     } else if (event is EventCodeRemove) {
       final code =
           project?.codes.value.firstWhereOrNull((c) => c.id == event.codeId);
