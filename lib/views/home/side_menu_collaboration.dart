@@ -170,14 +170,16 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
         children: [
           TextField(
             controller: _serverAddressController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Podaj adres serwera',
+              hintStyle: Theme.of(context).textTheme.bodyText2,
             ),
           ),
           TextField(
             controller: _passcodeController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Podaj kod projektu',
+              hintStyle: Theme.of(context).textTheme.bodyText2,
             ),
           ),
         ],
@@ -204,8 +206,9 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
       title: 'Wyślij projekt na serwer',
       content: TextField(
         controller: _serverAddressController,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Podaj adres serwera',
+          hintStyle: Theme.of(context).textTheme.bodyText2,
         ),
       ),
       actions: {

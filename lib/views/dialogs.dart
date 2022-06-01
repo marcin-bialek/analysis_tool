@@ -15,6 +15,10 @@ Future<T?> showGenericDialog<T>({
       return AlertDialog(
         title: Text(title),
         content: content,
+        backgroundColor: Theme.of(context).canvasColor,
+        titleTextStyle:
+            Theme.of(context).textTheme.bodyText2!.copyWith(fontSize: 20.0),
+        contentTextStyle: Theme.of(context).textTheme.bodyText2,
         actions: actions.keys.map((k) {
           final v = actions[k];
           return TextButton(
