@@ -83,6 +83,7 @@ class _SideMenuNotesItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10.0),
+      color: Theme.of(context).primaryColor,
       child: TextButton(
         child: Align(
           alignment: Alignment.centerLeft,
