@@ -26,6 +26,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
         Container(
           height: 40.0,
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          color: Theme.of(context).primaryColorLight,
           child: Row(
             children: [
               const Spacer(),

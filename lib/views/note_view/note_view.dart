@@ -71,18 +71,60 @@ class _NoteViewState extends State<NoteView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).canvasColor,
-      padding: const EdgeInsets.all(28.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextField(
+    return Column(
+      children: [
+        Container(
+          height: 40.0,
+          color: Theme.of(context).primaryColorLight,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                widget.note.title.observe((title) {
+                  return Text(
+                    title,
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .bodyText2!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  );
+                }),
+                const Spacer(),
+                TextButton.icon(
+                  icon: Icon(
+                    Icons.delete,
+                    size: 20.0,
+                    color: Theme.of(context).errorColor,
+                  ),
+                  label: Text(
+                    'Usuń notatkę',
+                    style:
+                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
+                              color: Theme.of(context).errorColor,
+                            ),
+                  ),
+                  onPressed: () async {
+                    final result = await showDialogRemoveNote(context: context);
+                    if (result == true) {
+                      mainViewNavigatorKey.currentState!
+                          .pushReplacementNamed(MainViewRoutes.none);
+                      ProjectService().removeNote(widget.note);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            color: Theme.of(context).canvasColor,
+            padding: const EdgeInsets.all(28.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
                   controller: titleController,
                   focusNode: titleFocusNode,
                   style: Theme.of(context).textTheme.bodyText2!.copyWith(
@@ -96,41 +138,20 @@ class _NoteViewState extends State<NoteView> {
                   ),
                   maxLines: null,
                 ),
-              ),
-              TextButton.icon(
-                icon: Icon(
-                  Icons.delete,
-                  size: 20.0,
-                  color: Theme.of(context).errorColor,
+                TextField(
+                  controller: textController,
+                  focusNode: textFocusNode,
+                  style: Theme.of(context).textTheme.bodyText2,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                  ),
+                  maxLines: null,
                 ),
-                label: Text(
-                  'Usuń notatkę',
-                  style: Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
-                        color: Theme.of(context).errorColor,
-                      ),
-                ),
-                onPressed: () async {
-                  final result = await showDialogRemoveNote(context: context);
-                  if (result == true) {
-                    mainViewNavigatorKey.currentState!
-                        .pushReplacementNamed(MainViewRoutes.none);
-                    ProjectService().removeNote(widget.note);
-                  }
-                },
-              ),
-            ],
-          ),
-          TextField(
-            controller: textController,
-            focusNode: textFocusNode,
-            style: Theme.of(context).textTheme.bodyText2,
-            decoration: const InputDecoration(
-              border: InputBorder.none,
+              ],
             ),
-            maxLines: null,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
