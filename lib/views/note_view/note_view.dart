@@ -85,10 +85,12 @@ class _NoteViewState extends State<NoteView> {
                 child: TextField(
                   controller: titleController,
                   focusNode: titleFocusNode,
-                  style: const TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize:
+                            Theme.of(context).textTheme.bodyText2!.fontSize! *
+                                1.3,
+                      ),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                   ),
@@ -121,9 +123,7 @@ class _NoteViewState extends State<NoteView> {
           TextField(
             controller: textController,
             focusNode: textFocusNode,
-            style: const TextStyle(
-              fontSize: 14.0,
-            ),
+            style: Theme.of(context).textTheme.bodyText2,
             decoration: const InputDecoration(
               border: InputBorder.none,
             ),
