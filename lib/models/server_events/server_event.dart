@@ -9,6 +9,7 @@ import 'package:analysis_tool/models/server_events/event_coding_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_update.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
 import 'package:analysis_tool/models/server_events/event_note_add_to_line.dart';
 import 'package:analysis_tool/models/server_events/event_note_remove.dart';
@@ -18,6 +19,7 @@ import 'package:analysis_tool/models/server_events/event_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_update.dart';
 import 'package:analysis_tool/models/text_file.dart';
 
 abstract class ServerEvent implements JsonEncodable {
@@ -49,6 +51,8 @@ abstract class ServerEvent implements JsonEncodable {
               : null;
         case EventTextFileRemove.name:
           return EventTextFileRemove.fromJson(event);
+        case EventTextFileUpdate.name:
+          return EventTextFileUpdate.fromJson(event);
 
         // TextCodingVersion events
         case EventCodingVersionAdd.name:
@@ -57,6 +61,8 @@ abstract class ServerEvent implements JsonEncodable {
               : null;
         case EventCodingVersionRemove.name:
           return EventCodingVersionRemove.fromJson(event);
+        case EventCodingVersionUpdate.name:
+          return EventCodingVersionUpdate.fromJson(event);
 
         // TextCoding events
         case EventCodingAdd.name:

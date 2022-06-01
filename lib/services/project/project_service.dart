@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:analysis_tool/models/server_events/event_coding_version_update.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_update.dart';
+
 import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
     as saver;
 
@@ -127,13 +130,20 @@ class ProjectService {
       switch (file.extension) {
         case 'txt':
           final textFile = TextFile.withId(name: file.name, rawText: text);
-          project.textFiles.value.add(textFile);
-          project.textFiles.notify();
-          ServerService().sendEvent(EventTextFileAdd(textFile: textFile));
+          addTextFile(textFile);
           break;
         default:
           throw UnsupportedFileError();
       }
+    }
+  }
+
+  void addTextFile(TextFile textFile, {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
+    project.textFiles.value.add(textFile);
+    project.textFiles.notify();
+    if (sendToServer) {
+      ServerService().sendEvent(EventTextFileAdd(textFile: textFile));
     }
   }
 
@@ -143,6 +153,33 @@ class ProjectService {
       project.textFiles.notify();
       if (sendToServer) {
         ServerService().sendEvent(EventTextFileRemove(textFileId: textFile.id));
+      }
+    }
+  }
+
+  void updateTextFile(
+    String id, {
+    String? name,
+    String? rawText,
+    bool sendToServer = true,
+  }) {
+    final project = _getOrCreateProject();
+    final textFile =
+        project.textFiles.value.firstWhereOrNull((e) => e.id == id);
+    if (textFile != null) {
+      if (rawText != null && textFile.codingVersions.value.isNotEmpty) {
+        return;
+      }
+      if (name != null) {
+        textFile.name.value = name;
+      }
+      if (rawText != null) {
+        textFile.rawText.value = rawText;
+        textFile.makeTextLines();
+      }
+      if (sendToServer) {
+        ServerService().sendEvent(EventTextFileUpdate(
+            textFileId: id, textFileName: name, rawText: rawText));
       }
     }
   }
@@ -189,6 +226,29 @@ class ProjectService {
           textFile.codingVersions.value.firstWhereOrNull((e) => e.id == id);
       if (version != null) {
         return removeCodingVersion(version, sendToServer: sendToServer);
+      }
+    }
+  }
+
+  void updateCodingVersion(
+    String id, {
+    String? name,
+    bool sendToServer = true,
+  }) {
+    final project = _getOrCreateProject();
+    TextCodingVersion? version;
+    for (final textFile in project.textFiles.value) {
+      version =
+          textFile.codingVersions.value.firstWhereOrNull((e) => e.id == id);
+      if (version != null) {
+        break;
+      }
+    }
+    if (version != null) {
+      if (name != null) version.name.value = name;
+      if (sendToServer) {
+        ServerService().sendEvent(EventCodingVersionUpdate(
+            codingVersionId: id, codingVersionName: name));
       }
     }
   }

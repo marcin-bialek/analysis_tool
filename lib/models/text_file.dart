@@ -18,20 +18,7 @@ class TextFile implements JsonEncodable {
     required String rawText,
   })  : name = Observable(name),
         rawText = Observable(rawText) {
-    final lines = rawText
-        .split('\n')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    int offset = 0;
-    for (int i = 0; i < lines.length; i++) {
-      textLines.value.add(TextLine(
-        index: i,
-        offset: offset,
-        text: lines[i],
-      ));
-      offset += lines[i].length;
-    }
+    makeTextLines();
   }
 
   factory TextFile.withId({
@@ -56,6 +43,25 @@ class TextFile implements JsonEncodable {
       (e) => TextCodingVersion.fromJson(e, file, codes, notes),
     ));
     return file;
+  }
+
+  void makeTextLines() {
+    final lines = rawText.value
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    textLines.value.clear();
+    int offset = 0;
+    for (int i = 0; i < lines.length; i++) {
+      textLines.value.add(TextLine(
+        index: i,
+        offset: offset,
+        text: lines[i],
+      ));
+      offset += lines[i].length;
+    }
+    textLines.notify();
   }
 
   @override

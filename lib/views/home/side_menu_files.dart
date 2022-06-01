@@ -123,7 +123,7 @@ class SideMenuFilesItem extends StatelessWidget {
               text: name,
               style: Theme.of(context).primaryTextTheme.bodyText2,
               edited: (text) {
-                file.name.value = text;
+                ProjectService().updateTextFile(file.id, name: text);
               },
             ),
           ),
@@ -158,7 +158,8 @@ class SideMenuFilesItem extends StatelessWidget {
                     text: name,
                     style: Theme.of(context).primaryTextTheme.bodyText2,
                     edited: (text) {
-                      version.name.value = text;
+                      ProjectService()
+                          .updateCodingVersion(version.id, name: text);
                     },
                   );
                 }),

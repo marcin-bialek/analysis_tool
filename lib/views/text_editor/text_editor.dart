@@ -21,21 +21,33 @@ class TextEditor extends StatefulWidget {
 }
 
 class _TextEditorState extends State<TextEditor> {
-  ItemScrollController? _textScrollController;
+  ItemScrollController? textScrollController;
+  TextEditingController? editorController;
+  final textLines = <String>[];
+  bool editing = false;
+  bool edited = false;
 
   @override
   void initState() {
     super.initState();
-    _textScrollController = ItemScrollController();
+    textLines.addAll(widget.file.textLines.value.map((e) => e.text));
+    editorController = TextEditingController();
+    textScrollController = ItemScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.line != null) {
-        _textScrollController?.scrollTo(
+        textScrollController?.scrollTo(
           index: widget.line!,
           duration: const Duration(microseconds: 200),
           curve: Curves.easeInOut,
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    editorController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,13 +71,55 @@ class _TextEditorState extends State<TextEditor> {
                   );
                 }),
                 const Spacer(),
-                TextButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Dodaj kodowanie'),
-                  onPressed: () {
-                    ProjectService().addCodingVersion(widget.file);
-                  },
+                Switch(
+                  value: editing,
+                  onChanged: _switchEditing,
                 ),
+                Text(
+                  'Edycja',
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                ),
+                const SizedBox(width: 20.0),
+                if (!editing &&
+                    edited &&
+                    widget.file.codingVersions.value.isEmpty)
+                  TextButton.icon(
+                    icon: const Icon(Icons.save),
+                    label: const Text('Zapisz'),
+                    onPressed: () {
+                      ProjectService().updateTextFile(
+                        widget.file.id,
+                        rawText: textLines.join('\n'),
+                      );
+                      setState(() {
+                        edited = false;
+                      });
+                    },
+                  ),
+                if (!editing && edited)
+                  TextButton.icon(
+                    icon: const Icon(Icons.save_as),
+                    label: const Text('Zapisz jako nowy'),
+                    onPressed: () {
+                      final textFile = TextFile.withId(
+                        name: '${widget.file.name.value} (edytowany)',
+                        rawText: textLines.join('\n'),
+                      );
+                      ProjectService().addTextFile(textFile);
+                      mainViewNavigatorKey.currentState!.pushReplacementNamed(
+                        MainViewRoutes.textEditor,
+                        arguments: [textFile, null],
+                      );
+                    },
+                  ),
+                if (!editing)
+                  TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Dodaj kodowanie'),
+                    onPressed: () {
+                      ProjectService().addCodingVersion(widget.file);
+                    },
+                  ),
                 TextButton.icon(
                   icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
                   label: Text(
@@ -81,42 +135,82 @@ class _TextEditorState extends State<TextEditor> {
             ),
           ),
         ),
-        Expanded(
-          child: Container(
-            color: Theme.of(context).canvasColor,
-            child: ScrollablePositionedList.separated(
-              itemCount: widget.file.textLines.value.length,
-              itemBuilder: (context, index) {
-                final line = widget.file.textLines.value[index];
-                return Row(
-                  children: [
-                    Container(
-                      width: 50.0,
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text(
-                        '${index + 1}',
-                        style: Theme.of(context).textTheme.bodyText2,
+        if (!editing)
+          Expanded(
+            child: Container(
+              color: Theme.of(context).canvasColor,
+              child: ScrollablePositionedList.separated(
+                itemCount: textLines.length,
+                itemBuilder: (context, index) {
+                  return Row(
+                    children: [
+                      Container(
+                        width: 50.0,
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text(
+                          '${index + 1}',
+                          style: Theme.of(context).textTheme.bodyText2,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        line.text,
-                        softWrap: true,
-                        style: Theme.of(context).textTheme.bodyText2,
+                      Expanded(
+                        child: Text(
+                          textLines[index],
+                          softWrap: true,
+                          style: Theme.of(context).textTheme.bodyText2,
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
-              separatorBuilder: (context, index) {
-                return const Divider();
-              },
-              itemScrollController: _textScrollController,
+                      const SizedBox(width: 50.0),
+                    ],
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return const Divider();
+                },
+                itemScrollController: textScrollController,
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+              ),
             ),
           ),
-        ),
+        if (editing)
+          Expanded(
+            child: Container(
+              color: Theme.of(context).canvasColor,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 50.0,
+                vertical: 10.0,
+              ),
+              child: TextField(
+                controller: editorController,
+                style: Theme.of(context).textTheme.bodyText2,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                ),
+                maxLines: null,
+                onChanged: (_) {
+                  setState(() {
+                    edited = true;
+                  });
+                },
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  void _switchEditing(bool value) {
+    setState(() {
+      if (value) {
+        editorController!.text = textLines.join('\n\n');
+      } else {
+        textLines.clear();
+        textLines.addAll(editorController!.text
+            .split('\n')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty));
+      }
+      editing = value;
+    });
   }
 
   void _removeTextFile() async {

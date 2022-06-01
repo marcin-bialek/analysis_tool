@@ -11,6 +11,7 @@ import 'package:analysis_tool/models/server_events/event_coding_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_remove.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_add.dart';
 import 'package:analysis_tool/models/server_events/event_coding_version_remove.dart';
+import 'package:analysis_tool/models/server_events/event_coding_version_update.dart';
 import 'package:analysis_tool/models/server_events/event_get_project.dart';
 import 'package:analysis_tool/models/server_events/event_hello.dart';
 import 'package:analysis_tool/models/server_events/event_note_add.dart';
@@ -23,6 +24,7 @@ import 'package:analysis_tool/models/server_events/event_publish_project.dart';
 import 'package:analysis_tool/models/server_events/event_published.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_add.dart';
 import 'package:analysis_tool/models/server_events/event_text_file_remove.dart';
+import 'package:analysis_tool/models/server_events/event_text_file_update.dart';
 import 'package:analysis_tool/models/server_events/server_event.dart';
 import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
@@ -116,10 +118,16 @@ class ServerService {
 
     // TextFile events
     else if (event is EventTextFileAdd) {
-      project?.textFiles.value.add(event.textFile);
-      project?.textFiles.notify();
+      projectService.addTextFile(event.textFile, sendToServer: false);
     } else if (event is EventTextFileRemove) {
       projectService.removeTextFileById(event.textFileId, sendToServer: false);
+    } else if (event is EventTextFileUpdate) {
+      projectService.updateTextFile(
+        event.textFileId,
+        name: event.textFileName,
+        rawText: event.rawText,
+        sendToServer: false,
+      );
     }
 
     // TextCodingVersion events
@@ -131,6 +139,9 @@ class ServerService {
     } else if (event is EventCodingVersionRemove) {
       projectService.removeCodingVersionById(event.codingVersionId,
           sendToServer: false);
+    } else if (event is EventCodingVersionUpdate) {
+      projectService.updateCodingVersion(event.codingVersionId,
+          name: event.codingVersionName, sendToServer: false);
     }
 
     // TextCoding events
