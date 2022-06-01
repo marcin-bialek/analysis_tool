@@ -1,5 +1,6 @@
 import 'package:analysis_tool/services/settings/settings_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -10,22 +11,24 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   final settings = SettingsService();
-  TextEditingController? fontSizeController;
+  TextEditingController? menuFontSizeController;
+  TextEditingController? editorFontSizeController;
   TextEditingController? usernameController;
 
   @override
   void initState() {
     super.initState();
-    fontSizeController = TextEditingController(text: '13');
-    usernameController = TextEditingController(text: settings.username);
-    usernameController?.addListener(() {
-      settings.username = usernameController!.text;
-    });
+    menuFontSizeController = TextEditingController(
+        text: settings.fontSizes.value.menuFontSize.toString());
+    editorFontSizeController = TextEditingController(
+        text: settings.fontSizes.value.editorFontSize.toString());
+    usernameController = TextEditingController(text: settings.username.value);
   }
 
   @override
   void dispose() {
-    fontSizeController?.dispose();
+    menuFontSizeController?.dispose();
+    editorFontSizeController?.dispose();
     usernameController?.dispose();
     super.dispose();
   }
@@ -40,23 +43,62 @@ class _SettingsViewState extends State<SettingsView> {
           1: FlexColumnWidth(0.7),
         },
         children: [
-          // TableRow(
-          //   children: [
-          //     const TableCell(
-          //       verticalAlignment: TableCellVerticalAlignment.middle,
-          //       child: Text(
-          //         'Rozmiar czcionki:',
-          //         style: TextStyle(color: Colors.white),
-          //       ),
-          //     ),
-          //     TableCell(
-          //       child: TextField(
-          //         controller: fontSizeController,
-          //         style: const TextStyle(color: Colors.white, fontSize: 15.0),
-          //       ),
-          //     ),
-          //   ],
-          // ),
+          TableRow(
+            children: [
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Text(
+                  'Rozmiar czcionki menu:',
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                ),
+              ),
+              TableCell(
+                child: TextField(
+                  controller: menuFontSizeController,
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  onEditingComplete: () {
+                    final size = int.tryParse(menuFontSizeController!.text);
+                    if (size != null) {
+                      SettingsService().fontSizes.value.menuFontSize = size;
+                      SettingsService().fontSizes.notify();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          TableRow(
+            children: [
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Text(
+                  'Rozmiar czcionki edytora tekstu:',
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                ),
+              ),
+              TableCell(
+                child: TextField(
+                  controller: editorFontSizeController,
+                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  onEditingComplete: () {
+                    final size = int.tryParse(editorFontSizeController!.text);
+                    if (size != null) {
+                      SettingsService().fontSizes.value.editorFontSize = size;
+                      SettingsService().fontSizes.notify();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
           TableRow(
             children: [
               TableCell(
@@ -70,6 +112,12 @@ class _SettingsViewState extends State<SettingsView> {
                 child: TextField(
                   controller: usernameController,
                   style: Theme.of(context).primaryTextTheme.bodyText2,
+                  onEditingComplete: () {
+                    final username = usernameController!.text;
+                    if (username.isNotEmpty) {
+                      SettingsService().username.value = username;
+                    }
+                  },
                 ),
               ),
             ],

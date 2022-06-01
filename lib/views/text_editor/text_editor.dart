@@ -93,12 +93,16 @@ class _TextEditorState extends State<TextEditor> {
                     Container(
                       width: 50.0,
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Text('${index + 1}'),
+                      child: Text(
+                        '${index + 1}',
+                        style: Theme.of(context).textTheme.bodyText2,
+                      ),
                     ),
                     Expanded(
                       child: Text(
                         line.text,
                         softWrap: true,
+                        style: Theme.of(context).textTheme.bodyText2,
                       ),
                     ),
                   ],

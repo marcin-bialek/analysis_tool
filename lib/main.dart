@@ -2,6 +2,7 @@ import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
+import 'package:analysis_tool/services/settings/settings_service.dart';
 import 'package:analysis_tool/views/code_stats/code_stats_view.dart';
 import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
@@ -26,25 +27,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Analysis Tool',
-      theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 30, 30, 30),
-        primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
-        primaryTextTheme: const TextTheme(
-          bodyText2: TextStyle(color: Colors.white, fontSize: 13.0),
+    return SettingsService().fontSizes.observe((sizes) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Analysis Tool',
+        theme: ThemeData(
+          primaryColor: const Color.fromARGB(255, 30, 30, 30),
+          primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
+          primaryTextTheme: TextTheme(
+            bodyText2: TextStyle(
+              color: Colors.white,
+              fontSize: sizes.menuFontSize.toDouble(),
+            ),
+          ),
+          primaryIconTheme: const IconThemeData(color: Colors.white),
+          canvasColor: const Color.fromARGB(255, 238, 238, 238),
+          textTheme: TextTheme(
+            bodyText2: TextStyle(
+              color: Colors.black,
+              fontSize: sizes.editorFontSize.toDouble(),
+            ),
+          ),
+          hintColor: Colors.white,
+          errorColor: Colors.red,
         ),
-        primaryIconTheme: const IconThemeData(color: Colors.white),
-        canvasColor: const Color.fromARGB(255, 238, 238, 238),
-        textTheme: const TextTheme(
-          bodyText2: TextStyle(color: Colors.black, fontSize: 15.0),
-        ),
-        hintColor: Colors.white,
-        errorColor: Colors.red,
-      ),
-      home: const HomePage(),
-    );
+        home: const HomePage(),
+      );
+    });
   }
 }
 

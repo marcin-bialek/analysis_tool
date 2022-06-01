@@ -224,7 +224,10 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
           Container(
             width: 50.0,
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: Text('${widget.codingLine.textLine.index + 1}'),
+            child: Text(
+              '${widget.codingLine.textLine.index + 1}',
+              style: Theme.of(context).textTheme.bodyText2,
+            ),
           ),
           Expanded(
             child: Container(
@@ -241,6 +244,7 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                         widget.codingLine.textLine.offset,
                         codings,
                       ),
+                      style: Theme.of(context).textTheme.bodyText2,
                     ),
                     key: _selectableTextKey,
                     maxLines: null,
@@ -465,7 +469,10 @@ class _NoteButton extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                        color:
+                            Theme.of(context).primaryTextTheme.bodyText2!.color,
+                      ),
                 ),
               );
             }),

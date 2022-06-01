@@ -78,7 +78,7 @@ class ServerService {
       }
       sendEvent(EventHello(
         clientId: clientId,
-        username: SettingsService().username,
+        username: SettingsService().username.value,
       ));
       completer.complete(connectionInfo);
     });
