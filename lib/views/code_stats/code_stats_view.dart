@@ -107,32 +107,44 @@ class _CodeStatsViewState extends State<CodeStatsView> {
               color: Theme.of(context).canvasColor,
               padding: const EdgeInsets.all(10.0),
               child: Row(
-                children: const [
+                children: [
                   SizedBox(
                     width: 100.0,
                     child: Text(
                       'Plik',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(
                     width: 100.0,
                     child: Text(
                       'Kodowanie',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(
                     width: 50.0,
                     child: Text(
                       'Linia',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Expanded(
                     child: Text(
                       'Tekst',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -148,16 +160,32 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                     child: ExpansionTile(
                       initiallyExpanded: true,
                       title: Text(
-                          '${textFile.name.value} (Liczba wersji: ${versionStats.length})'),
+                        '${textFile.name.value} (Liczba wersji: ${versionStats.length})',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText2!
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
                       backgroundColor: Theme.of(context).canvasColor,
                       collapsedBackgroundColor: Theme.of(context).canvasColor,
                       children: versionStats
                           .map((version, lines) {
                             final w = ExpansionTile(
                               initiallyExpanded: true,
-                              leading: Text(textFile.name.value),
+                              leading: Text(
+                                textFile.name.value,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
                               title: Text(
-                                  '${version.name.value} (Liczba wystąpień: ${lines.length})'),
+                                '${version.name.value} (Liczba wystąpień: ${lines.length})',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
                               children: lines.map((s) {
                                 return Container(
                                   color: Theme.of(context).canvasColor,
@@ -166,26 +194,49 @@ class _CodeStatsViewState extends State<CodeStatsView> {
                                     children: [
                                       SizedBox(
                                         width: 100.0,
-                                        child: Text(s.textFile.name.value),
+                                        child: Text(
+                                          s.textFile.name.value,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
+                                        ),
                                       ),
                                       SizedBox(
                                         width: 100.0,
-                                        child: Text(s.codingVersion.name.value),
+                                        child: Text(
+                                          s.codingVersion.name.value,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
+                                        ),
                                       ),
                                       if (s.startLine == s.endLine)
                                         SizedBox(
                                           width: 50.0,
-                                          child: Text('${s.startLine + 1}'),
+                                          child: Text(
+                                            '${s.startLine + 1}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                          ),
                                         ),
                                       if (s.startLine != s.endLine)
                                         SizedBox(
                                           width: 50.0,
                                           child: Text(
                                             '${s.startLine + 1}-${s.endLine + 1}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
                                           ),
                                         ),
                                       Expanded(
-                                        child: Text(s.text),
+                                        child: Text(
+                                          s.text,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
+                                        ),
                                       ),
                                     ],
                                   ),
