@@ -356,13 +356,15 @@ class ProjectService {
   void removeCode(Code code, {bool sendToServer = true}) {
     final project = _getOrCreateProject();
     if (project.codes.value.remove(code)) {
+      for (final file in project.textFiles.value) {
+        for (final codingVersion in file.codingVersions.value) {
+          codingVersion.removeCode(code);
+        }
+      }
+      project.codes.value.where((c) => c.parentId == code.id).forEach((child) {
+        removeCode(child, sendToServer: false);
+      });
       if (code.parentId == null) {
-        project.codes.value
-            .where((c) => c.parentId == code.id)
-            .toList()
-            .forEach((child) {
-          removeCode(child, sendToServer: sendToServer);
-        });
         project.codes.notify();
       } else {
         final parent =
@@ -370,11 +372,6 @@ class ProjectService {
         if (parent != null) {
           parent.children.value.remove(code);
           parent.children.notify();
-        }
-      }
-      for (final file in project.textFiles.value) {
-        for (final codingVersion in file.codingVersions.value) {
-          codingVersion.removeCode(code);
         }
       }
       if (sendToServer) {
