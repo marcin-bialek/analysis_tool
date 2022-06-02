@@ -72,6 +72,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
             return project.textFiles.observe((value) {
               final textFiles = value.toList();
               return ListView.builder(
+                key: UniqueKey(),
                 itemCount: textFiles.length,
                 itemBuilder: (context, index) {
                   final file = textFiles[index];

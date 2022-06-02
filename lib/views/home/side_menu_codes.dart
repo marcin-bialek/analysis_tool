@@ -57,6 +57,7 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
             return project.codes.observe((value) {
               final codes = value.where((c) => c.parentId == null).toList();
               return ListView.builder(
+                key: UniqueKey(),
                 itemCount: codes.length,
                 itemBuilder: (context, index) {
                   final code = codes[index];

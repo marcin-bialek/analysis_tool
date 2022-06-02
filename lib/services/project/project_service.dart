@@ -361,7 +361,10 @@ class ProjectService {
           codingVersion.removeCode(code);
         }
       }
-      project.codes.value.where((c) => c.parentId == code.id).forEach((child) {
+      project.codes.value
+          .where((c) => c.parentId == code.id)
+          .toList()
+          .forEach((child) {
         removeCode(child, sendToServer: false);
       });
       if (code.parentId == null) {
