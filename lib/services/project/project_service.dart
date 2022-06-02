@@ -246,19 +246,23 @@ class ProjectService {
     bool sendToServer = true,
   }) {
     final project = _getOrCreateProject();
+    TextFile? textFile;
     TextCodingVersion? version;
-    for (final textFile in project.textFiles.value) {
-      version =
-          textFile.codingVersions.value.firstWhereOrNull((e) => e.id == id);
+    for (final file in project.textFiles.value) {
+      version = file.codingVersions.value.firstWhereOrNull((e) => e.id == id);
       if (version != null) {
+        textFile = file;
         break;
       }
     }
-    if (version != null) {
+    if (textFile != null && version != null) {
       if (name != null) version.name.value = name;
       if (sendToServer) {
         ServerService().sendEvent(EventCodingVersionUpdate(
-            codingVersionId: id, codingVersionName: name));
+          textFileId: textFile.id,
+          codingVersionId: id,
+          codingVersionName: name,
+        ));
       }
     }
   }
