@@ -76,7 +76,9 @@ class ProjectService {
         _currentProjectPath = result.files.first.path;
         return project;
       } catch (e) {
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
         throw InvalidFileError();
       }
     }
@@ -118,7 +120,6 @@ class ProjectService {
   }
 
   Future<void> addFile() async {
-    final project = _getOrCreateProject();
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt'],
@@ -151,6 +152,11 @@ class ProjectService {
     final project = _getOrCreateProject();
     if (project.textFiles.value.remove(textFile)) {
       project.textFiles.notify();
+      for (final version in textFile.codingVersions.value) {
+        for (final note in project.notes.value) {
+          note.codingLines.remove(version.id);
+        }
+      }
       if (sendToServer) {
         ServerService().sendEvent(EventTextFileRemove(textFileId: textFile.id));
       }
@@ -208,8 +214,12 @@ class ProjectService {
 
   void removeCodingVersion(TextCodingVersion version,
       {bool sendToServer = true}) {
+    final project = _getOrCreateProject();
     if (version.file.codingVersions.value.remove(version)) {
       version.file.codingVersions.notify();
+      for (final note in project.notes.value) {
+        note.codingLines.remove(version.id);
+      }
       if (sendToServer) {
         ServerService().sendEvent(EventCodingVersionRemove(
           textFileId: version.file.id,

@@ -30,6 +30,7 @@ import 'package:analysis_tool/services/project/project_service.dart';
 import 'package:analysis_tool/services/server/server_service_exceptions.dart';
 import 'package:analysis_tool/services/server/unsecure_http_overrides.dart';
 import 'package:analysis_tool/services/settings/settings_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:uuid/uuid.dart';
 
@@ -217,7 +218,7 @@ class ServerService {
     }
 
     // unknown event
-    else {
+    else if (kDebugMode) {
       print(event);
     }
   }
