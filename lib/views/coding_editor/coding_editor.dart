@@ -26,18 +26,19 @@ class CodingEditor extends StatefulWidget {
 }
 
 class _CodingEditorState extends State<CodingEditor> {
-  final _selectedLine = Observable<_CodingEditorLine?>(null);
-  final _enabledCoding = Observable(EnabledCoding());
+  final selectedLines = Observable(<_CodingEditorLine>{});
+  final lineWithSelection = Observable<_CodingEditorLine?>(null);
+  final enabledCoding = Observable(EnabledCoding());
 
   @override
   void initState() {
     super.initState();
-    _enabledCoding.addListener(_onEnabledCodingChange);
+    enabledCoding.addListener(_onEnabledCodingChange);
   }
 
   @override
   void dispose() {
-    _enabledCoding.removeListener(_onEnabledCodingChange);
+    enabledCoding.removeListener(_onEnabledCodingChange);
     super.dispose();
   }
 
@@ -113,8 +114,9 @@ class _CodingEditorState extends State<CodingEditor> {
                       return _CodingEditorLine(
                         codingVersion: widget.codingVersion,
                         codingLine: codingLine,
-                        enabledCoding: _enabledCoding,
-                        selectedLine: _selectedLine,
+                        enabledCoding: enabledCoding,
+                        lineWithSelection: lineWithSelection,
+                        selectedLines: selectedLines,
                         backgroundColor:
                             candidateData.isNotEmpty ? Colors.white54 : null,
                       );
@@ -129,7 +131,7 @@ class _CodingEditorState extends State<CodingEditor> {
                   );
                 },
                 separatorBuilder: (context, index) {
-                  return const Divider();
+                  return const Divider(height: 1);
                 },
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
               );
@@ -163,7 +165,8 @@ class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
   final Observable<EnabledCoding> enabledCoding;
-  final Observable<_CodingEditorLine?> selectedLine;
+  final Observable<_CodingEditorLine?> lineWithSelection;
+  final Observable<Set<_CodingEditorLine>> selectedLines;
   final Color? backgroundColor;
 
   const _CodingEditorLine({
@@ -171,7 +174,8 @@ class _CodingEditorLine extends StatefulWidget {
     required this.codingVersion,
     required this.codingLine,
     required this.enabledCoding,
-    required this.selectedLine,
+    required this.lineWithSelection,
+    required this.selectedLines,
     this.backgroundColor,
   }) : super(key: key);
 
@@ -180,48 +184,57 @@ class _CodingEditorLine extends StatefulWidget {
 }
 
 class _CodingEditorLineState extends State<_CodingEditorLine> {
-  Key _selectableTextKey = UniqueKey();
-  int? _selectionStart;
-  int? _selectionEnd;
-  StreamSubscription<Code>? _codeRequestSubscription;
-  StreamSubscription<_CodingEditorLine?>? _selectedLineSubscription;
+  Key selectableTextKey = UniqueKey();
+  int? selectionStart;
+  int? selectionEnd;
+  StreamSubscription<Code>? codeRequestSubscription;
+  StreamSubscription<_CodingEditorLine?>? selectedLineSubscription;
 
   @override
   void initState() {
     super.initState();
-    _codeRequestSubscription = ProjectService().codeRequestStream.listen(
+    codeRequestSubscription = ProjectService().codeRequestStream.listen(
       (code) {
-        if (_selectionStart != null && _selectionEnd != null) {
+        if (widget.selectedLines.value.remove(widget)) {
           ProjectService().addNewCoding(
             widget.codingVersion,
             widget.codingLine,
             code,
-            _selectionStart!,
-            _selectionEnd! - _selectionStart!,
+            0,
+            widget.codingLine.textLine.text.length,
           );
-          setState(() {
-            _selectableTextKey = UniqueKey();
-          });
-          _selectionStart = null;
-          _selectionEnd = null;
+          widget.selectedLines.notify();
+        } else if (selectionStart != null && selectionEnd != null) {
+          ProjectService().addNewCoding(
+            widget.codingVersion,
+            widget.codingLine,
+            code,
+            selectionStart!,
+            selectionEnd! - selectionStart!,
+          );
         }
+        setState(() {
+          selectableTextKey = UniqueKey();
+        });
+        selectionStart = null;
+        selectionEnd = null;
       },
     );
-    _selectedLineSubscription = widget.selectedLine.stream.listen((line) {
-      if (line != widget && _selectionStart != null && _selectionEnd != null) {
+    selectedLineSubscription = widget.lineWithSelection.stream.listen((line) {
+      if (line != widget && selectionStart != null && selectionEnd != null) {
         setState(() {
-          _selectableTextKey = UniqueKey();
+          selectableTextKey = UniqueKey();
         });
-        _selectionStart = null;
-        _selectionEnd = null;
+        selectionStart = null;
+        selectionEnd = null;
       }
     });
   }
 
   @override
   void dispose() {
-    _codeRequestSubscription?.cancel();
-    _selectedLineSubscription?.cancel();
+    codeRequestSubscription?.cancel();
+    selectedLineSubscription?.cancel();
     super.dispose();
   }
 
@@ -229,55 +242,69 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
   Widget build(BuildContext context) {
     return Container(
       color: widget.backgroundColor,
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 50.0,
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: Text(
-              '${widget.codingLine.textLine.index + 1}',
-              style: Theme.of(context).textTheme.bodyText2,
+            child: GestureDetector(
+              onTap: () {
+                if (!widget.selectedLines.value.add(widget)) {
+                  widget.selectedLines.value.remove(widget);
+                }
+                widget.selectedLines.notify();
+              },
+              child: Text(
+                '${widget.codingLine.textLine.index + 1}',
+                style: Theme.of(context).textTheme.bodyText2,
+              ),
             ),
           ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: widget.codingLine.codings.observe((codings) {
-                return TextSelectionTheme(
-                  data: const TextSelectionThemeData(
-                    selectionColor: Colors.red,
-                  ),
-                  child: SelectableText.rich(
-                    TextSpan(
-                      children: makeTextCodingSpans(
-                        widget.codingLine.textLine.text,
-                        widget.codingLine.textLine.offset,
-                        codings,
-                        [widget.enabledCoding.value],
-                      ),
-                      style: Theme.of(context).textTheme.bodyText2,
+            child: widget.selectedLines.observe((selectedLines) {
+              return Container(
+                color: selectedLines.contains(widget) ? Colors.red : null,
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: widget.codingLine.codings.observe((codings) {
+                  return TextSelectionTheme(
+                    data: const TextSelectionThemeData(
+                      selectionColor: Colors.red,
                     ),
-                    key: _selectableTextKey,
-                    maxLines: null,
-                    onSelectionChanged: (selection, _) {
-                      if (selection.baseOffset != selection.extentOffset) {
-                        _selectionStart =
-                            min(selection.baseOffset, selection.extentOffset);
-                        _selectionEnd =
-                            max(selection.baseOffset, selection.extentOffset);
-                      } else {
-                        _selectionStart = null;
-                        _selectionEnd = null;
-                      }
-                    },
-                    onTap: () {
-                      widget.selectedLine.value = widget;
-                    },
-                  ),
-                );
-              }),
-            ),
+                    child: SelectableText.rich(
+                      TextSpan(
+                        children: makeTextCodingSpans(
+                          widget.codingLine.textLine.text,
+                          widget.codingLine.textLine.offset,
+                          codings,
+                          [widget.enabledCoding.value],
+                        ),
+                        style: Theme.of(context).textTheme.bodyText2,
+                      ),
+                      key: selectableTextKey,
+                      maxLines: null,
+                      onSelectionChanged: (selection, _) {
+                        if (selection.baseOffset != selection.extentOffset) {
+                          selectionStart =
+                              min(selection.baseOffset, selection.extentOffset);
+                          selectionEnd =
+                              max(selection.baseOffset, selection.extentOffset);
+                        } else {
+                          selectionStart = null;
+                          selectionEnd = null;
+                        }
+                      },
+                      onTap: () {
+                        widget.lineWithSelection.value = widget;
+                        widget.selectedLines.value.clear();
+                        widget.selectedLines.notify();
+                      },
+                    ),
+                  );
+                }),
+              );
+            }),
           ),
           Container(
             width: 250.0,
