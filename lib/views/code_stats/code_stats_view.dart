@@ -45,7 +45,10 @@ class _CodeStatsViewState extends State<CodeStatsView> {
               const SizedBox(width: 20.0),
               TextButton.icon(
                 icon: const Icon(Icons.analytics, size: 20.0),
-                label: const Text('Eksportuj do pliku CSV'),
+                label: Text(
+                  'Eksportuj do pliku CSV',
+                  style: Theme.of(context).primaryTextTheme.button,
+                ),
                 onPressed: () async {
                   await projectService.saveCodeStatsAsCSV(
                     groupAdjacentLines: groupAdjacentLines,

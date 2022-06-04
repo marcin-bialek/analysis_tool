@@ -163,13 +163,22 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
           ),
           if (!widget.isChild)
             TextButton(
-              child: const Text('Dodaj podkod'),
+              child: Text(
+                'Dodaj podkod',
+                style: Theme.of(context).primaryTextTheme.button,
+              ),
               onPressed: () {
                 _projectService.addNewCode(parent: widget.code);
               },
             ),
           TextButton(
-            child: const Text('Usuń kod'),
+            child: Text(
+              'Usuń kod',
+              style: Theme.of(context)
+                  .primaryTextTheme
+                  .button!
+                  .copyWith(color: Theme.of(context).errorColor),
+            ),
             onPressed: () async {
               final result = await showDialogRemoveCode(
                 context: context,
@@ -201,7 +210,10 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
                   _showChildren = true;
                 });
               },
-              child: const Text('...'),
+              child: Text(
+                '...',
+                style: Theme.of(context).primaryTextTheme.button,
+              ),
             );
           } else {
             return const SizedBox.shrink();

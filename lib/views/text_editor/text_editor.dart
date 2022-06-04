@@ -85,7 +85,10 @@ class _TextEditorState extends State<TextEditor> {
                     widget.file.codingVersions.value.isEmpty)
                   TextButton.icon(
                     icon: const Icon(Icons.save),
-                    label: const Text('Zapisz'),
+                    label: Text(
+                      'Zapisz',
+                      style: Theme.of(context).primaryTextTheme.button,
+                    ),
                     onPressed: () {
                       ProjectService().updateTextFile(
                         widget.file.id,
@@ -99,7 +102,10 @@ class _TextEditorState extends State<TextEditor> {
                 if (!editing && edited)
                   TextButton.icon(
                     icon: const Icon(Icons.save_as),
-                    label: const Text('Zapisz jako nowy'),
+                    label: Text(
+                      'Zapisz jako nowy',
+                      style: Theme.of(context).primaryTextTheme.button,
+                    ),
                     onPressed: () {
                       final textFile = TextFile.withId(
                         name: '${widget.file.name.value} (edytowany)',
@@ -115,19 +121,26 @@ class _TextEditorState extends State<TextEditor> {
                 if (!editing)
                   TextButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text('Dodaj kodowanie'),
+                    label: Text(
+                      'Dodaj kodowanie',
+                      style: Theme.of(context).primaryTextTheme.button,
+                    ),
                     onPressed: () {
-                      ProjectService().addCodingVersion(widget.file);
+                      final version =
+                          ProjectService().addNewCodingVersion(widget.file);
+                      mainViewNavigatorKey.currentState!.pushReplacementNamed(
+                          MainViewRoutes.codingEditor,
+                          arguments: version);
                     },
                   ),
                 TextButton.icon(
                   icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
                   label: Text(
                     'Usuń plik',
-                    style:
-                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
-                              color: Theme.of(context).errorColor,
-                            ),
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .button!
+                        .copyWith(color: Theme.of(context).errorColor),
                   ),
                   onPressed: _removeTextFile,
                 ),

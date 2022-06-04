@@ -199,17 +199,26 @@ class ProjectService {
     }
   }
 
-  void addCodingVersion(TextFile file) {
+  TextCodingVersion addCodingVersion(TextCodingVersion version,
+      {bool sendToServer = true}) {
+    version.file.codingVersions.value.add(version);
+    version.file.codingVersions.notify();
+    if (sendToServer) {
+      ServerService().sendEvent(EventCodingVersionAdd(
+        textFileId: version.file.id,
+        codingVersion: version,
+      ));
+    }
+    return version;
+  }
+
+  TextCodingVersion addNewCodingVersion(TextFile file,
+      {bool sendToServer = true}) {
     final version = TextCodingVersion.withId(
       name: 'Wersja #${file.codingVersions.value.length + 1}',
       file: file,
     );
-    file.codingVersions.value.add(version);
-    file.codingVersions.notify();
-    ServerService().sendEvent(EventCodingVersionAdd(
-      textFileId: file.id,
-      codingVersion: version,
-    ));
+    return addCodingVersion(version, sendToServer: sendToServer);
   }
 
   void removeCodingVersion(TextCodingVersion version,

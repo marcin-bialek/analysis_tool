@@ -133,10 +133,7 @@ class ServerService {
 
     // TextCodingVersion events
     else if (event is EventCodingVersionAdd) {
-      final textFile = project?.textFiles.value
-          .firstWhereOrNull((e) => e.id == event.textFileId);
-      textFile?.codingVersions.value.add(event.codingVersion);
-      textFile?.codingVersions.notify();
+      projectService.addCodingVersion(event.codingVersion, sendToServer: false);
     } else if (event is EventCodingVersionRemove) {
       projectService.removeCodingVersionById(event.codingVersionId,
           sendToServer: false);

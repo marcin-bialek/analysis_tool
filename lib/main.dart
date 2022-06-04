@@ -4,6 +4,7 @@ import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/text_coding_version.dart';
 import 'package:analysis_tool/services/settings/settings_service.dart';
 import 'package:analysis_tool/views/code_stats/code_stats_view.dart';
+import 'package:analysis_tool/views/coding_compare/coding_compare_view.dart';
 import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
 import 'package:analysis_tool/views/home/side_menu.dart';
 import 'package:analysis_tool/views/home/side_menu_codes.dart';
@@ -37,6 +38,10 @@ class MyApp extends StatelessWidget {
           primaryTextTheme: TextTheme(
             bodyText2: TextStyle(
               color: Colors.white,
+              fontSize: sizes.menuFontSize.toDouble(),
+            ),
+            button: TextStyle(
+              color: Colors.blue,
               fontSize: sizes.menuFontSize.toDouble(),
             ),
           ),
@@ -132,14 +137,18 @@ class _HomePageState extends State<HomePage> {
             return TextEditor(file: args[0], line: args[1]);
           case MainViewRoutes.codingEditor:
             return CodingEditor(
-                codingVersion: settings.arguments as TextCodingVersion);
+              codingVersion: settings.arguments as TextCodingVersion,
+            );
+          case MainViewRoutes.codingCompare:
+            final args = settings.arguments as List;
+            return CodingCompareView(
+              firstVersion: args[0],
+              secondVersion: args[1],
+            );
           case MainViewRoutes.codeStats:
             return const CodeStatsView();
           case MainViewRoutes.codeGraph:
             return const Text('graf kodów',
-                style: TextStyle(color: Colors.white));
-          case MainViewRoutes.compare:
-            return const Text('porównywanie',
                 style: TextStyle(color: Colors.white));
           case MainViewRoutes.note:
             return NoteView(note: settings.arguments as Note);

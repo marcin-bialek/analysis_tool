@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:analysis_tool/constants/keys.dart';
 import 'package:analysis_tool/constants/routes.dart';
+import 'package:analysis_tool/helpers/coding_view.dart';
 import 'package:analysis_tool/models/code.dart';
 import 'package:analysis_tool/models/note.dart';
 import 'package:analysis_tool/models/observable.dart';
@@ -24,21 +25,9 @@ class CodingEditor extends StatefulWidget {
   State<CodingEditor> createState() => _CodingEditorState();
 }
 
-class _EnabledCoding {
-  TextCoding? coding;
-  bool entireCode;
-
-  _EnabledCoding([this.coding, this.entireCode = false]);
-
-  bool shouldEnable(TextCoding coding) {
-    return this.coding == null ||
-        (entireCode ? this.coding!.code == coding.code : this.coding == coding);
-  }
-}
-
 class _CodingEditorState extends State<CodingEditor> {
   final _selectedLine = Observable<_CodingEditorLine?>(null);
-  final _enabledCoding = Observable(_EnabledCoding());
+  final _enabledCoding = Observable(EnabledCoding());
 
   @override
   void initState() {
@@ -63,24 +52,46 @@ class _CodingEditorState extends State<CodingEditor> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                widget.codingVersion.name.observe((name) {
-                  return Text(
-                    name,
-                    style:
-                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                  );
+                widget.codingVersion.file.name.observe((textFileName) {
+                  return widget.codingVersion.name.observe((versionName) {
+                    return Text(
+                      '$versionName ($textFileName)',
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .bodyText2!
+                          .copyWith(fontWeight: FontWeight.bold),
+                    );
+                  });
                 }),
+                const SizedBox(width: 20),
+                if (widget.codingVersion.file.codingVersions.value.length > 1)
+                  DropdownButton<TextCodingVersion>(
+                    style: Theme.of(context).primaryTextTheme.bodyText2,
+                    dropdownColor: Theme.of(context).primaryColorLight,
+                    hint: const Text('Porównaj z'),
+                    items: widget.codingVersion.file.codingVersions.value
+                        .where((v) => v != widget.codingVersion)
+                        .map((version) {
+                      return DropdownMenuItem(
+                        value: version,
+                        child: Text(version.name.value),
+                      );
+                    }).toList(),
+                    onChanged: (version) {
+                      mainViewNavigatorKey.currentState!.pushReplacementNamed(
+                        MainViewRoutes.codingCompare,
+                        arguments: [widget.codingVersion, version],
+                      );
+                    },
+                  ),
                 const Spacer(),
                 TextButton.icon(
                   icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
                   label: Text(
                     'Usuń kodowanie',
-                    style:
-                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
-                              color: Theme.of(context).errorColor,
-                            ),
+                    style: Theme.of(context).primaryTextTheme.button!.copyWith(
+                          color: Theme.of(context).errorColor,
+                        ),
                   ),
                   onPressed: _removeCodingVersion,
                 ),
@@ -129,7 +140,7 @@ class _CodingEditorState extends State<CodingEditor> {
     );
   }
 
-  void _onEnabledCodingChange(_EnabledCoding enabledCoding) {
+  void _onEnabledCodingChange(EnabledCoding enabledCoding) {
     for (final codingLine in widget.codingVersion.codingLines.value) {
       codingLine.codings.notify();
     }
@@ -151,7 +162,7 @@ class _CodingEditorState extends State<CodingEditor> {
 class _CodingEditorLine extends StatefulWidget {
   final TextCodingVersion codingVersion;
   final TextCodingLine codingLine;
-  final Observable<_EnabledCoding> enabledCoding;
+  final Observable<EnabledCoding> enabledCoding;
   final Observable<_CodingEditorLine?> selectedLine;
   final Color? backgroundColor;
 
@@ -239,16 +250,16 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                   ),
                   child: SelectableText.rich(
                     TextSpan(
-                      children: _makeSpans(
+                      children: makeTextCodingSpans(
                         widget.codingLine.textLine.text,
                         widget.codingLine.textLine.offset,
                         codings,
+                        [widget.enabledCoding.value],
                       ),
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                     key: _selectableTextKey,
                     maxLines: null,
-                    style: const TextStyle(fontSize: 15.0),
                     onSelectionChanged: (selection, _) {
                       if (selection.baseOffset != selection.extentOffset) {
                         _selectionStart =
@@ -309,69 +320,11 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
       ),
     );
   }
-
-  List<InlineSpan> _makeSpans(
-    String text,
-    int offset,
-    Iterable<TextCoding> codings,
-  ) {
-    if (codings.isEmpty) {
-      return [TextSpan(text: text)];
-    }
-    final List<_CodingMark> marks = [];
-    for (final c in codings) {
-      if (widget.enabledCoding.value.shouldEnable(c)) {
-        marks.add(_CodingMark(_CodingMarkType.start, c.start - offset, c.code));
-        marks.add(_CodingMark(_CodingMarkType.end, c.end - offset, c.code));
-      }
-    }
-    marks.sort((a, b) => a.offset.compareTo(b.offset));
-    marks.add(_CodingMark(
-      _CodingMarkType.end,
-      text.length,
-      Code.withId(name: '', color: Colors.white),
-    ));
-    List<InlineSpan> spans = [];
-    Set<Code> currentCodes = {};
-    for (int i = 0, j = 0, a = 0; i <= text.length && j < marks.length; i++) {
-      if (i == marks[j].offset) {
-        if (currentCodes.isNotEmpty) {
-          final v =
-              currentCodes.fold<int>(0, (p, c) => p + c.color.value.value) /
-                  currentCodes.length;
-          spans.add(
-            TextSpan(
-              text: text.substring(a, i),
-              style: TextStyle(
-                backgroundColor: Color(v.toInt()).withOpacity(0.8),
-              ),
-            ),
-          );
-        } else {
-          spans.add(
-            TextSpan(
-              text: text.substring(a, i),
-            ),
-          );
-        }
-        while (j < marks.length && i == marks[j].offset) {
-          if (marks[j].type == _CodingMarkType.start) {
-            currentCodes.add(marks[j].code);
-          } else {
-            currentCodes.remove(marks[j].code);
-          }
-          j += 1;
-        }
-        a = i;
-      }
-    }
-    return spans;
-  }
 }
 
 class _CodingButton extends StatelessWidget {
   final TextCoding coding;
-  final Observable<_EnabledCoding> enabledCoding;
+  final Observable<EnabledCoding> enabledCoding;
   final void Function()? onRemove;
 
   const _CodingButton({
@@ -400,13 +353,13 @@ class _CodingButton extends StatelessWidget {
                   onPressed: () {
                     if (enabledCoding.coding != null &&
                         enabledCoding.shouldEnable(coding)) {
-                      this.enabledCoding.value = _EnabledCoding();
+                      this.enabledCoding.value = EnabledCoding();
                     } else {
-                      this.enabledCoding.value = _EnabledCoding(coding, false);
+                      this.enabledCoding.value = EnabledCoding(coding, false);
                     }
                   },
                   onLongPress: () {
-                    this.enabledCoding.value = _EnabledCoding(coding, true);
+                    this.enabledCoding.value = EnabledCoding(coding, true);
                   },
                   child: coding.code.name.observe((name) {
                     return Text(
@@ -491,25 +444,4 @@ class _NoteButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CodingMark {
-  final _CodingMarkType type;
-  final int offset;
-  final Code code;
-
-  _CodingMark(this.type, this.offset, this.code);
-
-  @override
-  String toString() {
-    if (type == _CodingMarkType.start) {
-      return '_CodingMark: start, $offset';
-    }
-    return '_CodingMark: end, $offset';
-  }
-}
-
-enum _CodingMarkType {
-  start,
-  end;
 }

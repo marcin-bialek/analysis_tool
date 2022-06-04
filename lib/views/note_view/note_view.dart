@@ -98,10 +98,10 @@ class _NoteViewState extends State<NoteView> {
                   ),
                   label: Text(
                     'Usuń notatkę',
-                    style:
-                        Theme.of(context).primaryTextTheme.bodyText2!.copyWith(
-                              color: Theme.of(context).errorColor,
-                            ),
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .button!
+                        .copyWith(color: Theme.of(context).errorColor),
                   ),
                   onPressed: () async {
                     final result = await showDialogRemoveNote(context: context);

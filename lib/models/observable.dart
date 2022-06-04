@@ -25,10 +25,7 @@ class Observable<T> {
         switch (snap.connectionState) {
           case ConnectionState.waiting:
           case ConnectionState.active:
-            if (snap.hasData) {
-              return builder(snap.data as T);
-            }
-            return loadWidget ?? Container();
+            return builder(snap.data as T);
           default:
             return loadWidget ?? Container();
         }
