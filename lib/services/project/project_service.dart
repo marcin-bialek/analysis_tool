@@ -40,7 +40,7 @@ import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
 
 class ProjectService {
   static ProjectService? _instance;
-  static const projectFileExtension = 'atool';
+  static const projectFileExtension = 'qdam';
 
   final project = Observable<Project?>(null);
   String? _currentProjectPath;
@@ -56,7 +56,7 @@ class ProjectService {
   }
 
   Project _getOrCreateProject() {
-    project.value ??= Project.withId(name: 'new-project');
+    project.value ??= Project.withId(name: 'nowy projekt');
     return project.value!;
   }
 
@@ -95,7 +95,10 @@ class ProjectService {
   Future<bool> saveProjectAs() async {
     final project = _getOrCreateProject();
     if (kIsWeb) {
-      await saver.save('projekt.atool', jsonEncode(project.toJson()));
+      await saver.save(
+        '${project.name}.$projectFileExtension',
+        jsonEncode(project.toJson()),
+      );
     } else {
       final path = await FilePicker.platform.saveFile(
         type: FileType.custom,
