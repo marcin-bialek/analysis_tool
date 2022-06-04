@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:qdamono/models/server_events/event_coding_version_update.dart';
-import 'package:qdamono/models/server_events/event_text_file_update.dart';
-
-import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
-    as saver;
 
 import 'package:qdamono/extensions/iterable.dart';
 import 'package:qdamono/extensions/random.dart';
+import 'package:qdamono/helpers/docx.dart';
 import 'package:qdamono/models/code.dart';
 import 'package:qdamono/models/note.dart';
 import 'package:qdamono/models/observable.dart';
@@ -20,6 +16,7 @@ import 'package:qdamono/models/server_events/event_coding_add.dart';
 import 'package:qdamono/models/server_events/event_coding_remove.dart';
 import 'package:qdamono/models/server_events/event_coding_version_add.dart';
 import 'package:qdamono/models/server_events/event_coding_version_remove.dart';
+import 'package:qdamono/models/server_events/event_coding_version_update.dart';
 import 'package:qdamono/models/server_events/event_note_add.dart';
 import 'package:qdamono/models/server_events/event_note_add_to_line.dart';
 import 'package:qdamono/models/server_events/event_note_remove.dart';
@@ -27,6 +24,7 @@ import 'package:qdamono/models/server_events/event_note_remove_from_line.dart';
 import 'package:qdamono/models/server_events/event_note_update.dart';
 import 'package:qdamono/models/server_events/event_text_file_add.dart';
 import 'package:qdamono/models/server_events/event_text_file_remove.dart';
+import 'package:qdamono/models/server_events/event_text_file_update.dart';
 import 'package:qdamono/models/text_coding.dart';
 import 'package:qdamono/models/text_coding_version.dart';
 import 'package:qdamono/models/text_file.dart';
@@ -36,6 +34,9 @@ import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
 import 'package:flutter/foundation.dart';
+
+import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
+    as saver;
 
 class ProjectService {
   static ProjectService? _instance;
@@ -122,14 +123,19 @@ class ProjectService {
   Future<void> addFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['txt'],
+      allowedExtensions: ['txt', 'docx'],
       withData: true,
     );
     if (result != null) {
       final file = result.files.first;
-      final text = const Utf8Decoder().convert(file.bytes!);
       switch (file.extension) {
         case 'txt':
+          final text = const Utf8Decoder().convert(file.bytes!);
+          final textFile = TextFile.withId(name: file.name, rawText: text);
+          addTextFile(textFile);
+          break;
+        case 'docx':
+          final text = getTextFromDocx(file.bytes!);
           final textFile = TextFile.withId(name: file.name, rawText: text);
           addTextFile(textFile);
           break;

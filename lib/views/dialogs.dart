@@ -33,6 +33,15 @@ Future<T?> showGenericDialog<T>({
   );
 }
 
+Future<bool?> showDialogUnsupportedFileType({required BuildContext context}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Nieobsługiwany typ pliku',
+    content: const Text('Plik nie mógł zostać wczytany.'),
+    actions: {'Ok': true},
+  );
+}
+
 Future<bool?> showDialogSaveProject({required BuildContext context}) {
   return showGenericDialog<bool>(
     context: context,

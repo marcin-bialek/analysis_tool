@@ -2,6 +2,7 @@ import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
 import 'package:qdamono/models/text_file.dart';
 import 'package:qdamono/services/project/project_service.dart';
+import 'package:qdamono/services/project/project_service_exceptions.dart';
 import 'package:qdamono/views/dialogs.dart';
 import 'package:qdamono/views/editable_text.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
             ),
             const Spacer(),
             IconButton(
-              onPressed: _projectService.addFile,
+              onPressed: _addFile,
               tooltip: 'Dodaj plik',
               icon: Icon(
                 Icons.add,
@@ -84,6 +85,14 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
         ),
       ],
     );
+  }
+
+  Future<void> _addFile() async {
+    try {
+      await _projectService.addFile();
+    } on UnsupportedFileError {
+      await showDialogUnsupportedFileType(context: context);
+    }
   }
 
   Future<void> _closeProject() async {
