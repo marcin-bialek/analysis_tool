@@ -70,13 +70,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  MultiSplitViewController? splitViewController;
+
+  @override
+  void initState() {
+    super.initState();
+    splitViewController = MultiSplitViewController(areas: Area.weights([0.2]));
+  }
+
+  @override
+  void dispose() {
+    splitViewController?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body: Row(
         children: [
-          const SideMenu(),
+          SideMenu(showSideMenu: (value) {
+            splitViewController?.areas = Area.weights([value ? 0.2 : 0.0]);
+          }),
           Expanded(
             child: MultiSplitViewTheme(
               data: MultiSplitViewThemeData(
@@ -86,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               child: MultiSplitView(
-                initialAreas: [Area(weight: 0.2), Area(weight: 0.8)],
+                controller: splitViewController,
                 children: [
                   Navigator(
                     key: sideMenuNavigatorKey,

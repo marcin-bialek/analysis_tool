@@ -4,7 +4,12 @@ import 'package:qdamono/services/server/server_service.dart';
 import 'package:flutter/material.dart';
 
 class SideMenu extends StatefulWidget {
-  const SideMenu({Key? key}) : super(key: key);
+  final void Function(bool)? showSideMenu;
+
+  const SideMenu({
+    Key? key,
+    this.showSideMenu,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -13,7 +18,8 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
-  String _currentMenu = SideMenuRoutes.notes;
+  bool showSideMenu = true;
+  String currentMenu = SideMenuRoutes.files;
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +66,15 @@ class _SideMenuState extends State<SideMenu> {
 
   void _openMenu(String name) {
     if (name == MainViewRoutes.settings) {
-      mainViewNavigatorKey.currentState!.pushReplacementNamed(name);
-    } else if (name != _currentMenu) {
-      _currentMenu = name;
-      sideMenuNavigatorKey.currentState!.pushReplacementNamed(name);
+      mainViewNavigatorKey.currentState?.pushReplacementNamed(name);
+    } else if (name != currentMenu) {
+      showSideMenu = true;
+      widget.showSideMenu?.call(true);
+      currentMenu = name;
+      sideMenuNavigatorKey.currentState?.pushReplacementNamed(name);
+    } else {
+      showSideMenu = !showSideMenu;
+      widget.showSideMenu?.call(showSideMenu);
     }
   }
 }
