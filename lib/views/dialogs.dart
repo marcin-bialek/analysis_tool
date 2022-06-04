@@ -1,6 +1,6 @@
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/models/text_coding_version.dart';
-import 'package:analysis_tool/models/text_file.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/models/text_coding_version.dart';
+import 'package:qdamono/models/text_file.dart';
 import 'package:flutter/material.dart';
 
 Future<T?> showGenericDialog<T>({

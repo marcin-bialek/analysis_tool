@@ -1,21 +1,21 @@
-import 'package:analysis_tool/constants/keys.dart';
-import 'package:analysis_tool/constants/routes.dart';
-import 'package:analysis_tool/models/note.dart';
-import 'package:analysis_tool/models/text_coding_version.dart';
-import 'package:analysis_tool/services/settings/settings_service.dart';
-import 'package:analysis_tool/views/code_stats/code_stats_view.dart';
-import 'package:analysis_tool/views/coding_compare/coding_compare_view.dart';
-import 'package:analysis_tool/views/coding_editor/coding_editor.dart';
-import 'package:analysis_tool/views/home/side_menu.dart';
-import 'package:analysis_tool/views/home/side_menu_codes.dart';
-import 'package:analysis_tool/views/home/side_menu_collaboration.dart';
-import 'package:analysis_tool/views/home/side_menu_files.dart';
-import 'package:analysis_tool/views/home/side_menu_notes.dart';
-import 'package:analysis_tool/views/home/side_menu_search.dart';
-import 'package:analysis_tool/views/note_view/note_view.dart';
-import 'package:analysis_tool/views/settings/settings_view.dart';
-import 'package:analysis_tool/views/start/start_page.dart';
-import 'package:analysis_tool/views/text_editor/text_editor.dart';
+import 'package:qdamono/constants/keys.dart';
+import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/models/note.dart';
+import 'package:qdamono/models/text_coding_version.dart';
+import 'package:qdamono/services/settings/settings_service.dart';
+import 'package:qdamono/views/code_stats/code_stats_view.dart';
+import 'package:qdamono/views/coding_compare/coding_compare_view.dart';
+import 'package:qdamono/views/coding_editor/coding_editor.dart';
+import 'package:qdamono/views/home/side_menu.dart';
+import 'package:qdamono/views/home/side_menu_codes.dart';
+import 'package:qdamono/views/home/side_menu_collaboration.dart';
+import 'package:qdamono/views/home/side_menu_files.dart';
+import 'package:qdamono/views/home/side_menu_notes.dart';
+import 'package:qdamono/views/home/side_menu_search.dart';
+import 'package:qdamono/views/note_view/note_view.dart';
+import 'package:qdamono/views/settings/settings_view.dart';
+import 'package:qdamono/views/start/start_page.dart';
+import 'package:qdamono/views/text_editor/text_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return SettingsService().fontSizes.observe((sizes) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Analysis Tool',
+        title: 'QDAmono',
         theme: ThemeData(
           primaryColor: const Color.fromARGB(255, 30, 30, 30),
           primaryColorLight: const Color.fromARGB(255, 51, 51, 51),

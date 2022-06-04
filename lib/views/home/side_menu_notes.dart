@@ -1,7 +1,7 @@
-import 'package:analysis_tool/constants/keys.dart';
-import 'package:analysis_tool/constants/routes.dart';
-import 'package:analysis_tool/models/note.dart';
-import 'package:analysis_tool/services/project/project_service.dart';
+import 'package:qdamono/constants/keys.dart';
+import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/models/note.dart';
+import 'package:qdamono/services/project/project_service.dart';
 import 'package:flutter/material.dart';
 
 class SideMenuNotes extends StatefulWidget {

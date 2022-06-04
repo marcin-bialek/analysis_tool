@@ -1,5 +1,5 @@
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/models/json_encodable.dart';
 
 class TextCoding implements JsonEncodable {
   final Code code;

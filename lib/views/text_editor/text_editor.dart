@@ -1,8 +1,8 @@
-import 'package:analysis_tool/constants/keys.dart';
-import 'package:analysis_tool/constants/routes.dart';
-import 'package:analysis_tool/models/text_file.dart';
-import 'package:analysis_tool/services/project/project_service.dart';
-import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveTextFile;
+import 'package:qdamono/constants/keys.dart';
+import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/models/text_file.dart';
+import 'package:qdamono/services/project/project_service.dart';
+import 'package:qdamono/views/dialogs.dart' show showDialogRemoveTextFile;
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 

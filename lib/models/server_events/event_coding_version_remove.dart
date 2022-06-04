@@ -1,4 +1,4 @@
-import 'package:analysis_tool/models/server_events/server_event.dart';
+import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventCodingVersionRemove extends ServerEvent {
   static const name = 'codingVersionRemove';

@@ -1,5 +1,5 @@
-import 'package:analysis_tool/models/project.dart';
-import 'package:analysis_tool/models/server_events/server_event.dart';
+import 'package:qdamono/models/project.dart';
+import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventProject extends ServerEvent {
   static const name = 'project';

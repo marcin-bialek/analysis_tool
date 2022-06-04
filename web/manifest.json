@@ -1,6 +1,6 @@
 {
-    "name": "analysis_tool",
-    "short_name": "analysis_tool",
+    "name": "qdamono",
+    "short_name": "qdamono",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

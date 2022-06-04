@@ -1,7 +1,7 @@
-import 'package:analysis_tool/models/observable.dart';
+import 'package:qdamono/models/observable.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:analysis_tool/models/json_encodable.dart';
+import 'package:qdamono/models/json_encodable.dart';
 
 class Note implements JsonEncodable {
   final String id;

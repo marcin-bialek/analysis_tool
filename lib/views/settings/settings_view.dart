@@ -1,4 +1,4 @@
-import 'package:analysis_tool/services/settings/settings_service.dart';
+import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

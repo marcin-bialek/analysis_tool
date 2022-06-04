@@ -1,5 +1,5 @@
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/models/text_coding.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/models/text_coding.dart';
 import 'package:flutter/material.dart';
 
 List<InlineSpan> makeTextCodingSpans(

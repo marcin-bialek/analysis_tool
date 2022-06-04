@@ -1,9 +1,9 @@
-import 'package:analysis_tool/constants/keys.dart';
-import 'package:analysis_tool/constants/routes.dart';
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/services/project/project_service.dart';
-import 'package:analysis_tool/views/dialogs.dart' show showDialogRemoveCode;
-import 'package:analysis_tool/views/editable_text.dart';
+import 'package:qdamono/constants/keys.dart';
+import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/services/project/project_service.dart';
+import 'package:qdamono/views/dialogs.dart' show showDialogRemoveCode;
+import 'package:qdamono/views/editable_text.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 

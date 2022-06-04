@@ -1,6 +1,6 @@
-import 'package:analysis_tool/services/project/project_service.dart';
-import 'package:analysis_tool/services/project/project_service_exceptions.dart';
-import 'package:analysis_tool/views/dialogs.dart' show showDialogSaveProject;
+import 'package:qdamono/services/project/project_service.dart';
+import 'package:qdamono/services/project/project_service_exceptions.dart';
+import 'package:qdamono/views/dialogs.dart' show showDialogSaveProject;
 import 'package:flutter/material.dart';
 
 class StartPage extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:analysis_tool/models/observable.dart';
+import 'package:qdamono/models/observable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {

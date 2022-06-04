@@ -1,8 +1,8 @@
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/models/note.dart';
-import 'package:analysis_tool/models/server_events/server_event.dart';
-import 'package:analysis_tool/models/text_coding_version.dart';
-import 'package:analysis_tool/models/text_file.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/models/note.dart';
+import 'package:qdamono/models/server_events/server_event.dart';
+import 'package:qdamono/models/text_coding_version.dart';
+import 'package:qdamono/models/text_file.dart';
 
 class EventCodingVersionAdd extends ServerEvent {
   static const name = 'codingVersionAdd';

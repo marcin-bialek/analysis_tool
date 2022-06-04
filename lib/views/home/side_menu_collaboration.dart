@@ -1,7 +1,7 @@
-import 'package:analysis_tool/services/project/project_service.dart';
-import 'package:analysis_tool/services/server/server_service.dart';
-import 'package:analysis_tool/services/server/server_service_exceptions.dart';
-import 'package:analysis_tool/views/dialogs.dart';
+import 'package:qdamono/services/project/project_service.dart';
+import 'package:qdamono/services/server/server_service.dart';
+import 'package:qdamono/services/server/server_service_exceptions.dart';
+import 'package:qdamono/views/dialogs.dart';
 import 'package:flutter/material.dart';
 
 class SideMenuCollaboration extends StatefulWidget {

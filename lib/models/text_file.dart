@@ -1,8 +1,8 @@
-import 'package:analysis_tool/models/code.dart';
-import 'package:analysis_tool/models/json_encodable.dart';
-import 'package:analysis_tool/models/note.dart';
-import 'package:analysis_tool/models/observable.dart';
-import 'package:analysis_tool/models/text_coding_version.dart';
+import 'package:qdamono/models/code.dart';
+import 'package:qdamono/models/json_encodable.dart';
+import 'package:qdamono/models/note.dart';
+import 'package:qdamono/models/observable.dart';
+import 'package:qdamono/models/text_coding_version.dart';
 import 'package:uuid/uuid.dart';
 
 class TextFile implements JsonEncodable {

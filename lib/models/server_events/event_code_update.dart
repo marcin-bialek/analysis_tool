@@ -1,4 +1,4 @@
-import 'package:analysis_tool/models/server_events/server_event.dart';
+import 'package:qdamono/models/server_events/server_event.dart';
 import 'package:flutter/material.dart';
 
 class EventCodeUpdate extends ServerEvent {

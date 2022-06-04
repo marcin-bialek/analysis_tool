@@ -1,5 +1,5 @@
-import 'package:analysis_tool/models/json_encodable.dart';
-import 'package:analysis_tool/models/observable.dart';
+import 'package:qdamono/models/json_encodable.dart';
+import 'package:qdamono/models/observable.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
