@@ -11,119 +11,131 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   final settings = SettingsService();
-  TextEditingController? menuFontSizeController;
-  TextEditingController? editorFontSizeController;
-  TextEditingController? usernameController;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            _TextFieldRow(
+              settingName: 'Rozmiar czcionki menu',
+              initialValue: settings.fontSizes.value.menuFontSize.toString(),
+              onChange: (value) {
+                final size = int.tryParse(value);
+                if (size != null) {
+                  SettingsService().fontSizes.value.menuFontSize = size;
+                  SettingsService().fontSizes.notify();
+                }
+              },
+              formatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ],
+            ),
+            _TextFieldRow(
+              settingName: 'Rozmiar czcionki edytora tekstu',
+              initialValue: settings.fontSizes.value.editorFontSize.toString(),
+              onChange: (value) {
+                final size = int.tryParse(value);
+                if (size != null) {
+                  SettingsService().fontSizes.value.editorFontSize = size;
+                  SettingsService().fontSizes.notify();
+                }
+              },
+              formatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ],
+            ),
+            _TextFieldRow(
+              settingName: 'Nazwa użytkownika',
+              initialValue: settings.username.value,
+              onChange: (value) {
+                if (value.isNotEmpty) {
+                  SettingsService().username.value = value;
+                }
+              },
+            ),
+            const Spacer(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TextFieldRow extends StatefulWidget {
+  final String settingName;
+  final String? initialValue;
+  final void Function(String)? onChange;
+  final List<TextInputFormatter>? formatters;
+
+  const _TextFieldRow({
+    Key? key,
+    required this.settingName,
+    this.initialValue,
+    this.onChange,
+    this.formatters,
+  }) : super(key: key);
+
+  @override
+  State<_TextFieldRow> createState() => _TextFieldRowState();
+}
+
+class _TextFieldRowState extends State<_TextFieldRow> {
+  TextEditingController? textController;
+  FocusNode? focusNode;
 
   @override
   void initState() {
     super.initState();
-    menuFontSizeController = TextEditingController(
-        text: settings.fontSizes.value.menuFontSize.toString());
-    editorFontSizeController = TextEditingController(
-        text: settings.fontSizes.value.editorFontSize.toString());
-    usernameController = TextEditingController(text: settings.username.value);
+    textController = TextEditingController(text: widget.initialValue);
+    focusNode = FocusNode();
+    focusNode?.addListener(() {
+      if (focusNode?.hasFocus == false) {
+        FocusManager.instance.primaryFocus?.unfocus();
+        widget.onChange?.call(textController?.text ?? '');
+      }
+    });
   }
 
   @override
   void dispose() {
-    menuFontSizeController?.dispose();
-    editorFontSizeController?.dispose();
-    usernameController?.dispose();
+    textController?.dispose();
+    focusNode?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      child: Table(
-        columnWidths: const {
-          0: FlexColumnWidth(0.3),
-          1: FlexColumnWidth(0.7),
-        },
-        children: [
-          TableRow(
-            children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Text(
-                  'Rozmiar czcionki menu:',
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                ),
-              ),
-              TableCell(
-                child: TextField(
-                  controller: menuFontSizeController,
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(2),
-                  ],
-                  onEditingComplete: () {
-                    final size = int.tryParse(menuFontSizeController!.text);
-                    if (size != null) {
-                      SettingsService().fontSizes.value.menuFontSize = size;
-                      SettingsService().fontSizes.notify();
-                    }
-                  },
-                ),
-              ),
-            ],
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            '${widget.settingName}:',
+            style: Theme.of(context).primaryTextTheme.bodyText2,
           ),
-          TableRow(
-            children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Text(
-                  'Rozmiar czcionki edytora tekstu:',
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                ),
-              ),
-              TableCell(
-                child: TextField(
-                  controller: editorFontSizeController,
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(2),
-                  ],
-                  onEditingComplete: () {
-                    final size = int.tryParse(editorFontSizeController!.text);
-                    if (size != null) {
-                      SettingsService().fontSizes.value.editorFontSize = size;
-                      SettingsService().fontSizes.notify();
-                    }
-                  },
-                ),
-              ),
-            ],
+        ),
+        Expanded(
+          flex: 7,
+          child: TextField(
+            controller: textController,
+            focusNode: focusNode,
+            style: Theme.of(context).primaryTextTheme.bodyText2,
+            onEditingComplete: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              widget.onChange?.call(textController?.text ?? '');
+            },
+            inputFormatters: widget.formatters,
           ),
-          TableRow(
-            children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Text(
-                  'Nazwa użytkownika:',
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                ),
-              ),
-              TableCell(
-                child: TextField(
-                  controller: usernameController,
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
-                  onEditingComplete: () {
-                    final username = usernameController!.text;
-                    if (username.isNotEmpty) {
-                      SettingsService().username.value = username;
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
