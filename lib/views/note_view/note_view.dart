@@ -116,38 +116,40 @@ class _NoteViewState extends State<NoteView> {
             ),
           ),
         ),
+        Container(
+          color: Theme.of(context).canvasColor,
+          padding: const EdgeInsets.all(20.0),
+          child: TextField(
+            controller: titleController,
+            focusNode: titleFocusNode,
+            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize:
+                      Theme.of(context).textTheme.bodyText2!.fontSize! * 1.3,
+                ),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ),
         Expanded(
           child: Container(
             color: Theme.of(context).canvasColor,
-            padding: const EdgeInsets.all(28.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: titleController,
-                  focusNode: titleFocusNode,
-                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize:
-                            Theme.of(context).textTheme.bodyText2!.fontSize! *
-                                1.3,
-                      ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                  ),
-                  maxLines: null,
-                ),
-                TextField(
-                  controller: textController,
-                  focusNode: textFocusNode,
-                  style: Theme.of(context).textTheme.bodyText2,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                  ),
-                  maxLines: null,
-                ),
-              ],
+            padding: const EdgeInsets.only(
+              left: 20.0,
+              right: 20.0,
+              bottom: 20.0,
+            ),
+            child: TextField(
+              controller: textController,
+              focusNode: textFocusNode,
+              style: Theme.of(context).textTheme.bodyText2,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              maxLines: null,
             ),
           ),
         ),
