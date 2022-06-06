@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:qdamono/extensions/iterable.dart';
-import 'package:qdamono/extensions/random.dart';
 import 'package:qdamono/helpers/docx.dart';
 import 'package:qdamono/models/code.dart';
 import 'package:qdamono/models/note.dart';
@@ -364,9 +362,8 @@ class ProjectService {
 
   void addNewCode({Code? parent, bool sendToServer = true}) {
     final project = _getOrCreateProject();
-    final color = parent == null
-        ? Random().element(ColorTools.primaryColors)
-        : parent.color.value;
+    final color =
+        parent == null ? ColorTools.primaryColors.random() : parent.color.value;
     final code = Code.withId(
       name: 'Kod #${project.codes.value.length + 1}',
       color: color,

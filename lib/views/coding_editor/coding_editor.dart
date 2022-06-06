@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/extensions/list.dart';
 import 'package:qdamono/helpers/coding_view.dart';
 import 'package:qdamono/models/code.dart';
 import 'package:qdamono/models/note.dart';
@@ -315,7 +316,10 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                   spacing: 2.0,
                   runSpacing: 2.0,
                   children: [
-                    ...codings.map((c) {
+                    ...codings
+                        .toList()
+                        .sorted((a, b) => a.start.compareTo(b.start))
+                        .map((c) {
                       return _CodingButton(
                         key: UniqueKey(),
                         coding: c,

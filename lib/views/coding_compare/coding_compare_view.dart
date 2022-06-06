@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/extensions/list.dart';
 import 'package:qdamono/helpers/coding_view.dart';
 import 'package:qdamono/models/observable.dart';
 import 'package:qdamono/models/text_coding.dart';
@@ -276,7 +277,10 @@ class _CodingCompareLineState extends State<_CodingCompareLine> {
             child: Wrap(
               spacing: 2.0,
               runSpacing: 2.0,
-              children: widget.codingLineFirst.codings.value.map((coding) {
+              children: widget.codingLineFirst.codings.value
+                  .toList()
+                  .sorted((a, b) => a.start.compareTo(b.start))
+                  .map((coding) {
                 return _CodingButton(
                   coding: coding,
                   enabledCodings: widget.enabledCodingsFirst,
@@ -292,7 +296,10 @@ class _CodingCompareLineState extends State<_CodingCompareLine> {
             child: Wrap(
               spacing: 2.0,
               runSpacing: 2.0,
-              children: widget.codingLineSecond.codings.value.map((coding) {
+              children: widget.codingLineSecond.codings.value
+                  .toList()
+                  .sorted((a, b) => a.start.compareTo(b.start))
+                  .map((coding) {
                 return _CodingButton(
                   coding: coding,
                   enabledCodings: widget.enabledCodingsSecond,
