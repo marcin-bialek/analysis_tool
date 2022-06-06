@@ -180,6 +180,8 @@ class _CodingCompareViewState extends State<CodingCompareView> {
           }
         }
       }
+      enabledCodingsFirst[i].notify();
+      enabledCodingsSecond[i].notify();
     }
   }
 
