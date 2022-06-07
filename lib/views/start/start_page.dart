@@ -18,43 +18,62 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Strona startowa',
-            style: Theme.of(context)
-                .primaryTextTheme
-                .bodyText2!
-                .copyWith(fontSize: 18.0),
-          ),
-          const SizedBox(height: 20.0),
-          TextButton.icon(
-            onPressed: () async {
-              try {
-                await _projectService.openProject();
-              } on ProjectAlreadyOpenError {
-                final result = await showDialogSaveProject(context: context);
-                if (result != null) {
-                  if (result == true) {
-                    await _projectService.saveProject();
-                  }
-                  _projectService.closeProject();
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColorLight,
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/icon/icon.png',
+                  width: 100.0,
+                  height: 100.0,
+                ),
+                const SizedBox(width: 10.0),
+                Text(
+                  'QDAmono',
+                  style: Theme.of(context)
+                      .primaryTextTheme
+                      .bodyText2!
+                      .copyWith(fontSize: 48, fontWeight: FontWeight.w100),
+                ),
+              ],
+            ),
+            const SizedBox(height: 40.0),
+            TextButton.icon(
+              onPressed: () async {
+                try {
                   await _projectService.openProject();
+                } on ProjectAlreadyOpenError {
+                  final result = await showDialogSaveProject(context: context);
+                  if (result != null) {
+                    if (result == true) {
+                      await _projectService.saveProject();
+                    }
+                    _projectService.closeProject();
+                    await _projectService.openProject();
+                  }
                 }
-              }
-            },
-            icon: Icon(
-              Icons.file_open,
-              color: Theme.of(context).primaryIconTheme.color,
+              },
+              icon: Icon(
+                Icons.file_open,
+                color: Theme.of(context).primaryIconTheme.color,
+              ),
+              label: Text(
+                'Otwórz projekt',
+                style: Theme.of(context).primaryTextTheme.bodyText2,
+              ),
             ),
-            label: Text(
-              'Otwórz projekt',
-              style: Theme.of(context).primaryTextTheme.bodyText2,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
