@@ -5,7 +5,7 @@ import 'package:qdamono/models/text_coding_version.dart';
 import 'package:qdamono/models/text_file.dart';
 
 class EventCodingVersionAdd extends ServerEvent {
-  static const name = 'codingVersionAdd';
+  static const name = 'coding_version_add';
   final String textFileId;
   final TextCodingVersion codingVersion;
 
@@ -46,6 +46,6 @@ class EventCodingVersionAdd extends ServerEvent {
 
 class EventCodingVersionAddJsonKeys {
   static const name = 'name';
-  static const textFileId = 'textFileId';
-  static const codingVersion = 'codingVersion';
+  static const textFileId = 'text_file_id';
+  static const codingVersion = 'coding_version';
 }

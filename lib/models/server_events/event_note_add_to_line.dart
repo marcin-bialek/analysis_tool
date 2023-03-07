@@ -1,7 +1,7 @@
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventNoteAddToLine extends ServerEvent {
-  static const name = 'noteAddToLine';
+  static const name = 'note_add_to_line';
   final String codingVersionId;
   final int lineIndex;
   final String noteId;
@@ -36,7 +36,7 @@ class EventNoteAddToLine extends ServerEvent {
 
 class EventNoteAddToLineJsonKeys {
   static const name = 'name';
-  static const codingVersionId = 'codingVersionId';
-  static const lineIndex = 'lineIndex';
-  static const noteId = 'noteId';
+  static const codingVersionId = 'coding_version_id';
+  static const lineIndex = 'line_index';
+  static const noteId = 'note_id';
 }

@@ -2,7 +2,7 @@ import 'package:qdamono/models/code.dart';
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventCodeAdd extends ServerEvent {
-  static const name = 'codeAdd';
+  static const name = 'code_add';
   final Code code;
 
   EventCodeAdd({

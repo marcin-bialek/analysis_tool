@@ -1,7 +1,7 @@
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventGetProject extends ServerEvent {
-  static const name = 'getProject';
+  static const name = 'get_project';
   final String passcode;
 
   EventGetProject({

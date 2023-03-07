@@ -4,7 +4,7 @@ import 'package:qdamono/models/server_events/server_event.dart';
 import 'package:qdamono/models/text_file.dart';
 
 class EventTextFileAdd extends ServerEvent {
-  static const name = 'textFileAdd';
+  static const name = 'text_file_add';
   final TextFile textFile;
 
   EventTextFileAdd({
@@ -38,5 +38,5 @@ class EventTextFileAdd extends ServerEvent {
 
 class EventTextFileAddJsonKeys {
   static const name = 'name';
-  static const textFile = 'textFile';
+  static const textFile = 'text_file';
 }

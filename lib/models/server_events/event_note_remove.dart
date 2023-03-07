@@ -1,7 +1,7 @@
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventNoteRemove extends ServerEvent {
-  static const name = 'noteRemove';
+  static const name = 'note_remove';
   final String noteId;
 
   EventNoteRemove({
@@ -24,5 +24,5 @@ class EventNoteRemove extends ServerEvent {
 
 class EventNoteRemoveJsonKeys {
   static const name = 'name';
-  static const noteId = 'noteId';
+  static const noteId = 'note_id';
 }

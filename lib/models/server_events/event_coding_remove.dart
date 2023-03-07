@@ -3,7 +3,7 @@ import 'package:qdamono/models/server_events/server_event.dart';
 import 'package:qdamono/models/text_coding.dart';
 
 class EventCodingRemove extends ServerEvent {
-  static const name = 'codingRemove';
+  static const name = 'coding_remove';
   final String textFileId;
   final String codingVersionId;
   final TextCoding coding;
@@ -41,7 +41,7 @@ class EventCodingRemove extends ServerEvent {
 
 class EventCodingRemoveJsonKeys {
   static const name = 'name';
-  static const textFileId = 'textFileId';
-  static const codingVersionId = 'codingVersionId';
+  static const textFileId = 'text_file_id';
+  static const codingVersionId = 'coding_version_id';
   static const coding = 'coding';
 }

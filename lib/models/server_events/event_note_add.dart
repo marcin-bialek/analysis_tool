@@ -2,7 +2,7 @@ import 'package:qdamono/models/note.dart';
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventNoteAdd extends ServerEvent {
-  static const name = 'noteAdd';
+  static const name = 'note_add';
   final Note note;
 
   EventNoteAdd({

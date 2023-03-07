@@ -3,7 +3,7 @@ import 'package:qdamono/models/server_events/server_event.dart';
 import 'package:qdamono/models/text_coding.dart';
 
 class EventCodingAdd extends ServerEvent {
-  static const name = 'codingAdd';
+  static const name = 'coding_add';
   final String textFileId;
   final String codingVersionId;
   final int codingLineIndex;
@@ -46,8 +46,8 @@ class EventCodingAdd extends ServerEvent {
 
 class EventCodingAddJsonKeys {
   static const name = 'name';
-  static const textFileId = 'textFileId';
-  static const codingVersionId = 'codingVersionId';
-  static const codingLineIndex = 'codingLineIndex';
+  static const textFileId = 'text_file_id';
+  static const codingVersionId = 'coding_version_id';
+  static const codingLineIndex = 'coding_line_index';
   static const coding = 'coding';
 }

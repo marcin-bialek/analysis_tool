@@ -2,7 +2,7 @@ import 'package:qdamono/models/server_events/server_event.dart';
 import 'package:flutter/material.dart';
 
 class EventCodeUpdate extends ServerEvent {
-  static const name = 'codeUpdate';
+  static const name = 'code_update';
   final String codeId;
   final String? codeName;
   final Color? codeColor;
@@ -38,7 +38,7 @@ class EventCodeUpdate extends ServerEvent {
 
 class EventCodeUpdateJsonKeys {
   static const name = 'name';
-  static const codeId = 'codeId';
-  static const codeName = 'codeName';
-  static const codeColor = 'codeColor';
+  static const codeId = 'code_id';
+  static const codeName = 'code_name';
+  static const codeColor = 'code_color';
 }

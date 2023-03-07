@@ -1,7 +1,7 @@
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventNoteUpdate extends ServerEvent {
-  static const name = 'noteUpdate';
+  static const name = 'note_update';
   final String noteId;
   final String? title;
   final String? text;
@@ -36,7 +36,7 @@ class EventNoteUpdate extends ServerEvent {
 
 class EventNoteUpdateJsonKeys {
   static const name = 'name';
-  static const noteId = 'noteId';
+  static const noteId = 'note_id';
   static const title = 'title';
   static const text = 'text';
 }

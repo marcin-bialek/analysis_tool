@@ -1,7 +1,7 @@
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventTextFileRemove extends ServerEvent {
-  static const name = 'textFileRemove';
+  static const name = 'text_file_remove';
   final String textFileId;
 
   EventTextFileRemove({
@@ -24,5 +24,5 @@ class EventTextFileRemove extends ServerEvent {
 
 class EventTextFileRemoveJsonKeys {
   static const name = 'name';
-  static const textFileId = 'textFileId';
+  static const textFileId = 'text_file_id';
 }

@@ -22,6 +22,6 @@ class EventHello extends ServerEvent {
 
 class EventHelloJsonKeys {
   static const name = 'name';
-  static const clientId = 'clientId';
+  static const clientId = 'client_id';
   static const username = 'username';
 }

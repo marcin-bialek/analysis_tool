@@ -2,7 +2,7 @@ import 'package:qdamono/models/project.dart';
 import 'package:qdamono/models/server_events/server_event.dart';
 
 class EventPublishProject extends ServerEvent {
-  static const name = 'publishProject';
+  static const name = 'publish_project';
   final Project project;
 
   EventPublishProject({
