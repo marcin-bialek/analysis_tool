@@ -113,7 +113,7 @@ class _TextEditorState extends State<TextEditor> {
                       );
                       ProjectService().addTextFile(textFile);
                       mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                        MainViewRoutes.textEditor,
+                        MainViewRoutePaths.textEditor,
                         arguments: [textFile, null],
                       );
                     },
@@ -129,7 +129,7 @@ class _TextEditorState extends State<TextEditor> {
                       final version =
                           ProjectService().addNewCodingVersion(widget.file);
                       mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                          MainViewRoutes.codingEditor,
+                          MainViewRoutePaths.codingEditor,
                           arguments: version);
                     },
                   ),
@@ -232,7 +232,7 @@ class _TextEditorState extends State<TextEditor> {
     if (result == true) {
       ProjectService().removeTextFile(widget.file);
       await mainViewNavigatorKey.currentState!
-          .pushReplacementNamed(MainViewRoutes.none);
+          .pushReplacementNamed(MainViewRoutePaths.none);
     }
   }
 }

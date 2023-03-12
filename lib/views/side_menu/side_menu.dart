@@ -19,7 +19,7 @@ class SideMenu extends StatefulWidget {
 
 class _SideMenuState extends State<SideMenu> {
   bool showSideMenu = true;
-  String currentMenu = SideMenuRoutes.files;
+  SideMenuRoute currentMenu = SideMenuRoute.files;
 
   @override
   Widget build(BuildContext context) {
@@ -32,23 +32,23 @@ class _SideMenuState extends State<SideMenu> {
         children: [
           const SizedBox(height: 10.0),
           _SideMenuButton(Icons.content_copy_outlined, 'Pliki', () {
-            _openMenu(SideMenuRoutes.files);
+            _openMenu(SideMenuRoute.files);
           }),
           _SideMenuButton(Icons.search, 'Wyszukaj', () {
-            _openMenu(SideMenuRoutes.search);
+            _openMenu(SideMenuRoute.search);
           }),
           _SideMenuButton(Icons.account_tree, 'Kodowanie', () {
-            _openMenu(SideMenuRoutes.codes);
+            _openMenu(SideMenuRoute.codes);
           }),
           _SideMenuButton(Icons.sticky_note_2_outlined, 'Notatki', () {
-            _openMenu(SideMenuRoutes.notes);
+            _openMenu(SideMenuRoute.notes);
           }),
           ServerService().connectionInfo.state.observe((state) {
             return _SideMenuButton(
               Icons.people_rounded,
               'Współpraca',
               () {
-                _openMenu(SideMenuRoutes.collaboration);
+                _openMenu(SideMenuRoute.collaboration);
               },
               color: state == ServerConnectionState.connected
                   ? Colors.green
@@ -57,25 +57,28 @@ class _SideMenuState extends State<SideMenu> {
           }),
           const Spacer(),
           _SideMenuButton(Icons.settings_outlined, 'Ustawienia', () {
-            _openMenu(MainViewRoutes.settings);
+            _openSettings();
           }),
         ],
       ),
     );
   }
 
-  void _openMenu(String name) {
-    if (name == MainViewRoutes.settings) {
-      mainViewNavigatorKey.currentState?.pushReplacementNamed(name);
-    } else if (name != currentMenu) {
+  void _openMenu(SideMenuRoute route) {
+    if (route != currentMenu) {
       showSideMenu = true;
       widget.showSideMenu?.call(true);
-      currentMenu = name;
-      sideMenuNavigatorKey.currentState?.pushReplacementNamed(name);
+      currentMenu = route;
+      sideMenuNavigatorKey.currentState?.pushReplacementNamed(route.path);
     } else {
       showSideMenu = !showSideMenu;
       widget.showSideMenu?.call(showSideMenu);
     }
+  }
+
+  void _openSettings() {
+    mainViewNavigatorKey.currentState
+        ?.pushReplacementNamed(MainViewRoutePaths.settings);
   }
 }
 

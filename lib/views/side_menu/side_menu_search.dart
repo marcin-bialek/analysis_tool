@@ -85,7 +85,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                 ),
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                    MainViewRoutes.textEditor,
+                    MainViewRoutePaths.textEditor,
                     arguments: <dynamic>[result.file, result.line.index],
                   );
                 },

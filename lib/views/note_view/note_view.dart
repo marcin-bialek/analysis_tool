@@ -107,7 +107,7 @@ class _NoteViewState extends State<NoteView> {
                     final result = await showDialogRemoveNote(context: context);
                     if (result == true) {
                       mainViewNavigatorKey.currentState!
-                          .pushReplacementNamed(MainViewRoutes.none);
+                          .pushReplacementNamed(MainViewRoutePaths.none);
                       ProjectService().removeNote(widget.note);
                     }
                   },

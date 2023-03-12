@@ -105,7 +105,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
       }
       _projectService.closeProject();
       mainViewNavigatorKey.currentState!
-          .pushReplacementNamed(MainViewRoutes.start);
+          .pushReplacementNamed(MainViewRoutePaths.start);
     }
   }
 }
@@ -148,7 +148,7 @@ class SideMenuFilesItem extends StatelessWidget {
           visualDensity: const VisualDensity(vertical: -4.0),
           onTap: () {
             mainViewNavigatorKey.currentState!.pushReplacementNamed(
-              MainViewRoutes.textEditor,
+              MainViewRoutePaths.textEditor,
               arguments: <dynamic>[file, null],
             );
           },
@@ -181,7 +181,7 @@ class SideMenuFilesItem extends StatelessWidget {
                 visualDensity: const VisualDensity(vertical: -4.0),
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                    MainViewRoutes.codingEditor,
+                    MainViewRoutePaths.codingEditor,
                     arguments: version,
                   );
                 },

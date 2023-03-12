@@ -103,16 +103,12 @@ class _HomePageState extends State<HomePage> {
               ),
               child: MultiSplitView(
                 controller: splitViewController,
-                children: [
-                  Navigator(
-                    key: sideMenuNavigatorKey,
-                    initialRoute: SideMenuRoutes.files,
-                    onGenerateRoute: _sideMenuOnGenerateRoute,
+                children: const [
+                  SideView(
+                    initialRoute: SideMenuRoute.files,
                   ),
-                  Navigator(
-                    key: mainViewNavigatorKey,
-                    initialRoute: MainViewRoutes.start,
-                    onGenerateRoute: _mainViewOnGenerateRoute,
+                  MainView(
+                    initialRoute: MainViewRoute.none,
                   ),
                 ],
               ),
@@ -122,16 +118,22 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
 
-  Route _sideMenuOnGenerateRoute(RouteSettings settings) {
+class SideView extends StatelessWidget {
+  final SideMenuRoute initialRoute;
+
+  const SideView({required this.initialRoute, Key? key}) : super(key: key);
+
+  Route _onGenerateRoute(RouteSettings settings) {
     return PageRouteBuilder(
       pageBuilder: (context, _, __) {
         return {
-              SideMenuRoutes.files: const SideMenuFiles(),
-              SideMenuRoutes.search: const SideMenuSearch(),
-              SideMenuRoutes.codes: const SideMenuCodes(),
-              SideMenuRoutes.notes: const SideMenuNotes(),
-              SideMenuRoutes.collaboration: const SideMenuCollaboration(),
+              SideMenuRoutePaths.files: const SideMenuFiles(),
+              SideMenuRoutePaths.search: const SideMenuSearch(),
+              SideMenuRoutePaths.codes: const SideMenuCodes(),
+              SideMenuRoutePaths.notes: const SideMenuNotes(),
+              SideMenuRoutePaths.collaboration: const SideMenuCollaboration(),
             }[settings.name] ??
             Container();
       },
@@ -140,41 +142,65 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Route _mainViewOnGenerateRoute(RouteSettings settings) {
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: sideMenuNavigatorKey,
+      initialRoute: initialRoute.path,
+      onGenerateRoute: _onGenerateRoute,
+    );
+  }
+}
+
+class MainView extends StatelessWidget {
+  final MainViewRoute initialRoute;
+
+  const MainView({required this.initialRoute, Key? key}) : super(key: key);
+
+  Route _onGenerateRoute(RouteSettings settings) {
     return PageRouteBuilder(
       pageBuilder: (context, _, __) {
         switch (settings.name) {
-          case MainViewRoutes.start:
+          case MainViewRoutePaths.start:
             return const StartPage();
-          case MainViewRoutes.settings:
+          case MainViewRoutePaths.settings:
             return const SettingsView();
-          case MainViewRoutes.textEditor:
+          case MainViewRoutePaths.textEditor:
             final args = settings.arguments as List;
             return TextEditor(file: args[0], line: args[1]);
-          case MainViewRoutes.codingEditor:
+          case MainViewRoutePaths.codingEditor:
             return CodingEditor(
               codingVersion: settings.arguments as TextCodingVersion,
             );
-          case MainViewRoutes.codingCompare:
+          case MainViewRoutePaths.codingCompare:
             final args = settings.arguments as List;
             return CodingCompareView(
               firstVersion: args[0],
               secondVersion: args[1],
             );
-          case MainViewRoutes.codeStats:
+          case MainViewRoutePaths.codeStats:
             return const CodeStatsView();
-          case MainViewRoutes.codeGraph:
+          case MainViewRoutePaths.codeGraph:
             return const Text('graf kodów',
                 style: TextStyle(color: Colors.white));
-          case MainViewRoutes.note:
+          case MainViewRoutePaths.note:
             return NoteView(note: settings.arguments as Note);
-          case MainViewRoutes.none:
+          case MainViewRoutePaths.none:
           default:
             return Container();
         }
       },
       settings: settings,
       transitionDuration: Duration.zero,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: mainViewNavigatorKey,
+      initialRoute: initialRoute.path,
+      onGenerateRoute: _onGenerateRoute,
     );
   }
 }

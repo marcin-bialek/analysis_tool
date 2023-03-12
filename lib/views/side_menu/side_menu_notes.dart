@@ -98,7 +98,7 @@ class _SideMenuNotesItem extends StatelessWidget {
         ),
         onPressed: () {
           mainViewNavigatorKey.currentState!.pushReplacementNamed(
-            MainViewRoutes.note,
+            MainViewRoutePaths.note,
             arguments: note,
           );
         },

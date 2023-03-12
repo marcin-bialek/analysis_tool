@@ -40,7 +40,7 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
             IconButton(
               onPressed: () {
                 mainViewNavigatorKey.currentState!
-                    .pushReplacementNamed(MainViewRoutes.codeStats);
+                    .pushReplacementNamed(MainViewRoutePaths.codeStats);
               },
               icon: Icon(
                 Icons.article,

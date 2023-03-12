@@ -216,8 +216,9 @@ class _CodingCompareViewState extends State<CodingCompareView> {
       }
     }
     ProjectService().addCodingVersion(version);
-    mainViewNavigatorKey.currentState!
-        .pushReplacementNamed(MainViewRoutes.codingEditor, arguments: version);
+    mainViewNavigatorKey.currentState!.pushReplacementNamed(
+        MainViewRoutePaths.codingEditor,
+        arguments: version);
   }
 }
 

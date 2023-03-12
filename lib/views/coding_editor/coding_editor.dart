@@ -81,7 +81,7 @@ class _CodingEditorState extends State<CodingEditor> {
                     }).toList(),
                     onChanged: (version) {
                       mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                        MainViewRoutes.codingCompare,
+                        MainViewRoutePaths.codingCompare,
                         arguments: [widget.codingVersion, version],
                       );
                     },
@@ -157,7 +157,7 @@ class _CodingEditorState extends State<CodingEditor> {
     if (result == true) {
       ProjectService().removeCodingVersion(widget.codingVersion);
       await mainViewNavigatorKey.currentState!
-          .pushReplacementNamed(MainViewRoutes.none);
+          .pushReplacementNamed(MainViewRoutePaths.none);
     }
   }
 }
@@ -445,7 +445,7 @@ class _NoteButton extends StatelessWidget {
               return TextButton(
                 onPressed: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(
-                    MainViewRoutes.note,
+                    MainViewRoutePaths.note,
                     arguments: note,
                   );
                 },
