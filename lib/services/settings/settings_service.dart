@@ -5,7 +5,9 @@ class SettingsService {
   static SettingsService? _instance;
   SharedPreferences? _preferences;
   final fontSizes = Observable(FontSizes());
-  final username = Observable('bez nazwy');
+  final serverAddress = Observable('https://localhost');
+  final isConnectionSecure = Observable(false);
+  final allowInsecureConnection = Observable(false);
 
   SettingsService._() {
     fontSizes.addListener((sizes) async {
@@ -13,8 +15,13 @@ class SettingsService {
       _preferences?.setInt(
           PreferencesKeys.editorFontSize, sizes.editorFontSize);
     });
-    username.addListener((username) {
-      _preferences?.setString(PreferencesKeys.username, username);
+    serverAddress.addListener((address) {
+      _preferences?.setString(PreferencesKeys.serverAddress, address);
+      final uri = Uri.parse(address);
+      isConnectionSecure.value = uri.scheme == 'https' || uri.scheme == 'wss';
+    });
+    allowInsecureConnection.addListener((doAllow) {
+      _preferences?.setBool(PreferencesKeys.allowInsecureConnection, doAllow);
     });
     _readSettings();
   }
@@ -30,8 +37,11 @@ class SettingsService {
       ..menuFontSize = _preferences!.getInt(PreferencesKeys.menuFontSize) ?? 13
       ..editorFontSize =
           _preferences!.getInt(PreferencesKeys.editorFontSize) ?? 15;
-    username.value =
-        _preferences!.getString(PreferencesKeys.username) ?? 'bez nazwy';
+    serverAddress.value =
+        _preferences!.getString(PreferencesKeys.serverAddress) ??
+            'https://localhost';
+    allowInsecureConnection.value =
+        _preferences!.getBool(PreferencesKeys.allowInsecureConnection) ?? false;
   }
 }
 
@@ -43,5 +53,6 @@ class FontSizes {
 class PreferencesKeys {
   static const menuFontSize = 'menuFontSize';
   static const editorFontSize = 'editorFontSize';
-  static const username = 'username';
+  static const serverAddress = 'serverAddress';
+  static const allowInsecureConnection = 'allowInsecureConnection';
 }

@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
+import 'package:flutter/foundation.dart';
 import 'package:qdamono/extensions/iterable.dart';
 import 'package:qdamono/helpers/docx.dart';
 import 'package:qdamono/models/code.dart';
@@ -28,10 +32,6 @@ import 'package:qdamono/models/text_coding_version.dart';
 import 'package:qdamono/models/text_file.dart';
 import 'package:qdamono/services/project/project_service_exceptions.dart';
 import 'package:qdamono/services/server/server_service.dart';
-import 'package:csv/csv.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flex_color_picker/flex_color_picker.dart' show ColorTools;
-import 'package:flutter/foundation.dart';
 
 import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
     as saver;
@@ -73,10 +73,11 @@ class ProjectService {
         final project = Project.fromJson(jsonDecode(file));
         this.project.value = project;
         _currentProjectPath = result.files.first.path;
+        this.project.notify();
         return project;
       } catch (e) {
         if (kDebugMode) {
-          print(e);
+          print('Open project: $e');
         }
         throw InvalidFileError();
       }

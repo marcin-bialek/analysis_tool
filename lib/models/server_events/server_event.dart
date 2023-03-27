@@ -1,6 +1,7 @@
 import 'package:qdamono/models/code.dart';
 import 'package:qdamono/models/json_encodable.dart';
 import 'package:qdamono/models/note.dart';
+import 'package:qdamono/models/server_events/event_client_id.dart';
 import 'package:qdamono/models/server_events/event_clients.dart';
 import 'package:qdamono/models/server_events/event_code_add.dart';
 import 'package:qdamono/models/server_events/event_code_remove.dart';
@@ -38,6 +39,8 @@ abstract class ServerEvent implements JsonEncodable {
     final name = event[ServerEventJsonKeys.name] as String;
     try {
       switch (name) {
+        case EventClientId.name:
+          return EventClientId.fromJson(event);
         case EventClients.name:
           return EventClients.fromJson(event);
         case EventProject.name:
@@ -102,7 +105,7 @@ abstract class ServerEvent implements JsonEncodable {
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        print('Server event: $e');
       }
       return null;
     }

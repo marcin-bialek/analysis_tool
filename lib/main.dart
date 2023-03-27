@@ -6,6 +6,7 @@ import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/code_stats/code_stats_view.dart';
 import 'package:qdamono/views/coding_compare/coding_compare_view.dart';
 import 'package:qdamono/views/coding_editor/coding_editor.dart';
+import 'package:qdamono/views/project_list/project_list_view.dart';
 import 'package:qdamono/views/side_menu/side_menu.dart';
 import 'package:qdamono/views/side_menu/side_menu_codes.dart';
 import 'package:qdamono/views/side_menu/side_menu_collaboration.dart';
@@ -165,6 +166,8 @@ class MainView extends StatelessWidget {
             return const StartPage();
           case MainViewRoutePaths.settings:
             return const SettingsView();
+          case MainViewRoutePaths.projectList:
+            return const ProjectListView();
           case MainViewRoutePaths.textEditor:
             final args = settings.arguments as List;
             return TextEditor(file: args[0], line: args[1]);

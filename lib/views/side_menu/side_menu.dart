@@ -31,6 +31,9 @@ class _SideMenuState extends State<SideMenu> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 10.0),
+          _SideMenuButton(Icons.home_outlined, 'Projekt', () {
+            _openProjectList();
+          }),
           _SideMenuButton(Icons.content_copy_outlined, 'Pliki', () {
             _openMenu(SideMenuRoute.files);
           }),
@@ -79,6 +82,11 @@ class _SideMenuState extends State<SideMenu> {
   void _openSettings() {
     mainViewNavigatorKey.currentState
         ?.pushReplacementNamed(MainViewRoutePaths.settings);
+  }
+
+  void _openProjectList() {
+    mainViewNavigatorKey.currentState
+        ?.pushReplacementNamed(MainViewRoutePaths.projectList);
   }
 }
 

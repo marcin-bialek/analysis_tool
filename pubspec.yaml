@@ -12,14 +12,15 @@ dependencies:
   cupertino_icons: ^1.0.2
   multi_split_view: ^2.0.0
   uuid: ^3.0.6
-  file_picker: ^4.5.1
+  file_picker: ^5.2.5
   scrollable_positioned_list: ^0.3.2
-  flex_color_picker: ^2.5.0
-  socket_io_client: ^1.0.2
+  flex_color_picker: ^3.1.0
+  socket_io_client: ^2.0.1
   csv: ^5.0.1
   shared_preferences: ^2.0.15
   archive: ^3.3.0
   xml: ^6.1.0
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:

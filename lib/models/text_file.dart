@@ -93,7 +93,7 @@ class TextFileJsonKeys {
   static const id = 'id';
   static const name = 'name';
   static const text = 'text';
-  static const codingVersions = 'codingVersions';
+  static const codingVersions = 'coding_versions';
 }
 
 class TextLine {

@@ -128,9 +128,36 @@ Future<bool?> showDialogCouldNotConnect({
   );
 }
 
+Future<bool?> showDialogAuthenticationFailed({
+  required BuildContext context,
+  required String username,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Weryfikacja się nie powiodła',
+    content: Text('Nie udało się zweryfikować użytkownika $username'),
+    actions: {
+      'Ok': true,
+    },
+  );
+}
+
+Future<bool?> showDialogUserAlreadyExists({
+  required BuildContext context,
+  required String email,
+}) {
+  return showGenericDialog<bool>(
+    context: context,
+    title: 'Błąd rejestracji',
+    content: Text('Użytkownik $email już istnieje'),
+    actions: {
+      'Ok': true,
+    },
+  );
+}
+
 Future<bool?> showDialogConnectionInfo({
   required BuildContext context,
-  required String address,
   required String passcode,
 }) {
   return showGenericDialog<bool>(
@@ -139,23 +166,8 @@ Future<bool?> showDialogConnectionInfo({
     content: Table(
       columnWidths: const {
         0: IntrinsicColumnWidth(),
-        1: IntrinsicColumnWidth(),
       },
       children: [
-        TableRow(children: [
-          const TableCell(
-            child: Padding(
-              padding: EdgeInsets.all(5.0),
-              child: Text('Adres:'),
-            ),
-          ),
-          TableCell(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: SelectableText(address),
-            ),
-          ),
-        ]),
         TableRow(children: [
           const TableCell(
             child: Padding(

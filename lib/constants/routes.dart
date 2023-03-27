@@ -58,6 +58,7 @@ class MainViewRoutePaths {
   static const none = '/main-view/none';
   static const start = '/main-view/start';
   static const settings = '/main-view/settings';
+  static const projectList = '/main-view/project-list';
   static const textEditor = '/main-view/text-editor';
   static const codingEditor = '/main-view/coding-editor';
   static const codingCompare = '/main-view/coding-compare';
@@ -70,6 +71,7 @@ enum MainViewRoute {
   none,
   start,
   settings,
+  projectList,
   textEditor,
   codingEditor,
   codingCompare,
@@ -85,6 +87,8 @@ enum MainViewRoute {
         return MainViewRoute.start;
       case MainViewRoutePaths.settings:
         return MainViewRoute.settings;
+      case MainViewRoutePaths.projectList:
+        return MainViewRoute.projectList;
       case MainViewRoutePaths.textEditor:
         return MainViewRoute.textEditor;
       case MainViewRoutePaths.codingEditor:
@@ -112,6 +116,8 @@ extension MainViewRoutePath on MainViewRoute {
         return MainViewRoutePaths.start;
       case MainViewRoute.settings:
         return MainViewRoutePaths.settings;
+      case MainViewRoute.projectList:
+        return MainViewRoutePaths.projectList;
       case MainViewRoute.textEditor:
         return MainViewRoutePaths.textEditor;
       case MainViewRoute.codingEditor:

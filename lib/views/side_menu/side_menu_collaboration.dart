@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:qdamono/services/project/project_service.dart';
 import 'package:qdamono/services/server/server_service.dart';
 import 'package:qdamono/services/server/server_service_exceptions.dart';
+import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/dialogs.dart';
-import 'package:flutter/material.dart';
 
 class SideMenuCollaboration extends StatefulWidget {
   const SideMenuCollaboration({Key? key}) : super(key: key);
@@ -14,13 +18,23 @@ class SideMenuCollaboration extends StatefulWidget {
 class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
   final _projectService = ProjectService();
   final _serverService = ServerService();
+  final _settingsService = SettingsService();
   final _serverAddressController = TextEditingController();
   final _passcodeController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
     _serverAddressController.dispose();
     _passcodeController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -35,6 +49,92 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             children: [
               const SizedBox(width: 20.0),
               Text(
+                'Konto',
+                style: Theme.of(context).primaryTextTheme.bodyText2,
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+        _serverService.userInfo.username.observe((accessToken) {
+          final userIsLoggedIn =
+              _serverService.userInfo.accessToken.value != '';
+
+          if (userIsLoggedIn) {
+            return SizedBox(
+              height: 25.0,
+              child: Row(
+                children: [
+                  const SizedBox(width: 20.0),
+                  Text(
+                    _serverService.userInfo.username.value,
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .bodyText1
+                        ?.copyWith(decoration: TextDecoration.underline),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
+        }),
+        _serverService.userInfo.accessToken.observe((accessToken) {
+          final isLoggedIn = accessToken != '';
+
+          return ListTile(
+            enabled: true,
+            dense: true,
+            leading: Icon(isLoggedIn ? Icons.logout : Icons.login,
+                size: 20.0, color: isLoggedIn ? Colors.red : Colors.green),
+            title: Text(
+              isLoggedIn ? 'Wyloguj się' : 'Zaloguj się',
+              style: TextStyle(
+                color: isLoggedIn ? Colors.red : Colors.green,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            onTap: () async {
+              if (isLoggedIn) {
+                await _logout();
+              } else {
+                await _login();
+              }
+            },
+          );
+        }),
+        _serverService.userInfo.accessToken.observe((accessToken) {
+          final isLoggedIn = accessToken != '';
+
+          if (!isLoggedIn) {
+            return ListTile(
+              enabled: true,
+              dense: true,
+              leading: Icon(Icons.add_home,
+                  size: 20.0, color: isLoggedIn ? Colors.red : Colors.green),
+              title: Text(
+                'Zarejestruj się',
+                style: TextStyle(
+                  color: isLoggedIn ? Colors.red : Colors.green,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              onTap: () async {
+                await _register();
+              },
+            );
+          }
+
+          return const SizedBox.shrink();
+        }),
+        SizedBox(
+          height: 40.0,
+          child: Row(
+            children: [
+              const SizedBox(width: 20.0),
+              Text(
                 'Współpraca',
                 style: Theme.of(context).primaryTextTheme.bodyText2,
               ),
@@ -42,47 +142,53 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             ],
           ),
         ),
-        _serverService.connectionInfo.state.observe((state) {
-          return ListTile(
-            enabled: state != ServerConnectionState.connecting,
-            dense: true,
-            leading: Icon(
-                _serverService.connectionInfo.secure.value
-                    ? Icons.lock
-                    : Icons.cloud,
-                size: 20.0,
-                color: Colors.green),
-            title: Text(
-              <ServerConnectionState, String>{
-                ServerConnectionState.disconnected: 'Połącz z serwerem',
-                ServerConnectionState.connecting: 'Łączenie...',
-                ServerConnectionState.connected:
-                    'Połączono z ${_serverService.connectionInfo.address.value}',
-              }[state]!,
-              style: const TextStyle(
-                color: Colors.green,
-                overflow: TextOverflow.ellipsis,
+        _serverService.userInfo.accessToken.observe((accessToken) {
+          final userIsLoggedIn =
+              _serverService.userInfo.accessToken.value != '';
+
+          return _serverService.connectionInfo.state.observe((state) {
+            return ListTile(
+              enabled: _serverService.userInfo.accessToken.value != '' &&
+                  state != ServerConnectionState.connecting,
+              dense: true,
+              leading: Icon(
+                  _settingsService.isConnectionSecure.value
+                      ? Icons.lock
+                      : Icons.cloud,
+                  size: 20.0,
+                  color: userIsLoggedIn ? Colors.green : Colors.grey),
+              title: Text(
+                <ServerConnectionState, String>{
+                  ServerConnectionState.disconnected:
+                      'Otwórz istniejący projekt',
+                  ServerConnectionState.connecting: 'Łączenie...',
+                  ServerConnectionState.connected:
+                      'Otworzono projekt ${_projectService.project.value?.name}',
+                }[state]!,
+                style: TextStyle(
+                  color: userIsLoggedIn ? Colors.green : Colors.grey,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            trailing: state == ServerConnectionState.connecting
-                ? const SizedBox(
-                    width: 20.0,
-                    height: 20.0,
-                    child: CircularProgressIndicator(color: Colors.green),
-                  )
-                : null,
-            onTap: () async {
-              if (state == ServerConnectionState.disconnected) {
-                await _connectToServer();
-              } else if (state == ServerConnectionState.connected) {
-                await showDialogConnectionInfo(
-                  context: context,
-                  address: _serverService.connectionInfo.address.value,
-                  passcode: _serverService.connectionInfo.passcode.value,
-                );
-              }
-            },
-          );
+              trailing: state == ServerConnectionState.connecting
+                  ? const SizedBox(
+                      width: 20.0,
+                      height: 20.0,
+                      child: CircularProgressIndicator(color: Colors.green),
+                    )
+                  : null,
+              onTap: () async {
+                if (state == ServerConnectionState.disconnected) {
+                  await _openProject();
+                } else if (state == ServerConnectionState.connected) {
+                  await showDialogConnectionInfo(
+                    context: context,
+                    passcode: _serverService.connectionInfo.passcode.value,
+                  );
+                }
+              },
+            );
+          });
         }),
         _serverService.connectionInfo.state.observe((state) {
           switch (state) {
@@ -148,7 +254,9 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                     ),
                     title: Text(
                       e.value +
-                          (e.key == _serverService.clientId ? ' (Ty)' : ''),
+                          (e.key == _serverService.connectionInfo.clientId.value
+                              ? ' (Ty)'
+                              : ''),
                       style: Theme.of(context).primaryTextTheme.bodyText2,
                     ),
                   );
@@ -161,20 +269,112 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
   }
 
-  Future<void> _connectToServer() async {
-    final result = await showGenericDialog<bool>(
+  Future<void> _register() async {
+    final result = await showGenericDialog(
       context: context,
-      title: 'Połącz z serwerem',
+      title: 'Zarejestruj się',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
-            controller: _serverAddressController,
+            controller: _usernameController,
             decoration: InputDecoration(
-              hintText: 'Podaj adres serwera',
+              hintText: 'Podaj swój email',
               hintStyle: Theme.of(context).textTheme.bodyText2,
             ),
           ),
+          TextField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              hintText: 'Podaj hasło',
+              hintStyle: Theme.of(context).textTheme.bodyText2,
+            ),
+            obscureText: true,
+            enableSuggestions: false,
+            autocorrect: false,
+          ),
+        ],
+      ),
+      actions: {
+        'Zarejestruj się': true,
+        'Anuluj': false,
+      },
+    );
+
+    if (result == true) {
+      final username = _usernameController.text;
+      final password = _passwordController.text;
+
+      try {
+        await _serverService.register(username, password);
+      } on UserAlreadyExistsError {
+        await showDialogUserAlreadyExists(context: context, email: username);
+      } catch (e) {
+        await showDialogCouldNotConnect(
+            context: context, address: _settingsService.serverAddress.value);
+      }
+    }
+  }
+
+  Future<void> _login() async {
+    final result = await showGenericDialog(
+      context: context,
+      title: 'Zaloguj się',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _usernameController,
+            decoration: InputDecoration(
+              hintText: 'Podaj swój email',
+              hintStyle: Theme.of(context).textTheme.bodyText2,
+            ),
+          ),
+          TextField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              hintText: 'Podaj hasło',
+              hintStyle: Theme.of(context).textTheme.bodyText2,
+            ),
+            obscureText: true,
+            enableSuggestions: false,
+            autocorrect: false,
+          ),
+        ],
+      ),
+      actions: {
+        'Zaloguj się': true,
+        'Anuluj': false,
+      },
+    );
+
+    if (result == true) {
+      final username = _usernameController.text;
+      final password = _passwordController.text;
+
+      try {
+        await _serverService.login(username, password);
+      } on AuthenticationError {
+        await showDialogAuthenticationFailed(
+            context: context, username: username);
+      } catch (_) {
+        await showDialogCouldNotConnect(
+            context: context, address: _settingsService.serverAddress.value);
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    await _serverService.logout();
+  }
+
+  Future<void> _openProject() async {
+    final result = await showGenericDialog<bool>(
+      context: context,
+      title: 'Otwórz projekt',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           TextField(
             controller: _passcodeController,
             decoration: InputDecoration(
@@ -185,15 +385,17 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
         ],
       ),
       actions: {
-        'Połącz': true,
+        'Otwórz': true,
         'Anuluj': false,
       },
     );
+
     if (result == true) {
-      final address = _serverAddressController.text;
+      final address = _settingsService.serverAddress.value;
       final passcode = _passcodeController.text;
+
       try {
-        await _serverService.connect(address, passcode);
+        await _serverService.connect(passcode);
       } on CouldNotConnectError {
         await showDialogCouldNotConnect(context: context, address: address);
       }
@@ -201,25 +403,19 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
   }
 
   Future<void> _publishProject() async {
+    final address = _settingsService.serverAddress.value;
     final result = await showGenericDialog<bool>(
       context: context,
       title: 'Wyślij projekt na serwer',
-      content: TextField(
-        controller: _serverAddressController,
-        decoration: InputDecoration(
-          hintText: 'Podaj adres serwera',
-          hintStyle: Theme.of(context).textTheme.bodyText2,
-        ),
-      ),
+      content: Text("Projekt zostanie opublikowany na serwerze: $address"),
       actions: {
         'Wyślij': true,
         'Anuluj': false,
       },
     );
     if (result == true) {
-      final address = _serverAddressController.text;
       try {
-        await _serverService.publishProject(address);
+        await _serverService.publishProject();
       } on CouldNotConnectError {
         await showDialogCouldNotConnect(context: context, address: address);
       }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,18 +54,86 @@ class _SettingsViewState extends State<SettingsView> {
               ],
             ),
             _TextFieldRow(
-              settingName: 'Nazwa użytkownika',
-              initialValue: settings.username.value,
+              settingName: 'Adres serwera',
+              initialValue: settings.serverAddress.value,
               onChange: (value) {
                 if (value.isNotEmpty) {
-                  SettingsService().username.value = value;
+                  SettingsService().serverAddress.value = value;
                 }
+              },
+            ),
+            _SwitchFieldRow(
+              settingName: 'Pozwalaj na połączenia przez HTTP',
+              initialValue: settings.allowInsecureConnection.value,
+              onChange: (value) {
+                SettingsService().allowInsecureConnection.value = value;
+                return value;
               },
             ),
             const Spacer(),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SwitchFieldRow extends StatefulWidget {
+  final String settingName;
+  final bool? initialValue;
+  final bool Function(bool)? onChange;
+
+  const _SwitchFieldRow({
+    Key? key,
+    required this.settingName,
+    this.initialValue,
+    this.onChange,
+  }) : super(key: key);
+
+  @override
+  State<_SwitchFieldRow> createState() => _SwitchFieldRowState();
+}
+
+class _SwitchFieldRowState extends State<_SwitchFieldRow> {
+  bool value = false;
+
+  @override
+  void initState() {
+    super.initState();
+    value = widget.initialValue ?? false;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            '${widget.settingName}:',
+            style: Theme.of(context).primaryTextTheme.bodyText2,
+          ),
+        ),
+        Expanded(
+          flex: 7,
+          child: Switch(
+            value: value,
+            onChanged: (newValue) {
+              final valueToSet = widget.onChange?.call(newValue) ?? value;
+              if (valueToSet != value) {
+                setState(() {
+                  value = valueToSet;
+                });
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -21,7 +21,7 @@ String getTextFromDocx(Uint8List bytes) {
     }).join('\n');
   } catch (e) {
     if (kDebugMode) {
-      print(e);
+      print('Docs: $e');
     }
     throw UnsupportedFileError();
   }

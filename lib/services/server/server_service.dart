@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:qdamono/extensions/iterable.dart';
 import 'package:qdamono/models/observable.dart';
+import 'package:qdamono/models/project_info.dart';
+import 'package:qdamono/models/server_events/event_client_id.dart';
 import 'package:qdamono/models/server_events/event_clients.dart';
 import 'package:qdamono/models/server_events/event_code_add.dart';
 import 'package:qdamono/models/server_events/event_code_remove.dart';
@@ -12,8 +17,8 @@ import 'package:qdamono/models/server_events/event_coding_remove.dart';
 import 'package:qdamono/models/server_events/event_coding_version_add.dart';
 import 'package:qdamono/models/server_events/event_coding_version_remove.dart';
 import 'package:qdamono/models/server_events/event_coding_version_update.dart';
+import 'package:qdamono/models/server_events/event_get_client_id.dart';
 import 'package:qdamono/models/server_events/event_get_project.dart';
-import 'package:qdamono/models/server_events/event_hello.dart';
 import 'package:qdamono/models/server_events/event_note_add.dart';
 import 'package:qdamono/models/server_events/event_note_add_to_line.dart';
 import 'package:qdamono/models/server_events/event_note_remove.dart';
@@ -30,14 +35,13 @@ import 'package:qdamono/services/project/project_service.dart';
 import 'package:qdamono/services/server/server_service_exceptions.dart';
 import 'package:qdamono/services/server/unsecure_http_overrides.dart';
 import 'package:qdamono/services/settings/settings_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
-import 'package:uuid/uuid.dart';
 
 class ServerService {
   static ServerService? _instance;
   final connectionInfo = ConnectionInfo();
-  final clientId = const Uuid().v4();
+  final userInfo = UserInfo();
+  final projectList = Observable<List<ProjectInfo>>(List.empty());
   socket_io.Socket? _socket;
 
   ServerService._() {
@@ -55,34 +59,165 @@ class ServerService {
     _socket?.emit('event', event.toJson());
   }
 
+  bool isConnectionAllowed() {
+    return SettingsService().isConnectionSecure.value ||
+        SettingsService().allowInsecureConnection.value;
+  }
+
+  Future<void> _register(String email, String password) async {
+    final address = SettingsService().serverAddress.value;
+    final response = await http.post(
+      Uri.parse('$address/auth/register'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      return;
+    }
+
+    if (response.statusCode == 400) {
+      final Map<String, dynamic> content = jsonDecode(response.body);
+
+      if (content['detail'] is String &&
+          content['detail'] == 'REGISTER_USER_ALREADY_EXISTS') {
+        throw UserAlreadyExistsError('User $email already exists');
+      }
+
+      if (content['detail'] is Map<String, dynamic> &&
+          content['detail']['code'] == 'REGISTER_INVALID_PASSWORD') {
+        throw InvalidPasswordError(content['detail']['reason']);
+      }
+    }
+
+    throw RegisterUserError("User registration unsuccessful");
+  }
+
+  Future<UserInfo> _login(String username, String password) async {
+    final address = SettingsService().serverAddress.value;
+    final request =
+        http.MultipartRequest('POST', Uri.parse('$address/auth/login'))
+          ..fields['username'] = username
+          ..fields['password'] = password;
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final Map<String, dynamic> content = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      userInfo.username.value = username;
+      userInfo.password.value = password;
+      userInfo.accessToken.value = content['access_token'];
+      userInfo.accessToken.notify();
+      userInfo.username.notify();
+      userInfo.password.notify();
+      return userInfo;
+    }
+
+    if (response.statusCode == 400) {
+      final String detail = content['detail'];
+      throw AuthenticationError('Login unsuccessful: $detail');
+    }
+
+    throw AuthenticationError('Login unsuccessful');
+  }
+
+  Future<UserInfo> _logout() async {
+    final address = SettingsService().serverAddress.value;
+    final accessToken = userInfo.accessToken.value;
+    final response = await http.post(
+      Uri.parse('$address/auth/logout'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      userInfo.accessToken.value = '';
+      userInfo.username.value = '';
+      userInfo.password.value = '';
+      userInfo.accessToken.notify();
+      userInfo.username.notify();
+      userInfo.password.notify();
+      return userInfo;
+    }
+
+    if (response.statusCode == 401) {
+      if (kDebugMode) {
+        print('User is inactive');
+      }
+      return userInfo;
+    }
+
+    throw Exception(
+        'Unexpected error during logout. Something might have happened to the server.');
+  }
+
+  Future<bool> checkAccessTokenIsValid() async {
+    final address = SettingsService().serverAddress.value;
+    final accessToken = userInfo.accessToken.value;
+    final response = await http.get(
+      Uri.parse('$address/auth/me'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    return response.statusCode == 200;
+  }
+
+  Future<List<ProjectInfo>> getProjectList() async {
+    final address = SettingsService().serverAddress.value;
+    final accessToken = userInfo.accessToken.value;
+    final response = await http.get(
+      Uri.parse('$address/project/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Iterable content = jsonDecode(response.body);
+      projectList.value = content.map(
+        (rawProjectInfo) {
+          return ProjectInfo.fromJson(rawProjectInfo as Map<String, dynamic>);
+        },
+      ).toList();
+      projectList.notify();
+    }
+
+    return projectList.value;
+  }
+
   Future<ConnectionInfo> _connect(String address) async {
     if (_socket != null) {
       return connectionInfo;
     }
 
     address = address.trim();
-    final uri = Uri.parse(address);
     final completer = Completer<ConnectionInfo>();
     final options = socket_io.OptionBuilder()
         .setTransports(['websocket'])
+        .setAuth({'token': userInfo.accessToken.value})
         .enableForceNew()
         .build();
     final socket = socket_io.io(address, options);
     _socket = socket;
-    connectionInfo.address.value = address;
     connectionInfo.state.value = ServerConnectionState.connecting;
 
     socket.onConnect((_) {
       socket.onDisconnect((_) => disconnect());
       socket.on('event', _handleEvent);
       connectionInfo.state.value = ServerConnectionState.connected;
-      if (uri.scheme == 'https' || uri.scheme == 'wss') {
-        connectionInfo.secure.value = true;
-      }
-      sendEvent(EventHello(
-        clientId: clientId,
-        username: SettingsService().username.value,
-      ));
+      sendEvent(EventGetClientId());
       completer.complete(connectionInfo);
     });
 
@@ -106,13 +241,16 @@ class ServerService {
       notes: project?.notes.value,
     );
 
-    if (event is EventClients) {
+    if (event is EventClientId) {
+      connectionInfo.clientId.value = event.clientId;
+    } else if (event is EventClients) {
       connectionInfo.users.value = event.clients;
     } else if (event is EventProject) {
       projectService.project.value = event.project;
       if (event.project == null) {
         disconnect();
       }
+      projectService.project.notify();
     } else if (event is EventPublished) {
       connectionInfo.passcode.value = event.passcode;
     }
@@ -216,11 +354,12 @@ class ServerService {
 
     // unknown event
     else if (kDebugMode) {
-      print(event);
+      print('Handle event: $event');
     }
   }
 
-  Future<void> publishProject(String address) async {
+  Future<void> publishProject() async {
+    final address = SettingsService().serverAddress.value;
     final project = ProjectService().project.value;
     if (project != null) {
       await _connect(address);
@@ -228,29 +367,54 @@ class ServerService {
     }
   }
 
-  Future<void> connect(String address, String passcode) async {
+  Future<void> login(String username, String password) async {
+    if (isConnectionAllowed()) {
+      await _login(username, password);
+    }
+  }
+
+  Future<void> logout() async {
+    if (isConnectionAllowed()) {
+      await _logout();
+    }
+  }
+
+  Future<void> register(String email, String password) async {
+    if (isConnectionAllowed()) {
+      await _register(email, password);
+      await login(email, password);
+    }
+  }
+
+  Future<void> connect(String passcode) async {
+    final address = SettingsService().serverAddress.value;
     await _connect(address);
     connectionInfo.passcode.value = passcode;
+    connectionInfo.passcode.notify();
     sendEvent(EventGetProject(passcode: passcode));
   }
 
   void disconnect() {
-    connectionInfo.address.value = '';
     connectionInfo.passcode.value = '';
     connectionInfo.state.value = ServerConnectionState.disconnected;
     connectionInfo.users.value = {};
-    connectionInfo.secure.value = false;
+    connectionInfo.clientId.value = '';
     _socket?.dispose();
     _socket = null;
   }
 }
 
 class ConnectionInfo {
-  final address = Observable('');
   final passcode = Observable('');
   final state = Observable(ServerConnectionState.disconnected);
   final users = Observable<Map<String, String>>({});
-  final secure = Observable(false);
+  final clientId = Observable('');
+}
+
+class UserInfo {
+  final username = Observable('');
+  final password = Observable('');
+  final accessToken = Observable('');
 }
 
 enum ServerConnectionState { disconnected, connecting, connected }

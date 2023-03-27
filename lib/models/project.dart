@@ -70,7 +70,7 @@ class Project implements JsonEncodable {
 class ProjectJsonKeys {
   static const id = 'id';
   static const name = 'name';
-  static const textFiles = 'textFiles';
+  static const textFiles = 'text_files';
   static const codes = 'codes';
   static const notes = 'notes';
 }
