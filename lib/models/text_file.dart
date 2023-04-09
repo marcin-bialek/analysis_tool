@@ -90,7 +90,7 @@ class TextFile implements JsonEncodable {
 }
 
 class TextFileJsonKeys {
-  static const id = 'id';
+  static const id = '_id';
   static const name = 'name';
   static const text = 'text';
   static const codingVersions = 'coding_versions';

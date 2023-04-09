@@ -146,7 +146,7 @@ class TextCodingVersion implements JsonEncodable {
 }
 
 class TextCodingVersionJsonKeys {
-  static const id = 'id';
+  static const id = '_id';
   static const name = 'name';
   static const codings = 'codings';
 }

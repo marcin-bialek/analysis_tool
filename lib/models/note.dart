@@ -56,7 +56,7 @@ class Note implements JsonEncodable {
 }
 
 class NoteJsonKeys {
-  static const id = 'id';
+  static const id = '_id';
   static const title = 'title';
   static const text = 'text';
   static const codingLines = 'codingLines';

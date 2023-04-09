@@ -42,6 +42,6 @@ class ProjectInfo implements JsonEncodable {
 }
 
 class ProjectInfoJsonKeys {
-  static const id = 'id';
+  static const id = '_id';
   static const name = 'name';
 }
