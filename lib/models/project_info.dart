@@ -1,26 +1,26 @@
+import 'package:qdamono/constants/privilege_level.dart';
 import 'package:qdamono/models/json_encodable.dart';
-import 'package:uuid/uuid.dart';
 
 class ProjectInfo implements JsonEncodable {
   final String id;
   final String name;
+  final PrivilegeLevel privilegeLevel;
 
   ProjectInfo({
     required this.id,
     required this.name,
+    required this.privilegeLevel,
   });
-
-  factory ProjectInfo.withId({
-    required String name,
-  }) {
-    final id = const Uuid().v4();
-    return ProjectInfo(id: id, name: name);
-  }
 
   factory ProjectInfo.fromJson(Map<String, dynamic> json) {
     final id = json[ProjectInfoJsonKeys.id];
     final name = json[ProjectInfoJsonKeys.name];
-    final projectInfo = ProjectInfo(id: id, name: name);
+    final privilegeLevel = json[ProjectInfoJsonKeys.privilegeLevel];
+    final projectInfo = ProjectInfo(
+        id: id,
+        name: name,
+        privilegeLevel: PrivilegeLevel.values
+            .firstWhere((element) => element.value == privilegeLevel));
     return projectInfo;
   }
 
@@ -29,6 +29,7 @@ class ProjectInfo implements JsonEncodable {
     return {
       ProjectInfoJsonKeys.id: id,
       ProjectInfoJsonKeys.name: name,
+      ProjectInfoJsonKeys.privilegeLevel: privilegeLevel.index,
     };
   }
 
@@ -44,4 +45,5 @@ class ProjectInfo implements JsonEncodable {
 class ProjectInfoJsonKeys {
   static const id = '_id';
   static const name = 'name';
+  static const privilegeLevel = 'privilege';
 }

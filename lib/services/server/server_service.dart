@@ -253,6 +253,7 @@ class ServerService {
       projectService.project.notify();
     } else if (event is EventPublished) {
       connectionInfo.passcode.value = event.passcode;
+      connectionInfo.passcode.notify();
     }
 
     // TextFile events
