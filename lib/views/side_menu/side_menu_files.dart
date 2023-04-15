@@ -24,10 +24,9 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
       children: [
         Row(
           children: [
-            const SizedBox(width: 20.0),
-            Text(
-              'Pliki',
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+            Container(
+              margin: const EdgeInsets.only(left: 20.0),
+              child: const Text('Pliki'),
             ),
             const Spacer(),
             IconButton(
@@ -35,7 +34,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
               tooltip: 'Dodaj plik',
               icon: Icon(
                 Icons.add,
-                color: Theme.of(context).primaryIconTheme.color,
+                color: Theme.of(context).iconTheme.color,
               ),
             ),
             _projectService.project.observe((project) {
@@ -47,7 +46,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
                     icon: Icon(
                       Icons.save,
                       size: 20.0,
-                      color: Theme.of(context).primaryIconTheme.color,
+                      color: Theme.of(context).iconTheme.color,
                     ),
                   ),
                   IconButton(
@@ -56,7 +55,7 @@ class _SideMenuFilesState extends State<SideMenuFiles> {
                     icon: Icon(
                       Icons.close,
                       size: 20.0,
-                      color: Theme.of(context).primaryIconTheme.color,
+                      color: Theme.of(context).iconTheme.color,
                     ),
                   ),
                 ]);
@@ -125,13 +124,13 @@ class SideMenuFilesItem extends StatelessWidget {
         ListTile(
           leading: Icon(
             Icons.file_copy,
-            color: Theme.of(context).primaryIconTheme.color,
+            color: Theme.of(context).iconTheme.color,
             size: 14.0,
           ),
           title: file.name.observe(
             (name) => TextEditable(
               text: name,
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               edited: (text) {
                 ProjectService().updateTextFile(file.id, name: text);
               },
@@ -160,13 +159,13 @@ class SideMenuFilesItem extends StatelessWidget {
               return ListTile(
                 leading: Icon(
                   Icons.account_tree,
-                  color: Theme.of(context).primaryIconTheme.color,
+                  color: Theme.of(context).iconTheme.color,
                   size: 14.0,
                 ),
                 title: version.name.observe((name) {
                   return TextEditable(
                     text: name,
-                    style: Theme.of(context).primaryTextTheme.bodyText2,
+                    style: Theme.of(context).textTheme.bodyMedium,
                     edited: (text) {
                       ProjectService()
                           .updateCodingVersion(version.id, name: text);

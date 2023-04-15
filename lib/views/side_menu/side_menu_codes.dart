@@ -24,17 +24,16 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
       children: [
         Row(
           children: [
-            const SizedBox(width: 20.0),
-            Text(
-              'Kody',
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+            Container(
+              margin: const EdgeInsets.only(left: 20.0),
+              child: const Text('Kody'),
             ),
             const Spacer(),
             IconButton(
               onPressed: _projectService.addNewCode,
               icon: Icon(
                 Icons.add,
-                color: Theme.of(context).primaryIconTheme.color,
+                color: Theme.of(context).iconTheme.color,
               ),
             ),
             IconButton(
@@ -44,7 +43,7 @@ class _SideMenuCodesState extends State<SideMenuCodes> {
               },
               icon: Icon(
                 Icons.article,
-                color: Theme.of(context).primaryIconTheme.color,
+                color: Theme.of(context).iconTheme.color,
               ),
             ),
           ],
@@ -113,7 +112,7 @@ class _SideMenuCodesItemState extends State<_SideMenuCodesItem> {
           title: widget.code.name.observe(
             (name) => TextEditable(
               text: name,
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               edited: (text) {
                 widget.code.name.value = text;
                 _projectService.updatedCode(widget.code);

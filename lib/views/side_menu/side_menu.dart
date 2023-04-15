@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qdamono/constants/defaults.dart';
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
+import 'package:qdamono/providers/settings/theme.dart';
 import 'package:qdamono/services/server/server_service.dart';
 import 'package:flutter/material.dart';
 
-class SideMenu extends StatefulWidget {
+class SideMenu extends ConsumerStatefulWidget {
   final void Function(bool)? showSideMenu;
 
   const SideMenu({
@@ -12,20 +16,20 @@ class SideMenu extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<SideMenu> createState() {
     return _SideMenuState();
   }
 }
 
-class _SideMenuState extends State<SideMenu> {
+class _SideMenuState extends ConsumerState<SideMenu> {
   bool showSideMenu = true;
   SideMenuRoute currentMenu = SideMenuRoute.files;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 50.0,
-      color: Theme.of(context).primaryColorLight,
+      width: AppDefaults.sideMenuBarWidth,
+      color: Theme.of(context).colorScheme.surfaceVariant,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -59,6 +63,17 @@ class _SideMenuState extends State<SideMenu> {
             );
           }),
           const Spacer(),
+          kDebugMode
+              ? _SideMenuButton(Icons.question_mark, '<debug> Start', () {
+                  mainViewNavigatorKey.currentState
+                      ?.pushReplacementNamed(MainViewRoutePaths.start);
+                }, color: Colors.red)
+              : const SizedBox.shrink(),
+          kDebugMode
+              ? _SideMenuButton(Icons.mode_edit, '<debug> Theme', () {
+                  ref.read(appThemeModeProvider.notifier).toggle();
+                }, color: Colors.red)
+              : const SizedBox.shrink(),
           _SideMenuButton(Icons.settings_outlined, 'Ustawienia', () {
             _openSettings();
           }),
@@ -100,17 +115,20 @@ class _SideMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(
-        data,
-        color: color ?? Colors.white70,
-        size: 25.0,
+    return Tooltip(
+      message: tooltip,
+      waitDuration: const Duration(seconds: 1),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(
+          data,
+          color: color ?? Theme.of(context).colorScheme.onPrimaryContainer,
+          size: 25.0,
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        splashColor: Theme.of(context).primaryColor,
+        highlightColor: Theme.of(context).primaryColor,
       ),
-      tooltip: tooltip,
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      splashColor: Theme.of(context).primaryColor,
-      highlightColor: Theme.of(context).primaryColor,
     );
   }
 }

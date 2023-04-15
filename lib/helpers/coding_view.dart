@@ -34,11 +34,15 @@ List<InlineSpan> makeTextCodingSpans(
       if (currentCodes.isNotEmpty) {
         final v = currentCodes.fold<int>(0, (p, c) => p + c.color.value.value) /
             currentCodes.length;
+        final bgColor = Color(v.toInt()).withOpacity(0.8);
+        final fgColor =
+            bgColor.computeLuminance() > 0.179 ? Colors.black : Colors.white;
         spans.add(
           TextSpan(
             text: text.substring(a, i),
             style: TextStyle(
-              backgroundColor: Color(v.toInt()).withOpacity(0.8),
+              color: fgColor,
+              backgroundColor: bgColor,
             ),
           ),
         );

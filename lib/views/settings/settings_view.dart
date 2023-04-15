@@ -116,7 +116,7 @@ class _SwitchFieldRowState extends State<_SwitchFieldRow> {
           flex: 3,
           child: Text(
             '${widget.settingName}:',
-            style: Theme.of(context).primaryTextTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
         Expanded(
@@ -188,7 +188,7 @@ class _TextFieldRowState extends State<_TextFieldRow> {
           flex: 3,
           child: Text(
             '${widget.settingName}:',
-            style: Theme.of(context).primaryTextTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
         Expanded(
@@ -196,7 +196,7 @@ class _TextFieldRowState extends State<_TextFieldRow> {
           child: TextField(
             controller: textController,
             focusNode: focusNode,
-            style: Theme.of(context).primaryTextTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
             onEditingComplete: () {
               FocusManager.instance.primaryFocus?.unfocus();
               widget.onChange?.call(textController?.text ?? '');

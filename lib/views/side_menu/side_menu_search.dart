@@ -39,7 +39,7 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                     hintText: 'Wyszukaj',
                     hintStyle: TextStyle(color: Theme.of(context).hintColor),
                   ),
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                  style: Theme.of(context).textTheme.bodyMedium,
                   onChanged: (value) {
                     if (value.isEmpty) {
                       setState(() {
@@ -73,15 +73,15 @@ class _SideMenuSearchState extends State<SideMenuSearch> {
                 leading: Text(
                   '${result.file.name.value}:${result.line.index}',
                   style: Theme.of(context)
-                      .primaryTextTheme
-                      .bodyText2!
+                      .textTheme
+                      .bodyMedium!
                       .copyWith(fontWeight: FontWeight.bold),
                 ),
                 title: Text(
                   result.line.text.substring(result.offset),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).primaryTextTheme.bodyText2,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 onTap: () {
                   mainViewNavigatorKey.currentState!.pushReplacementNamed(

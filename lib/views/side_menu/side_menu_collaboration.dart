@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qdamono/services/project/project_service.dart';
 import 'package:qdamono/services/server/server_service.dart';
@@ -47,10 +46,9 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
           height: 40.0,
           child: Row(
             children: [
-              const SizedBox(width: 20.0),
-              Text(
-                'Konto',
-                style: Theme.of(context).primaryTextTheme.bodyText2,
+              Container(
+                margin: const EdgeInsets.only(left: 20.0),
+                child: const Text('Konto'),
               ),
               const Spacer(),
             ],
@@ -69,8 +67,8 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                   Text(
                     _serverService.userInfo.username.value,
                     style: Theme.of(context)
-                        .primaryTextTheme
-                        .bodyText1
+                        .textTheme
+                        .bodyLarge
                         ?.copyWith(decoration: TextDecoration.underline),
                   ),
                   const Spacer(),
@@ -136,7 +134,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
               const SizedBox(width: 20.0),
               Text(
                 'Współpraca',
-                style: Theme.of(context).primaryTextTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const Spacer(),
             ],
@@ -234,7 +232,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
               const SizedBox(width: 20.0),
               Text(
                 'Użytkownicy',
-                style: Theme.of(context).primaryTextTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const Spacer(),
             ],
@@ -250,14 +248,14 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                     leading: Icon(
                       Icons.person,
                       size: 20.0,
-                      color: Theme.of(context).primaryIconTheme.color,
+                      color: Theme.of(context).iconTheme.color,
                     ),
                     title: Text(
                       e.value +
                           (e.key == _serverService.connectionInfo.clientId.value
                               ? ' (Ty)'
                               : ''),
-                      style: Theme.of(context).primaryTextTheme.bodyText2,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
                 },

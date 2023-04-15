@@ -20,7 +20,7 @@ class _StartPageState extends State<StartPage> {
     return Center(
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(12.0),
         ),
         padding: const EdgeInsets.all(30.0),
@@ -41,8 +41,8 @@ class _StartPageState extends State<StartPage> {
                 Text(
                   'QDAmono',
                   style: Theme.of(context)
-                      .primaryTextTheme
-                      .bodyText2!
+                      .textTheme
+                      .bodyMedium!
                       .copyWith(fontSize: 48, fontWeight: FontWeight.w100),
                 ),
               ],
@@ -65,11 +65,11 @@ class _StartPageState extends State<StartPage> {
               },
               icon: Icon(
                 Icons.file_open,
-                color: Theme.of(context).primaryIconTheme.color,
+                color: Theme.of(context).iconTheme.color,
               ),
               label: Text(
                 'Otwórz projekt',
-                style: Theme.of(context).primaryTextTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ],

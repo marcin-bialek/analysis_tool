@@ -56,7 +56,7 @@ class _TextEditorState extends State<TextEditor> {
       children: [
         Container(
           height: 40.0,
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).primaryColor,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(

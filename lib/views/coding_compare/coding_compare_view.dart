@@ -45,7 +45,7 @@ class _CodingCompareViewState extends State<CodingCompareView> {
       children: [
         Container(
           height: 40.0,
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).primaryColor,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(

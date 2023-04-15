@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
 import 'package:qdamono/models/note.dart';
+import 'package:qdamono/providers/visual/side_menu.dart';
 import 'package:qdamono/services/project/project_service.dart';
 import 'package:flutter/material.dart';
 
@@ -21,18 +23,14 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
       children: [
         Row(
           children: [
-            const SizedBox(width: 20.0),
-            Text(
-              'Notatki',
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+            Container(
+              margin: const EdgeInsets.only(left: 20.0),
+              child: const Text('Notatki'),
             ),
             const Spacer(),
             IconButton(
               onPressed: _projectService.addEmptyNote,
-              icon: Icon(
-                Icons.add,
-                color: Theme.of(context).primaryIconTheme.color,
-              ),
+              icon: const Icon(Icons.add),
             ),
           ],
         ),
@@ -45,28 +43,40 @@ class _SideMenuNotesState extends State<SideMenuNotes> {
               final notes = value.toList();
               return ListView.builder(
                 itemCount: notes.length,
-                itemBuilder: (context, index) {
-                  return Draggable(
-                    rootOverlay: true,
-                    data: notes[index],
-                    feedback: Material(
-                      child: Container(
-                        width: 300.0,
-                        height: 50.0,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white),
-                        ),
-                        child: _SideMenuNotesItem(note: notes[index]),
-                      ),
-                    ),
-                    child: _SideMenuNotesItem(note: notes[index]),
-                  );
-                },
+                itemBuilder: (context, index) =>
+                    DraggableNote(note: notes[index]),
               );
             });
           }),
         ),
       ],
+    );
+  }
+}
+
+class DraggableNote extends ConsumerWidget {
+  final Note note;
+  const DraggableNote({Key? key, required this.note}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sideMenuWidth = ref.watch(sideMenuWidthProvider);
+
+    return Draggable(
+      rootOverlay: true,
+      data: note,
+      feedback: Material(
+        elevation: 2.0,
+        child: SizedBox(
+          width: sideMenuWidth,
+          height: 30.0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: _SideMenuNotesItem(note: note),
+          ),
+        ),
+      ),
+      child: _SideMenuNotesItem(note: note),
     );
   }
 }
@@ -82,15 +92,14 @@ class _SideMenuNotesItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10.0),
-      color: Theme.of(context).primaryColor,
+      padding: const EdgeInsets.all(5.0),
       child: TextButton(
         child: Align(
           alignment: Alignment.centerLeft,
           child: note.title.observe((title) {
             return Text(
               note.title.value,
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             );

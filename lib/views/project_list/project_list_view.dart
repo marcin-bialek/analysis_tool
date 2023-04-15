@@ -74,7 +74,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                       margin: const EdgeInsets.only(left: 20.0),
                       child: Text(
                         'Dostępne projekty',
-                        style: Theme.of(context).primaryTextTheme.titleLarge,
+                        style: Theme.of(context).textTheme.titleLarge,
                         textAlign: TextAlign.left,
                       ),
                     ),
@@ -84,7 +84,7 @@ class _ProjectListViewState extends State<ProjectListView> {
             ),
           ],
         ),
-        Divider(color: Theme.of(context).colorScheme.onBackground),
+        Divider(color: Theme.of(context).colorScheme.surfaceVariant),
         Row(
           children: [
             Expanded(
@@ -92,7 +92,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                 margin: const EdgeInsets.only(top: 20.0),
                 child: Text(
                   "Moje i udostępnione projekty",
-                  style: Theme.of(context).primaryTextTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -114,13 +114,12 @@ class _ProjectListViewState extends State<ProjectListView> {
                 )
               : Text(
                   'Brak projektów',
-                  style:
-                      Theme.of(context).primaryTextTheme.titleMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onBackground
-                                .withAlpha(192),
-                          ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onBackground
+                            .withAlpha(63),
+                      ),
                 );
         }),
         Row(
@@ -130,7 +129,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                 margin: const EdgeInsets.only(top: 20.0),
                 child: Text(
                   "Publiczne projekty",
-                  style: Theme.of(context).primaryTextTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -154,13 +153,12 @@ class _ProjectListViewState extends State<ProjectListView> {
                 )
               : Text(
                   'Brak projektów',
-                  style:
-                      Theme.of(context).primaryTextTheme.titleMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onBackground
-                                .withAlpha(192),
-                          ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onBackground
+                            .withAlpha(63),
+                      ),
                 );
         }),
       ],

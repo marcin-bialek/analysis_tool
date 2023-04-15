@@ -1,7 +1,12 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/foundation.dart';
+import 'package:qdamono/constants/defaults.dart';
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
 import 'package:qdamono/models/note.dart';
 import 'package:qdamono/models/text_coding_version.dart';
+import 'package:qdamono/providers/settings/theme.dart';
+import 'package:qdamono/providers/visual/side_menu.dart';
 import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/code_stats/code_stats_view.dart';
 import 'package:qdamono/views/coding_compare/coding_compare_view.dart';
@@ -19,58 +24,65 @@ import 'package:qdamono/views/start/start_page.dart';
 import 'package:qdamono/views/text_editor/text_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(appThemeModeProvider);
+    final flexScheme = ref.watch(appFlexSchemeProvider);
+
     return SettingsService().fontSizes.observe((sizes) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'QDAmono',
-        theme: ThemeData(
-          primaryColor: const Color.fromARGB(255, 30, 30, 30),
-          primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
-          primaryTextTheme: TextTheme(
-            bodyText2: TextStyle(
-              color: Colors.white,
-              fontSize: sizes.menuFontSize.toDouble(),
-            ),
-            button: TextStyle(
-              color: Colors.blue,
-              fontSize: sizes.menuFontSize.toDouble(),
-            ),
-          ),
-          primaryIconTheme: const IconThemeData(color: Colors.white),
-          canvasColor: const Color.fromARGB(255, 238, 238, 238),
-          textTheme: TextTheme(
-            bodyText2: TextStyle(
-              color: Colors.black,
-              fontSize: sizes.editorFontSize.toDouble(),
-            ),
-          ),
-          hintColor: Colors.white,
-          errorColor: Colors.red,
-        ),
+        themeMode: themeMode,
+        theme: FlexThemeData.light(scheme: flexScheme),
+        darkTheme: FlexThemeData.dark(scheme: flexScheme),
+        // theme: ThemeData(
+        //   primaryColor: const Color.fromARGB(255, 30, 30, 30),
+        //   primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
+        //   primaryTextTheme: TextTheme(
+        //     bodyText2: TextStyle(
+        //       color: Colors.white,
+        //       fontSize: sizes.menuFontSize.toDouble(),
+        //     ),
+        //     button: TextStyle(
+        //       color: Colors.blue,
+        //       fontSize: sizes.menuFontSize.toDouble(),
+        //     ),
+        //   ),
+        //   primaryIconTheme: const IconThemeData(color: Colors.white),
+        //   canvasColor: const Color.fromARGB(255, 238, 238, 238),
+        //   textTheme: TextTheme(
+        //     bodyText2: TextStyle(
+        //       color: Colors.black,
+        //       fontSize: sizes.editorFontSize.toDouble(),
+        //     ),
+        //   ),
+        //   hintColor: Colors.white,
+        //   errorColor: Colors.red,
+        // ),
         home: const HomePage(),
       );
     });
   }
 }
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   MultiSplitViewController? splitViewController;
 
   @override
@@ -85,10 +97,18 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void updateSideMenuWidth() {
+    final sideMenuWeight = splitViewController!.areas[0].weight!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    ref
+        .read(sideMenuWidthProvider.notifier)
+        .set((screenWidth - AppDefaults.sideMenuBarWidth) * sideMenuWeight);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
+      // backgroundColor: Theme.of(context).primaryColor,
       body: Row(
         children: [
           SideMenu(showSideMenu: (value) {
@@ -97,13 +117,18 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: MultiSplitViewTheme(
               data: MultiSplitViewThemeData(
-                dividerThickness: 2,
-                dividerPainter: DividerPainters.background(
-                  color: Theme.of(context).primaryColorLight,
+                dividerThickness: 8,
+                dividerPainter: DividerPainters.grooved1(
+                  backgroundColor: Theme.of(context).dividerColor,
+                  color: Theme.of(context).primaryColor,
+                  highlightedColor: Theme.of(context).primaryColorLight,
                 ),
               ),
               child: MultiSplitView(
                 controller: splitViewController,
+                onWeightChange: () {
+                  updateSideMenuWidth();
+                },
                 children: const [
                   SideView(
                     initialRoute: SideMenuRoute.files,

@@ -49,7 +49,7 @@ class _CodingEditorState extends State<CodingEditor> {
       children: [
         Container(
           height: 40.0,
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).colorScheme.surfaceVariant,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -58,25 +58,37 @@ class _CodingEditorState extends State<CodingEditor> {
                   return widget.codingVersion.name.observe((versionName) {
                     return Text(
                       '$versionName ($textFileName)',
-                      style: Theme.of(context)
-                          .primaryTextTheme
-                          .bodyText2!
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
                     );
                   });
                 }),
                 const SizedBox(width: 20),
                 if (widget.codingVersion.file.codingVersions.value.length > 1)
                   DropdownButton<TextCodingVersion>(
-                    style: Theme.of(context).primaryTextTheme.bodyText2,
-                    dropdownColor: Theme.of(context).primaryColorLight,
-                    hint: const Text('Porównaj z'),
+                    style: Theme.of(context).primaryTextTheme.bodyMedium,
+                    dropdownColor: Theme.of(context).colorScheme.surfaceVariant,
+                    hint: Text(
+                      'Porównaj z',
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
+                    ),
                     items: widget.codingVersion.file.codingVersions.value
                         .where((v) => v != widget.codingVersion)
                         .map((version) {
                       return DropdownMenuItem(
                         value: version,
-                        child: Text(version.name.value),
+                        child: Text(version.name.value,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant)),
                       );
                     }).toList(),
                     onChanged: (version) {
@@ -88,12 +100,14 @@ class _CodingEditorState extends State<CodingEditor> {
                   ),
                 const Spacer(),
                 TextButton.icon(
-                  icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
+                  icon: Icon(Icons.delete,
+                      color: Theme.of(context).colorScheme.error),
                   label: Text(
                     'Usuń kodowanie',
-                    style: Theme.of(context).primaryTextTheme.button!.copyWith(
-                          color: Theme.of(context).errorColor,
-                        ),
+                    style:
+                        Theme.of(context).primaryTextTheme.labelLarge!.copyWith(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                   ),
                   onPressed: _removeCodingVersion,
                 ),
@@ -259,7 +273,7 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
               },
               child: Text(
                 '${widget.codingLine.textLine.index + 1}',
-                style: Theme.of(context).textTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ),
@@ -281,7 +295,7 @@ class _CodingEditorLineState extends State<_CodingEditorLine> {
                           codings,
                           [widget.enabledCoding.value],
                         ),
-                        style: Theme.of(context).textTheme.bodyText2,
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       key: selectableTextKey,
                       maxLines: null,
@@ -393,9 +407,16 @@ class _CodingButton extends StatelessWidget {
                     this.enabledCoding.value = EnabledCoding(coding, true);
                   },
                   child: coding.code.name.observe((name) {
+                    final fgColor =
+                        coding.code.color.value.computeLuminance() > 0.179
+                            ? Colors.black
+                            : Colors.white;
                     return Text(
                       name,
-                      style: Theme.of(context).textTheme.bodyText2,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium!
+                          .copyWith(color: fgColor),
                       overflow: TextOverflow.ellipsis,
                     );
                   }),
@@ -432,7 +453,7 @@ class _NoteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: const BorderRadius.all(
           Radius.circular(5.0),
         ),
@@ -453,9 +474,11 @@ class _NoteButton extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                        color:
-                            Theme.of(context).primaryTextTheme.bodyText2!.color,
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context)
+                            .primaryTextTheme
+                            .bodyMedium!
+                            .color,
                       ),
                 ),
               );

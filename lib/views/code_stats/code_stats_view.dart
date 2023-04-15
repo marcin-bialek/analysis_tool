@@ -26,7 +26,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
         Container(
           height: 40.0,
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).primaryColor,
           child: Row(
             children: [
               const Spacer(),
@@ -40,14 +40,14 @@ class _CodeStatsViewState extends State<CodeStatsView> {
               ),
               Text(
                 'Grupuj kody w przyległych liniach',
-                style: Theme.of(context).primaryTextTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyText2,
               ),
               const SizedBox(width: 20.0),
               TextButton.icon(
                 icon: const Icon(Icons.analytics, size: 20.0),
                 label: Text(
                   'Eksportuj do pliku CSV',
-                  style: Theme.of(context).primaryTextTheme.button,
+                  style: Theme.of(context).textTheme.button,
                 ),
                 onPressed: () async {
                   await projectService.saveCodeStatsAsCSV(
@@ -102,7 +102,7 @@ class _CodeStatsViewState extends State<CodeStatsView> {
           title: code.name.observe((name) {
             return Text(
               '$name (liczba plików: ${fileStats.length})',
-              style: Theme.of(context).primaryTextTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyText2,
             );
           }),
           initiallyExpanded: true,

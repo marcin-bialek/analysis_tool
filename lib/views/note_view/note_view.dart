@@ -75,7 +75,7 @@ class _NoteViewState extends State<NoteView> {
       children: [
         Container(
           height: 40.0,
-          color: Theme.of(context).primaryColorLight,
+          color: Theme.of(context).primaryColor,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -85,7 +85,7 @@ class _NoteViewState extends State<NoteView> {
                     title,
                     style: Theme.of(context)
                         .primaryTextTheme
-                        .bodyText2!
+                        .bodyMedium!
                         .copyWith(fontWeight: FontWeight.bold),
                   );
                 }),
@@ -94,14 +94,14 @@ class _NoteViewState extends State<NoteView> {
                   icon: Icon(
                     Icons.delete,
                     size: 20.0,
-                    color: Theme.of(context).errorColor,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   label: Text(
                     'Usuń notatkę',
                     style: Theme.of(context)
                         .primaryTextTheme
-                        .button!
-                        .copyWith(color: Theme.of(context).errorColor),
+                        .labelLarge!
+                        .copyWith(color: Theme.of(context).colorScheme.error),
                   ),
                   onPressed: () async {
                     final result = await showDialogRemoveNote(context: context);
@@ -122,10 +122,10 @@ class _NoteViewState extends State<NoteView> {
           child: TextField(
             controller: titleController,
             focusNode: titleFocusNode,
-            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize:
-                      Theme.of(context).textTheme.bodyText2!.fontSize! * 1.3,
+                      Theme.of(context).textTheme.bodyMedium!.fontSize! * 1.3,
                 ),
             decoration: const InputDecoration(
               border: InputBorder.none,
@@ -144,7 +144,7 @@ class _NoteViewState extends State<NoteView> {
             child: TextField(
               controller: textController,
               focusNode: textFocusNode,
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
