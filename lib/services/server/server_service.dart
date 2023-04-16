@@ -31,10 +31,10 @@ import 'package:qdamono/models/server_events/event_text_file_add.dart';
 import 'package:qdamono/models/server_events/event_text_file_remove.dart';
 import 'package:qdamono/models/server_events/event_text_file_update.dart';
 import 'package:qdamono/models/server_events/server_event.dart';
+import 'package:qdamono/providers/settings/settings.dart';
 import 'package:qdamono/services/project/project_service.dart';
 import 'package:qdamono/services/server/server_service_exceptions.dart';
 import 'package:qdamono/services/server/unsecure_http_overrides.dart';
-import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
 class ServerService {
@@ -59,15 +59,14 @@ class ServerService {
     _socket?.emit('event', event.toJson());
   }
 
-  bool isConnectionAllowed() {
-    return SettingsService().isConnectionSecure.value ||
-        SettingsService().allowInsecureConnection.value;
+  bool isConnectionAllowed(SettingsState settings) {
+    return settings.isConnectionSecure || settings.allowInsecureConnection;
   }
 
-  Future<void> _register(String email, String password) async {
-    final address = SettingsService().serverAddress.value;
+  Future<void> _register(
+      String serverAddress, String email, String password) async {
     final response = await http.post(
-      Uri.parse('$address/auth/register'),
+      Uri.parse('$serverAddress/auth/register'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -98,10 +97,10 @@ class ServerService {
     throw RegisterUserError("User registration unsuccessful");
   }
 
-  Future<UserInfo> _login(String username, String password) async {
-    final address = SettingsService().serverAddress.value;
+  Future<UserInfo> _login(
+      String serverAddress, String username, String password) async {
     final request =
-        http.MultipartRequest('POST', Uri.parse('$address/auth/login'))
+        http.MultipartRequest('POST', Uri.parse('$serverAddress/auth/login'))
           ..fields['username'] = username
           ..fields['password'] = password;
 
@@ -127,11 +126,10 @@ class ServerService {
     throw AuthenticationError('Login unsuccessful');
   }
 
-  Future<UserInfo> _logout() async {
-    final address = SettingsService().serverAddress.value;
+  Future<UserInfo> _logout(String serverAddress) async {
     final accessToken = userInfo.accessToken.value;
     final response = await http.post(
-      Uri.parse('$address/auth/logout'),
+      Uri.parse('$serverAddress/auth/logout'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $accessToken',
@@ -159,11 +157,10 @@ class ServerService {
         'Unexpected error during logout. Something might have happened to the server.');
   }
 
-  Future<bool> checkAccessTokenIsValid() async {
-    final address = SettingsService().serverAddress.value;
+  Future<bool> checkAccessTokenIsValid(String serverAddress) async {
     final accessToken = userInfo.accessToken.value;
     final response = await http.get(
-      Uri.parse('$address/auth/me'),
+      Uri.parse('$serverAddress/auth/me'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $accessToken',
@@ -173,11 +170,10 @@ class ServerService {
     return response.statusCode == 200;
   }
 
-  Future<List<ProjectInfo>> getProjectList() async {
-    final address = SettingsService().serverAddress.value;
+  Future<List<ProjectInfo>> getProjectList(String serverAddress) async {
     final accessToken = userInfo.accessToken.value;
     final response = await http.get(
-      Uri.parse('$address/project/'),
+      Uri.parse('$serverAddress/project/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $accessToken',
@@ -359,37 +355,37 @@ class ServerService {
     }
   }
 
-  Future<void> publishProject() async {
-    final address = SettingsService().serverAddress.value;
+  Future<void> publishProject(String serverAddress) async {
     final project = ProjectService().project.value;
     if (project != null) {
-      await _connect(address);
+      await _connect(serverAddress);
       sendEvent(EventPublishProject(project: project));
     }
   }
 
-  Future<void> login(String username, String password) async {
-    if (isConnectionAllowed()) {
-      await _login(username, password);
+  Future<void> login(
+      SettingsState settings, String email, String password) async {
+    if (isConnectionAllowed(settings)) {
+      await _login(settings.serverAddress, email, password);
     }
   }
 
-  Future<void> logout() async {
-    if (isConnectionAllowed()) {
-      await _logout();
+  Future<void> logout(SettingsState settings) async {
+    if (isConnectionAllowed(settings)) {
+      await _logout(settings.serverAddress);
     }
   }
 
-  Future<void> register(String email, String password) async {
-    if (isConnectionAllowed()) {
-      await _register(email, password);
-      await login(email, password);
+  Future<void> register(
+      SettingsState settings, String email, String password) async {
+    if (isConnectionAllowed(settings)) {
+      await _register(settings.serverAddress, email, password);
+      await _login(settings.serverAddress, email, password);
     }
   }
 
-  Future<void> connect(String passcode) async {
-    final address = SettingsService().serverAddress.value;
-    await _connect(address);
+  Future<void> connect(String serverAddress, String passcode) async {
+    await _connect(serverAddress);
     connectionInfo.passcode.value = passcode;
     connectionInfo.passcode.notify();
     sendEvent(EventGetProject(passcode: passcode));

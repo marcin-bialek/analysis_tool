@@ -1,5 +1,4 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/foundation.dart';
 import 'package:qdamono/constants/defaults.dart';
 import 'package:qdamono/constants/keys.dart';
 import 'package:qdamono/constants/routes.dart';
@@ -7,7 +6,6 @@ import 'package:qdamono/models/note.dart';
 import 'package:qdamono/models/text_coding_version.dart';
 import 'package:qdamono/providers/settings/theme.dart';
 import 'package:qdamono/providers/visual/side_menu.dart';
-import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/code_stats/code_stats_view.dart';
 import 'package:qdamono/views/coding_compare/coding_compare_view.dart';
 import 'package:qdamono/views/coding_editor/coding_editor.dart';
@@ -38,40 +36,38 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(appThemeModeProvider);
     final flexScheme = ref.watch(appFlexSchemeProvider);
 
-    return SettingsService().fontSizes.observe((sizes) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'QDAmono',
-        themeMode: themeMode,
-        theme: FlexThemeData.light(scheme: flexScheme),
-        darkTheme: FlexThemeData.dark(scheme: flexScheme),
-        // theme: ThemeData(
-        //   primaryColor: const Color.fromARGB(255, 30, 30, 30),
-        //   primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
-        //   primaryTextTheme: TextTheme(
-        //     bodyText2: TextStyle(
-        //       color: Colors.white,
-        //       fontSize: sizes.menuFontSize.toDouble(),
-        //     ),
-        //     button: TextStyle(
-        //       color: Colors.blue,
-        //       fontSize: sizes.menuFontSize.toDouble(),
-        //     ),
-        //   ),
-        //   primaryIconTheme: const IconThemeData(color: Colors.white),
-        //   canvasColor: const Color.fromARGB(255, 238, 238, 238),
-        //   textTheme: TextTheme(
-        //     bodyText2: TextStyle(
-        //       color: Colors.black,
-        //       fontSize: sizes.editorFontSize.toDouble(),
-        //     ),
-        //   ),
-        //   hintColor: Colors.white,
-        //   errorColor: Colors.red,
-        // ),
-        home: const HomePage(),
-      );
-    });
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'QDAmono',
+      themeMode: themeMode,
+      theme: FlexThemeData.light(scheme: flexScheme),
+      darkTheme: FlexThemeData.dark(scheme: flexScheme),
+      // theme: ThemeData(
+      //   primaryColor: const Color.fromARGB(255, 30, 30, 30),
+      //   primaryColorLight: const Color.fromARGB(255, 51, 51, 51),
+      //   primaryTextTheme: TextTheme(
+      //     bodyText2: TextStyle(
+      //       color: Colors.white,
+      //       fontSize: sizes.menuFontSize.toDouble(),
+      //     ),
+      //     button: TextStyle(
+      //       color: Colors.blue,
+      //       fontSize: sizes.menuFontSize.toDouble(),
+      //     ),
+      //   ),
+      //   primaryIconTheme: const IconThemeData(color: Colors.white),
+      //   canvasColor: const Color.fromARGB(255, 238, 238, 238),
+      //   textTheme: TextTheme(
+      //     bodyText2: TextStyle(
+      //       color: Colors.black,
+      //       fontSize: sizes.editorFontSize.toDouble(),
+      //     ),
+      //   ),
+      //   hintColor: Colors.white,
+      //   errorColor: Colors.red,
+      // ),
+      home: const HomePage(),
+    );
   }
 }
 

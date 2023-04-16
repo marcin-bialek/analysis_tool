@@ -1,20 +1,22 @@
-import 'package:flutter/foundation.dart';
-import 'package:qdamono/services/settings/settings_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qdamono/providers/settings/settings.dart';
+import 'package:qdamono/providers/settings/theme.dart';
 
-class SettingsView extends StatefulWidget {
+class SettingsView extends ConsumerStatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
 
   @override
-  State<SettingsView> createState() => _SettingsViewState();
+  ConsumerState<SettingsView> createState() => _SettingsViewState();
 }
 
-class _SettingsViewState extends State<SettingsView> {
-  final settings = SettingsService();
-
+class _SettingsViewState extends ConsumerState<SettingsView> {
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
+
     return GestureDetector(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
@@ -25,12 +27,14 @@ class _SettingsViewState extends State<SettingsView> {
           children: [
             _TextFieldRow(
               settingName: 'Rozmiar czcionki menu',
-              initialValue: settings.fontSizes.value.menuFontSize.toString(),
+              initialValue: settings.fontSizes.menuFontSize.toString(),
               onChange: (value) {
                 final size = int.tryParse(value);
                 if (size != null) {
-                  SettingsService().fontSizes.value.menuFontSize = size;
-                  SettingsService().fontSizes.notify();
+                  ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
+                        menuFontSize: size,
+                        editorFontSize: settings.fontSizes.editorFontSize,
+                      ));
                 }
               },
               formatters: [
@@ -40,12 +44,14 @@ class _SettingsViewState extends State<SettingsView> {
             ),
             _TextFieldRow(
               settingName: 'Rozmiar czcionki edytora tekstu',
-              initialValue: settings.fontSizes.value.editorFontSize.toString(),
+              initialValue: settings.fontSizes.editorFontSize.toString(),
               onChange: (value) {
                 final size = int.tryParse(value);
                 if (size != null) {
-                  SettingsService().fontSizes.value.editorFontSize = size;
-                  SettingsService().fontSizes.notify();
+                  ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
+                        menuFontSize: settings.fontSizes.menuFontSize,
+                        editorFontSize: size,
+                      ));
                 }
               },
               formatters: [
@@ -55,18 +61,41 @@ class _SettingsViewState extends State<SettingsView> {
             ),
             _TextFieldRow(
               settingName: 'Adres serwera',
-              initialValue: settings.serverAddress.value,
+              initialValue: settings.serverAddress,
               onChange: (value) {
                 if (value.isNotEmpty) {
-                  SettingsService().serverAddress.value = value;
+                  ref.read(settingsProvider.notifier).setServerAddress(value);
                 }
               },
             ),
             _SwitchFieldRow(
               settingName: 'Pozwalaj na połączenia przez HTTP',
-              initialValue: settings.allowInsecureConnection.value,
+              initialValue: settings.allowInsecureConnection,
               onChange: (value) {
-                SettingsService().allowInsecureConnection.value = value;
+                ref
+                    .read(settingsProvider.notifier)
+                    .setAllowInsecureConnection(value);
+                return value;
+              },
+            ),
+            _SwitchFieldRow(
+              settingName: 'Motyw systemowy',
+              initialValue: themeMode == ThemeMode.system,
+              onChange: (value) {
+                ref.read(appThemeModeProvider.notifier).setSystem(value);
+                return value;
+              },
+            ),
+            _SwitchFieldRow(
+              settingName: 'Motyw ciemny',
+              disabled: themeMode == ThemeMode.system,
+              initialValue:
+                  ref.read(appThemeModeProvider.notifier).isDarkMode(),
+              force: themeMode == ThemeMode.system,
+              onChange: (value) {
+                ref
+                    .read(appThemeModeProvider.notifier)
+                    .set(value ? ThemeMode.dark : ThemeMode.light);
                 return value;
               },
             ),
@@ -82,12 +111,16 @@ class _SwitchFieldRow extends StatefulWidget {
   final String settingName;
   final bool? initialValue;
   final bool Function(bool)? onChange;
+  final bool disabled;
+  final bool force;
 
   const _SwitchFieldRow({
     Key? key,
     required this.settingName,
     this.initialValue,
     this.onChange,
+    this.disabled = false,
+    this.force = false,
   }) : super(key: key);
 
   @override
@@ -110,6 +143,12 @@ class _SwitchFieldRowState extends State<_SwitchFieldRow> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.force && (widget.initialValue ?? false) != value) {
+      setState(
+        () => value = widget.initialValue ?? false,
+      );
+    }
+
     return Row(
       children: [
         Expanded(
@@ -123,14 +162,16 @@ class _SwitchFieldRowState extends State<_SwitchFieldRow> {
           flex: 7,
           child: Switch(
             value: value,
-            onChanged: (newValue) {
-              final valueToSet = widget.onChange?.call(newValue) ?? value;
-              if (valueToSet != value) {
-                setState(() {
-                  value = valueToSet;
-                });
-              }
-            },
+            onChanged: widget.disabled
+                ? null
+                : (newValue) {
+                    final valueToSet = widget.onChange?.call(newValue) ?? value;
+                    if (valueToSet != value) {
+                      setState(() {
+                        value = valueToSet;
+                      });
+                    }
+                  },
           ),
         ),
       ],

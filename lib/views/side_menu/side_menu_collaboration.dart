@@ -1,23 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qdamono/providers/settings/settings.dart';
 import 'package:qdamono/services/project/project_service.dart';
 import 'package:qdamono/services/server/server_service.dart';
 import 'package:qdamono/services/server/server_service_exceptions.dart';
-import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/dialogs.dart';
 
-class SideMenuCollaboration extends StatefulWidget {
+class SideMenuCollaboration extends ConsumerStatefulWidget {
   const SideMenuCollaboration({Key? key}) : super(key: key);
 
   @override
-  State<SideMenuCollaboration> createState() => _SideMenuCollaborationState();
+  ConsumerState<SideMenuCollaboration> createState() =>
+      _SideMenuCollaborationState();
 }
 
-class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
+class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
   final _projectService = ProjectService();
   final _serverService = ServerService();
-  final _settingsService = SettingsService();
   final _serverAddressController = TextEditingController();
   final _passcodeController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -39,6 +40,8 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -96,9 +99,9 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             ),
             onTap: () async {
               if (isLoggedIn) {
-                await _logout();
+                await _logout(settings);
               } else {
-                await _login();
+                await _login(settings);
               }
             },
           );
@@ -120,7 +123,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                 ),
               ),
               onTap: () async {
-                await _register();
+                await _register(settings);
               },
             );
           }
@@ -150,9 +153,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                   state != ServerConnectionState.connecting,
               dense: true,
               leading: Icon(
-                  _settingsService.isConnectionSecure.value
-                      ? Icons.lock
-                      : Icons.cloud,
+                  settings.isConnectionSecure ? Icons.lock : Icons.cloud,
                   size: 20.0,
                   color: userIsLoggedIn ? Colors.green : Colors.grey),
               title: Text(
@@ -177,7 +178,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                   : null,
               onTap: () async {
                 if (state == ServerConnectionState.disconnected) {
-                  await _openProject();
+                  await _openProject(settings);
                 } else if (state == ServerConnectionState.connected) {
                   await showDialogConnectionInfo(
                     context: context,
@@ -206,7 +207,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
                     'Wyślij na serwer',
                     style: TextStyle(color: Colors.blue),
                   ),
-                  onTap: _publishProject,
+                  onTap: () => _publishProject(settings.serverAddress),
                 );
               });
             case ServerConnectionState.connected:
@@ -267,7 +268,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
   }
 
-  Future<void> _register() async {
+  Future<void> _register(SettingsState settings) async {
     final result = await showGenericDialog(
       context: context,
       title: 'Zarejestruj się',
@@ -278,14 +279,14 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             controller: _usernameController,
             decoration: InputDecoration(
               hintText: 'Podaj swój email',
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           TextField(
             controller: _passwordController,
             decoration: InputDecoration(
               hintText: 'Podaj hasło',
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
             ),
             obscureText: true,
             enableSuggestions: false,
@@ -304,17 +305,17 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
       final password = _passwordController.text;
 
       try {
-        await _serverService.register(username, password);
+        await _serverService.register(settings, username, password);
       } on UserAlreadyExistsError {
         await showDialogUserAlreadyExists(context: context, email: username);
       } catch (e) {
         await showDialogCouldNotConnect(
-            context: context, address: _settingsService.serverAddress.value);
+            context: context, address: settings.serverAddress);
       }
     }
   }
 
-  Future<void> _login() async {
+  Future<void> _login(SettingsState settings) async {
     final result = await showGenericDialog(
       context: context,
       title: 'Zaloguj się',
@@ -325,14 +326,14 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             controller: _usernameController,
             decoration: InputDecoration(
               hintText: 'Podaj swój email',
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           TextField(
             controller: _passwordController,
             decoration: InputDecoration(
               hintText: 'Podaj hasło',
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
             ),
             obscureText: true,
             enableSuggestions: false,
@@ -351,22 +352,22 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
       final password = _passwordController.text;
 
       try {
-        await _serverService.login(username, password);
+        await _serverService.login(settings, username, password);
       } on AuthenticationError {
         await showDialogAuthenticationFailed(
             context: context, username: username);
       } catch (_) {
         await showDialogCouldNotConnect(
-            context: context, address: _settingsService.serverAddress.value);
+            context: context, address: settings.serverAddress);
       }
     }
   }
 
-  Future<void> _logout() async {
-    await _serverService.logout();
+  Future<void> _logout(SettingsState settings) async {
+    await _serverService.logout(settings);
   }
 
-  Future<void> _openProject() async {
+  Future<void> _openProject(SettingsState settings) async {
     final result = await showGenericDialog<bool>(
       context: context,
       title: 'Otwórz projekt',
@@ -377,7 +378,7 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
             controller: _passcodeController,
             decoration: InputDecoration(
               hintText: 'Podaj kod projektu',
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
         ],
@@ -389,23 +390,23 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
 
     if (result == true) {
-      final address = _settingsService.serverAddress.value;
       final passcode = _passcodeController.text;
 
       try {
-        await _serverService.connect(passcode);
+        await _serverService.connect(settings.serverAddress, passcode);
       } on CouldNotConnectError {
-        await showDialogCouldNotConnect(context: context, address: address);
+        await showDialogCouldNotConnect(
+            context: context, address: settings.serverAddress);
       }
     }
   }
 
-  Future<void> _publishProject() async {
-    final address = _settingsService.serverAddress.value;
+  Future<void> _publishProject(String serverAddress) async {
     final result = await showGenericDialog<bool>(
       context: context,
       title: 'Wyślij projekt na serwer',
-      content: Text("Projekt zostanie opublikowany na serwerze: $address"),
+      content:
+          Text("Projekt zostanie opublikowany na serwerze: $serverAddress"),
       actions: {
         'Wyślij': true,
         'Anuluj': false,
@@ -413,9 +414,10 @@ class _SideMenuCollaborationState extends State<SideMenuCollaboration> {
     );
     if (result == true) {
       try {
-        await _serverService.publishProject();
+        await _serverService.publishProject(serverAddress);
       } on CouldNotConnectError {
-        await showDialogCouldNotConnect(context: context, address: address);
+        await showDialogCouldNotConnect(
+            context: context, address: serverAddress);
       }
     }
   }

@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qdamono/constants/privilege_level.dart';
 import 'package:qdamono/models/project_info.dart';
+import 'package:qdamono/providers/settings/settings.dart';
 import 'package:qdamono/services/server/server_service.dart';
 
-class ProjectListView extends StatefulWidget {
+class ProjectListView extends ConsumerStatefulWidget {
   const ProjectListView({Key? key}) : super(key: key);
 
   @override
-  State<ProjectListView> createState() => _ProjectListViewState();
+  ConsumerState<ProjectListView> createState() => _ProjectListViewState();
 }
 
-class _ProjectListViewState extends State<ProjectListView> {
+class _ProjectListViewState extends ConsumerState<ProjectListView> {
   final _serverService = ServerService();
 
-  Future<void> refreshProjectList() async {
-    await _serverService.getProjectList();
+  Future<void> refreshProjectList(String serverAddress) async {
+    await _serverService.getProjectList(serverAddress);
   }
 
-  Widget listElement(ProjectInfo projectInfo) {
+  Widget listElement(ProjectInfo projectInfo, String serverAddress) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -36,7 +38,7 @@ class _ProjectListViewState extends State<ProjectListView> {
         ),
         IconButton(
           onPressed: () async {
-            await _serverService.connect(projectInfo.id);
+            await _serverService.connect(serverAddress, projectInfo.id);
           },
           icon: Icon(
             Icons.open_in_new,
@@ -49,6 +51,9 @@ class _ProjectListViewState extends State<ProjectListView> {
 
   @override
   Widget build(BuildContext context) {
+    final serverAddress =
+        ref.watch(settingsProvider.select((value) => value.serverAddress));
+
     return Column(
       children: [
         Row(
@@ -63,7 +68,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                   children: [
                     IconButton(
                       onPressed: () async {
-                        await refreshProjectList();
+                        await refreshProjectList(serverAddress);
                       },
                       icon: Icon(
                         Icons.refresh,
@@ -109,7 +114,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                           element.privilegeLevel.value >
                           PrivilegeLevel.guest.value)
                       .map((project) {
-                    return listElement(project);
+                    return listElement(project, serverAddress);
                   }).toList(),
                 )
               : Text(
@@ -148,7 +153,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                         PrivilegeLevel.guest.value,
                   )
                       .map((project) {
-                    return listElement(project);
+                    return listElement(project, serverAddress);
                   }).toList(),
                 )
               : Text(

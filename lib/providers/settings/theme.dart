@@ -18,8 +18,29 @@ class AppThemeMode extends _$AppThemeMode {
     }
   }
 
-  void system() {
-    state = ThemeMode.system;
+  void set(ThemeMode themeMode) {
+    state = themeMode;
+  }
+
+  bool isSystem() {
+    return state == ThemeMode.system;
+  }
+
+  bool isDarkMode() {
+    return state == ThemeMode.dark ||
+        (state == ThemeMode.system && SystemTheme.isDarkMode);
+  }
+
+  bool isSameAsSystem() {
+    return isSystem() || SystemTheme.isDarkMode == (state == ThemeMode.dark);
+  }
+
+  void setSystem(bool useSystemThemeMode) {
+    state = useSystemThemeMode
+        ? ThemeMode.system
+        : SystemTheme.isDarkMode
+            ? ThemeMode.dark
+            : ThemeMode.light;
   }
 }
 
