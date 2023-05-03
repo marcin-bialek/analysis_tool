@@ -22,6 +22,7 @@ dependencies:
   xml: ^6.1.0
   http: ^0.13.5
   flutter_flow_chart: ^1.0.0+1
+  star_menu: ^3.1.4
 
 dev_dependencies:
   flutter_test:
