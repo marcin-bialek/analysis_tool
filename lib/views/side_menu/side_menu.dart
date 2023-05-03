@@ -62,6 +62,9 @@ class _SideMenuState extends ConsumerState<SideMenu> {
                   : null,
             );
           }),
+          _SideMenuButton(Icons.draw, 'Diagram', () {
+            _openFlowChartEditor();
+          }),
           const Spacer(),
           kDebugMode
               ? _SideMenuButton(Icons.question_mark, '<debug> Start', () {
@@ -102,6 +105,11 @@ class _SideMenuState extends ConsumerState<SideMenu> {
   void _openProjectList() {
     mainViewNavigatorKey.currentState
         ?.pushReplacementNamed(MainViewRoutePaths.projectList);
+  }
+
+  void _openFlowChartEditor() {
+    mainViewNavigatorKey.currentState
+        ?.pushReplacementNamed(MainViewRoutePaths.flowChart);
   }
 }
 

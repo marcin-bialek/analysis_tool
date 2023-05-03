@@ -65,6 +65,7 @@ class MainViewRoutePaths {
   static const codeStats = '/main-view/code-stats';
   static const codeGraph = '/main-view/code-graph';
   static const note = '/main-view/note';
+  static const flowChart = 'main-view/flow-chart';
 }
 
 enum MainViewRoute {
@@ -77,7 +78,8 @@ enum MainViewRoute {
   codingCompare,
   codeStats,
   codeGraph,
-  note;
+  note,
+  flowChart;
 
   factory MainViewRoute.fromString(String path) {
     switch (path) {
@@ -101,6 +103,8 @@ enum MainViewRoute {
         return MainViewRoute.codeGraph;
       case MainViewRoutePaths.note:
         return MainViewRoute.note;
+      case MainViewRoutePaths.flowChart:
+        return MainViewRoute.flowChart;
       default:
         throw InvalidRouteException(path);
     }
@@ -130,6 +134,8 @@ extension MainViewRoutePath on MainViewRoute {
         return MainViewRoutePaths.codeGraph;
       case MainViewRoute.note:
         return MainViewRoutePaths.note;
+      case MainViewRoute.flowChart:
+        return MainViewRoutePaths.flowChart;
     }
   }
 }
