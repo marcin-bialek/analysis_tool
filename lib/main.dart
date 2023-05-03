@@ -6,6 +6,7 @@ import 'package:qdamono/services/settings/settings_service.dart';
 import 'package:qdamono/views/code_stats/code_stats_view.dart';
 import 'package:qdamono/views/coding_compare/coding_compare_view.dart';
 import 'package:qdamono/views/coding_editor/coding_editor.dart';
+import 'package:qdamono/views/flow_charts/flow_chart_editor.dart';
 import 'package:qdamono/views/project_list/project_list_view.dart';
 import 'package:qdamono/views/side_menu/side_menu.dart';
 import 'package:qdamono/views/side_menu/side_menu_codes.dart';
@@ -188,6 +189,8 @@ class MainView extends StatelessWidget {
                 style: TextStyle(color: Colors.white));
           case MainViewRoutePaths.note:
             return NoteView(note: settings.arguments as Note);
+          case MainViewRoutePaths.flowChart:
+            return const FlowChartEditorView();
           case MainViewRoutePaths.none:
           default:
             return Container();

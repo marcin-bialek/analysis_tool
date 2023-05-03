@@ -21,6 +21,7 @@ dependencies:
   archive: ^3.3.0
   xml: ^6.1.0
   http: ^0.13.5
+  flutter_flow_chart: ^1.0.0+1
 
 dev_dependencies:
   flutter_test:

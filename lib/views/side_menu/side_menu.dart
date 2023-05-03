@@ -58,6 +58,9 @@ class _SideMenuState extends State<SideMenu> {
                   : null,
             );
           }),
+          _SideMenuButton(Icons.draw, 'Diagram', () {
+            _openFlowChartEditor();
+          }),
           const Spacer(),
           _SideMenuButton(Icons.settings_outlined, 'Ustawienia', () {
             _openSettings();
@@ -87,6 +90,11 @@ class _SideMenuState extends State<SideMenu> {
   void _openProjectList() {
     mainViewNavigatorKey.currentState
         ?.pushReplacementNamed(MainViewRoutePaths.projectList);
+  }
+
+  void _openFlowChartEditor() {
+    mainViewNavigatorKey.currentState
+        ?.pushReplacementNamed(MainViewRoutePaths.flowChart);
   }
 }
 
