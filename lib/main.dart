@@ -190,7 +190,7 @@ class MainView extends StatelessWidget {
           case MainViewRoutePaths.note:
             return NoteView(note: settings.arguments as Note);
           case MainViewRoutePaths.flowChart:
-            return const FlowChartEditorView();
+            return const FlowchartEditorView();
           case MainViewRoutePaths.none:
           default:
             return Container();

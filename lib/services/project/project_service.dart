@@ -33,8 +33,8 @@ import 'package:qdamono/models/text_file.dart';
 import 'package:qdamono/services/project/project_service_exceptions.dart';
 import 'package:qdamono/services/server/server_service.dart';
 
-import './desktop_saver.dart' if (dart.library.html) './web_saver.dart'
-    as saver;
+import 'package:qdamono/helpers/desktop_saver.dart'
+    if (dart.library.html) 'package:qdamono/helpers/web_saver.dart' as saver;
 
 class ProjectService {
   static ProjectService? _instance;
