@@ -1,69 +1,95 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'settings.g.dart';
+part 'settings.freezed.dart';
 
-class SettingsState {
-  FontSizes fontSizes = FontSizes();
-  String serverAddress = "";
-  bool isConnectionSecure = false;
-  bool allowInsecureConnection = false;
+@freezed
+class FontSizes with _$FontSizes {
+  const factory FontSizes({
+    @Default(13) int menuFontSize,
+    @Default(15) int editorFontSize,
+  }) = _FontSizes;
+}
+
+@freezed
+class SettingsState with _$SettingsState {
+  const SettingsState._();
+
+  const factory SettingsState({
+    @Default(FontSizes()) FontSizes fontSizes,
+    @Default('https://qdamono.xyz') String serverAddress,
+    @Default(false) bool allowInsecureConnection,
+  }) = _SettingsState;
+
+  bool get isConnectionSecure {
+    final uri = Uri.parse(serverAddress);
+    return uri.scheme == 'https' || uri.scheme == 'wss';
+  }
 }
 
 @riverpod
 class Settings extends _$Settings {
-  SharedPreferences? _preferences;
+  static SharedPreferences? _preferences;
 
   @override
-  SettingsState build() {
-    final stateValue = SettingsState();
-    SharedPreferences.getInstance().then((value) {
-      _preferences = value;
-      _readSettings(value, stateValue);
-      return value;
-    });
-    return stateValue;
+  FutureOr<SettingsState> build() async {
+    ref.keepAlive();
+    if (kDebugMode) {
+      print('Settings build');
+    }
+
+    _preferences ??= await SharedPreferences.getInstance();
+
+    return _readSettings(_preferences!);
   }
 
-  static void _readSettings(
-      SharedPreferences preferences, SettingsState state) {
-    state.fontSizes = FontSizes()
-      ..menuFontSize = preferences.getInt(PreferencesKeys.menuFontSize) ?? 13
-      ..editorFontSize =
-          preferences.getInt(PreferencesKeys.editorFontSize) ?? 15;
-    state.serverAddress =
+  static SettingsState _readSettings(SharedPreferences preferences) {
+    final fontSizes = FontSizes(
+        menuFontSize: preferences.getInt(PreferencesKeys.menuFontSize) ?? 13,
+        editorFontSize:
+            preferences.getInt(PreferencesKeys.editorFontSize) ?? 15);
+
+    final serverAddress =
         preferences.getString(PreferencesKeys.serverAddress) ??
             'https://localhost';
-    state.allowInsecureConnection =
+    final allowInsecureConnection =
         preferences.getBool(PreferencesKeys.allowInsecureConnection) ?? false;
+
+    return SettingsState(
+        fontSizes: fontSizes,
+        serverAddress: serverAddress,
+        allowInsecureConnection: allowInsecureConnection);
   }
 
   void setFontSizes(FontSizes fontSizes) {
-    state.fontSizes = fontSizes;
-    _preferences?.setInt(PreferencesKeys.menuFontSize, fontSizes.menuFontSize);
-    _preferences?.setInt(
-        PreferencesKeys.editorFontSize, fontSizes.editorFontSize);
+    if (state.hasValue) {
+      state = AsyncValue.data(state.value!.copyWith(fontSizes: fontSizes));
+      _preferences?.setInt(
+          PreferencesKeys.menuFontSize, fontSizes.menuFontSize);
+      _preferences?.setInt(
+          PreferencesKeys.editorFontSize, fontSizes.editorFontSize);
+    }
   }
 
   void setServerAddress(String serverAddress) {
-    state.serverAddress = serverAddress;
-    final uri = Uri.parse(serverAddress);
-    state.isConnectionSecure = uri.scheme == 'https' || uri.scheme == 'wss';
-    _preferences?.setString(PreferencesKeys.serverAddress, serverAddress);
+    if (state.hasValue) {
+      state =
+          AsyncValue.data(state.value!.copyWith(serverAddress: serverAddress));
+      _preferences?.setString(PreferencesKeys.serverAddress, serverAddress);
+    }
   }
 
   void setAllowInsecureConnection(bool allowInsecureConnection) {
-    state.allowInsecureConnection = allowInsecureConnection;
-    _preferences?.setBool(
-        PreferencesKeys.allowInsecureConnection, allowInsecureConnection);
+    if (state.hasValue) {
+      state = AsyncValue.data(state.value!
+          .copyWith(allowInsecureConnection: allowInsecureConnection));
+      _preferences?.setBool(
+          PreferencesKeys.allowInsecureConnection, allowInsecureConnection);
+    }
   }
-}
-
-class FontSizes {
-  int menuFontSize;
-  int editorFontSize;
-
-  FontSizes({this.menuFontSize = 13, this.editorFontSize = 15});
 }
 
 class PreferencesKeys {

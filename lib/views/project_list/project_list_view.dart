@@ -19,7 +19,7 @@ class _ProjectListViewState extends ConsumerState<ProjectListView> {
     await _serverService.getProjectList(serverAddress);
   }
 
-  Widget listElement(ProjectInfo projectInfo, String serverAddress) {
+  Widget listElement(ProjectInfo projectInfo, String? serverAddress) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -37,9 +37,11 @@ class _ProjectListViewState extends ConsumerState<ProjectListView> {
           ),
         ),
         IconButton(
-          onPressed: () async {
-            await _serverService.connect(serverAddress, projectInfo.id);
-          },
+          onPressed: serverAddress == null
+              ? null
+              : () async {
+                  await _serverService.connect(serverAddress, projectInfo.id);
+                },
           icon: Icon(
             Icons.open_in_new,
             color: Theme.of(context).colorScheme.primary,
@@ -51,8 +53,8 @@ class _ProjectListViewState extends ConsumerState<ProjectListView> {
 
   @override
   Widget build(BuildContext context) {
-    final serverAddress =
-        ref.watch(settingsProvider.select((value) => value.serverAddress));
+    final serverAddress = ref.watch(
+        settingsProvider.select((aValue) => aValue.valueOrNull?.serverAddress));
 
     return Column(
       children: [
@@ -67,9 +69,11 @@ class _ProjectListViewState extends ConsumerState<ProjectListView> {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () async {
-                        await refreshProjectList(serverAddress);
-                      },
+                      onPressed: serverAddress == null
+                          ? null
+                          : () async {
+                              await refreshProjectList(serverAddress);
+                            },
                       icon: Icon(
                         Icons.refresh,
                         color: Theme.of(context).colorScheme.primary,

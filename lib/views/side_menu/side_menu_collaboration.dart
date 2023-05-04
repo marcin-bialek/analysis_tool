@@ -86,7 +86,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
           final isLoggedIn = accessToken != '';
 
           return ListTile(
-            enabled: true,
+            enabled: settings.hasValue,
             dense: true,
             leading: Icon(isLoggedIn ? Icons.logout : Icons.login,
                 size: 20.0, color: isLoggedIn ? Colors.red : Colors.green),
@@ -99,9 +99,9 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
             ),
             onTap: () async {
               if (isLoggedIn) {
-                await _logout(settings);
+                await _logout(settings.value!);
               } else {
-                await _login(settings);
+                await _login(settings.value!);
               }
             },
           );
@@ -111,7 +111,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
 
           if (!isLoggedIn) {
             return ListTile(
-              enabled: true,
+              enabled: settings.hasValue,
               dense: true,
               leading: Icon(Icons.add_home,
                   size: 20.0, color: isLoggedIn ? Colors.red : Colors.green),
@@ -123,7 +123,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
                 ),
               ),
               onTap: () async {
-                await _register(settings);
+                await _register(settings.value!);
               },
             );
           }
@@ -150,10 +150,13 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
           return _serverService.connectionInfo.state.observe((state) {
             return ListTile(
               enabled: _serverService.userInfo.accessToken.value != '' &&
-                  state != ServerConnectionState.connecting,
+                  state != ServerConnectionState.connecting &&
+                  settings.hasValue,
               dense: true,
               leading: Icon(
-                  settings.isConnectionSecure ? Icons.lock : Icons.cloud,
+                  (settings.valueOrNull?.isConnectionSecure ?? false)
+                      ? Icons.lock
+                      : Icons.cloud,
                   size: 20.0,
                   color: userIsLoggedIn ? Colors.green : Colors.grey),
               title: Text(
@@ -178,7 +181,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
                   : null,
               onTap: () async {
                 if (state == ServerConnectionState.disconnected) {
-                  await _openProject(settings);
+                  await _openProject(settings.value!);
                 } else if (state == ServerConnectionState.connected) {
                   await showDialogConnectionInfo(
                     context: context,
@@ -197,6 +200,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
                   return const SizedBox.shrink();
                 }
                 return ListTile(
+                  enabled: settings.hasValue,
                   dense: true,
                   leading: const Icon(
                     Icons.cloud_upload,
@@ -207,7 +211,7 @@ class _SideMenuCollaborationState extends ConsumerState<SideMenuCollaboration> {
                     'Wyślij na serwer',
                     style: TextStyle(color: Colors.blue),
                   ),
-                  onTap: () => _publishProject(settings.serverAddress),
+                  onTap: () => _publishProject(settings.value!.serverAddress),
                 );
               });
             case ServerConnectionState.connected:

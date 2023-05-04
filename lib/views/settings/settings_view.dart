@@ -14,7 +14,7 @@ class SettingsView extends ConsumerStatefulWidget {
 class _SettingsViewState extends ConsumerState<SettingsView> {
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
+    final settingsAsync = ref.watch(settingsProvider);
     final themeMode = ref.watch(appThemeModeProvider);
 
     return GestureDetector(
@@ -23,84 +23,93 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
       },
       child: Container(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            _TextFieldRow(
-              settingName: 'Rozmiar czcionki menu',
-              initialValue: settings.fontSizes.menuFontSize.toString(),
-              onChange: (value) {
-                final size = int.tryParse(value);
-                if (size != null) {
-                  ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
-                        menuFontSize: size,
-                        editorFontSize: settings.fontSizes.editorFontSize,
-                      ));
-                }
-              },
-              formatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-              ],
-            ),
-            _TextFieldRow(
-              settingName: 'Rozmiar czcionki edytora tekstu',
-              initialValue: settings.fontSizes.editorFontSize.toString(),
-              onChange: (value) {
-                final size = int.tryParse(value);
-                if (size != null) {
-                  ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
-                        menuFontSize: settings.fontSizes.menuFontSize,
-                        editorFontSize: size,
-                      ));
-                }
-              },
-              formatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-              ],
-            ),
-            _TextFieldRow(
-              settingName: 'Adres serwera',
-              initialValue: settings.serverAddress,
-              onChange: (value) {
-                if (value.isNotEmpty) {
-                  ref.read(settingsProvider.notifier).setServerAddress(value);
-                }
-              },
-            ),
-            _SwitchFieldRow(
-              settingName: 'Pozwalaj na połączenia przez HTTP',
-              initialValue: settings.allowInsecureConnection,
-              onChange: (value) {
-                ref
-                    .read(settingsProvider.notifier)
-                    .setAllowInsecureConnection(value);
-                return value;
-              },
-            ),
-            _SwitchFieldRow(
-              settingName: 'Motyw systemowy',
-              initialValue: themeMode == ThemeMode.system,
-              onChange: (value) {
-                ref.read(appThemeModeProvider.notifier).setSystem(value);
-                return value;
-              },
-            ),
-            _SwitchFieldRow(
-              settingName: 'Motyw ciemny',
-              disabled: themeMode == ThemeMode.system,
-              initialValue:
-                  ref.read(appThemeModeProvider.notifier).isDarkMode(),
-              force: themeMode == ThemeMode.system,
-              onChange: (value) {
-                ref
-                    .read(appThemeModeProvider.notifier)
-                    .set(value ? ThemeMode.dark : ThemeMode.light);
-                return value;
-              },
-            ),
-            const Spacer(),
-          ],
+        child: settingsAsync.map(
+          data: (settings) => Column(
+            children: [
+              _TextFieldRow(
+                settingName: 'Rozmiar czcionki menu',
+                initialValue: settings.value.fontSizes.menuFontSize.toString(),
+                onChange: (value) {
+                  final size = int.tryParse(value);
+                  if (size != null) {
+                    ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
+                          menuFontSize: size,
+                          editorFontSize:
+                              settings.value.fontSizes.editorFontSize,
+                        ));
+                  }
+                },
+                formatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(2),
+                ],
+              ),
+              _TextFieldRow(
+                settingName: 'Rozmiar czcionki edytora tekstu',
+                initialValue:
+                    settings.value.fontSizes.editorFontSize.toString(),
+                onChange: (value) {
+                  final size = int.tryParse(value);
+                  if (size != null) {
+                    ref.read(settingsProvider.notifier).setFontSizes(FontSizes(
+                          menuFontSize: settings.value.fontSizes.menuFontSize,
+                          editorFontSize: size,
+                        ));
+                  }
+                },
+                formatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(2),
+                ],
+              ),
+              _TextFieldRow(
+                settingName: 'Adres serwera',
+                initialValue: settings.value.serverAddress,
+                onChange: (value) {
+                  if (value.isNotEmpty) {
+                    ref.read(settingsProvider.notifier).setServerAddress(value);
+                  }
+                },
+              ),
+              _SwitchFieldRow(
+                settingName: 'Pozwalaj na połączenia przez HTTP',
+                initialValue: settings.value.allowInsecureConnection,
+                onChange: (value) {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setAllowInsecureConnection(value);
+                  return value;
+                },
+              ),
+              _SwitchFieldRow(
+                settingName: 'Motyw systemowy',
+                initialValue: themeMode == ThemeMode.system,
+                onChange: (value) {
+                  ref.read(appThemeModeProvider.notifier).setSystem(value);
+                  return value;
+                },
+              ),
+              _SwitchFieldRow(
+                settingName: 'Motyw ciemny',
+                disabled: themeMode == ThemeMode.system,
+                initialValue:
+                    ref.read(appThemeModeProvider.notifier).isDarkMode(),
+                force: themeMode == ThemeMode.system,
+                onChange: (value) {
+                  ref
+                      .read(appThemeModeProvider.notifier)
+                      .set(value ? ThemeMode.dark : ThemeMode.light);
+                  return value;
+                },
+              ),
+              const Spacer(),
+            ],
+          ),
+          error: (_) => Center(
+              child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.error,
+          )),
+          loading: (_) => const Center(child: CircularProgressIndicator()),
         ),
       ),
     );
